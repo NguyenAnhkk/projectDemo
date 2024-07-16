@@ -10,8 +10,10 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +28,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -115,10 +118,10 @@ fun LoginPage(
     var currentLocation by remember {
         mutableStateOf(LatLng(21.0278, 105.8342))
     }
-    val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(currentLocation, 1f)
-    }
-    val mapUtils = MapUtils(context)
+//    val cameraPositionState = rememberCameraPositionState {
+//        position = CameraPosition.fromLatLngZoom(currentLocation, 1f)
+//    }
+//    val mapUtils = MapUtils(context)
     val gso =
         GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(token)
@@ -207,12 +210,9 @@ fun LoginPage(
                     ) {
                         Text(text = "Login")
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Spacer(modifier = Modifier.height(8.dp))
                     TextButton(onClick = { navController.navigate("signup") }) {
                         Text(text = "Don't have an account? Signup")
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
                     TextButton(onClick = { navController.navigate("forgot") }) {
                         Text(text = "I forget my password !")
                     }
@@ -225,7 +225,9 @@ fun LoginPage(
                             Button(
                                 onClick = {
                                     launcher.launch(googleSignInClient.signInIntent)
-                                }, colors = ButtonDefaults.buttonColors(Color.Yellow)
+                                }, colors = ButtonDefaults.buttonColors(Color.White),
+                                modifier = Modifier .border(BorderStroke(1.dp, color = Color.Black),
+                                    CircleShape)
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Image(
@@ -240,7 +242,8 @@ fun LoginPage(
                                         fontFamily = FontFamily.SansSerif,
                                         fontWeight = FontWeight.ExtraBold,
                                         fontSize = 15.sp,
-                                        letterSpacing = 0.1.em
+                                        letterSpacing = 0.1.em,
+                                        color = Color.Black
                                     )
                                 }
                             }

@@ -34,9 +34,9 @@ class MapUtils(private val context: Context) {
         Manifest.permission.ACCESS_FINE_LOCATION,
     )
     private var locationRequired: Boolean = false
-    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
-    private lateinit var locationCallback: LocationCallback
 
+    private lateinit var locationCallback: LocationCallback
+    private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
     init {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
         setupLocationCallback()
