@@ -2,9 +2,9 @@ package com.example.projectdemo.pages
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.graphics.drawable.Icon
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.ComponentActivity
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.ActivityResult
@@ -24,7 +24,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -72,6 +71,10 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.em
 import com.example.projectdemo.R
 import com.example.projectdemo.ui.theme.rememberImeState
+import com.facebook.AccessToken
+import com.facebook.CallbackManager
+import com.facebook.FacebookCallback
+import com.facebook.FacebookException
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
@@ -85,6 +88,13 @@ import com.google.firebase.ktx.Firebase
 import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import com.facebook.FacebookSdk;
+import com.facebook.appevents.AppEventsLogger;
+import com.facebook.login.LoginManager
+import com.facebook.login.LoginResult
+import com.google.firebase.auth.FacebookAuthProvider
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.OAuthProvider
 
 @SuppressLint("ResourceType")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -94,10 +104,52 @@ fun LoginPage(
     navController: NavHostController,
     authViewModel: AuthViewModel,
 ) {
+    val context = LocalContext.current
+    val callbackManager = remember { CallbackManager.Factory.create() }
+
+    fun loginWithFacebook() {
+        LoginManager.getInstance()
+            .logInWithReadPermissions(context as ComponentActivity, listOf("public_profile"))
+    }
+
+    fun handleFacebookAccessToken(token: AccessToken, navController: NavHostController) {
+        val credential = FacebookAuthProvider.getCredential(token.token)
+        FirebaseAuth.getInstance().signInWithCredential(credential)
+            .addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    Log.d("FacebookLogin", "signInWithCredential:success")
+                    navController.navigate("home")
+                } else {
+                    Log.w("FacebookLogin", "signInWithCredential:failure", task.exception)
+                    // Xử lý khi đăng nhập thất bại
+                }
+            }
+    }
+
+    val facebookCallback = remember {
+        object : FacebookCallback<LoginResult> {
+            override fun onSuccess(loginResult: LoginResult) {
+                handleFacebookAccessToken(loginResult.accessToken,navController)
+            }
+
+            override fun onCancel() {
+                // Xử lý khi người dùng huỷ đăng nhập
+                Log.d("FacebookLogin", "Login canceled")
+            }
+
+            override fun onError(error: FacebookException) {
+                // Xử lý khi xảy ra lỗi đăng nhập
+                Log.d("FacebookLogin", "Login error: ${error.message}")
+            }
+        }
+    }
+
+    LaunchedEffect(callbackManager) {
+        LoginManager.getInstance().registerCallback(callbackManager, facebookCallback)
+    }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     val authState = authViewModel.authState.observeAsState()
-    val context = LocalContext.current
     val imeState = rememberImeState()
     val scrollState = rememberScrollState()
     var passwordVisibility by remember {
@@ -114,6 +166,7 @@ fun LoginPage(
     val launcher = rememberFirebaseAuthLauncher(onAuthComplete = { result -> user = result.user },
         onAuthError = { user = null }
     )
+    val auth = FirebaseAuth.getInstance()
     val token = stringResource(id = R.string.client_id)
     var currentLocation by remember {
         mutableStateOf(LatLng(21.0278, 105.8342))
@@ -153,7 +206,7 @@ fun LoginPage(
                     contentDescription = null,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxHeight(0.4f),
+                        .fillMaxHeight(0.3f),
                     contentScale = ContentScale.FillBounds
                 )
                 Column(
@@ -203,7 +256,6 @@ fun LoginPage(
                         visualTransformation = if (passwordVisibility) VisualTransformation.None
                         else PasswordVisualTransformation()
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
                     Button(
                         onClick = { authViewModel.login(email, password) },
                         modifier = Modifier.fillMaxWidth(0.5f)
@@ -226,8 +278,10 @@ fun LoginPage(
                                 onClick = {
                                     launcher.launch(googleSignInClient.signInIntent)
                                 }, colors = ButtonDefaults.buttonColors(Color.White),
-                                modifier = Modifier .border(BorderStroke(1.dp, color = Color.Black),
-                                    CircleShape)
+                                modifier = Modifier.border(
+                                    BorderStroke(1.dp, color = Color.Black),
+                                    CircleShape
+                                )
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Image(
@@ -251,11 +305,18 @@ fun LoginPage(
                             navController.navigate("home")
                         }
                     }
+                    Column {
+                        Button(onClick = { loginWithFacebook() }) {
+                            Text(text = "Login Facebook")
+                        }
+                    }
+
                 }
             }
         }
     }
 }
+
 @Composable
 fun rememberFirebaseAuthLauncher(
     onAuthComplete: (AuthResult) -> Unit,
@@ -278,3 +339,4 @@ fun rememberFirebaseAuthLauncher(
         }
     }
 }
+

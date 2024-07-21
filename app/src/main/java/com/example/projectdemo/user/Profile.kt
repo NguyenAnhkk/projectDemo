@@ -64,6 +64,11 @@ fun Profile(
                 Icon(painter = painterResource(id = R.drawable.baseline_navigate_next_24), contentDescription = null )
             }
         }
+        Column {
+            Button(onClick = { navController.navigate("setting")  }) {
+                Icon(painter = painterResource(id = R.drawable.baseline_settings_24), contentDescription = null )
+            }
+        }
 
 
 

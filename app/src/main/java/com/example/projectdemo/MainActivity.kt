@@ -26,6 +26,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.ktx.Firebase
 import com.google.maps.android.compose.rememberCameraPositionState
 class MainActivity : ComponentActivity() {
@@ -33,10 +34,10 @@ class MainActivity : ComponentActivity() {
     private val authViewModel: AuthViewModel by viewModels()
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
+        FirebaseDatabase.getInstance().setPersistenceEnabled(true)
         super.onCreate(savedInstanceState)
         MapsInitializer.initialize(this, MapsInitializer.Renderer.LATEST) {}
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-
         val sharedPreferences = getSharedPreferences("my_prefs", Context.MODE_PRIVATE)
         val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
         setContent {
@@ -55,12 +56,6 @@ class MainActivity : ComponentActivity() {
                             MyAppNavigation(
                                 authViewModel = authViewModel,
                             )
-                            mapUtils.LocationScreen(
-                                context = context,
-                                currentLocation = currentLocation,
-                                camerapositionState = cameraPositionState,
-                            )
-
                         }
                     }
                 }

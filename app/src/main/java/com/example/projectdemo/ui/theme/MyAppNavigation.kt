@@ -11,10 +11,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.projectdemo.pages.ForgotPasswordScreen
 import com.example.projectdemo.pages.PasswordResetViewModel
+import settingProfile
+
 
 @Composable
 fun MyAppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
     val navController = rememberNavController()
+
     NavHost(navController = navController, startDestination = "login", builder = {
         composable("login") {
             LoginPage(modifier, navController, authViewModel)
@@ -31,6 +34,10 @@ fun MyAppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel)
         composable("profile") {
             Profile(modifier, navController, authViewModel)
         }
+        composable("setting") {
+            settingProfile(modifier, navController , authViewModel)
+        }
+
     }
     )
 }
