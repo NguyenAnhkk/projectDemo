@@ -2,7 +2,8 @@
     <string name="app_name">ProjectDemo</string>
     <string name="The_future">The Future is in Your Hands</string>
     <string name="client_id">697800429635-asbhh9504of51rnc342hm00srhcjqg0v.apps.googleusercontent.com</string>
-    <string name="facebook_app_id">1169060074334824</string>
-    <string name="fb_login_protocol_scheme">fb1169060074334824</string>
-    <string name="facebook_client_token">950b6ee0fdf6d33a453463570de929ed</string>
+    <string name="facebook_app_id">466644976331839</string>
+    <string name="fb_login_protocol_scheme">fb466644976331839</string>
+    <string name="facebook_client_token">ae659a4d47d09c11b5d53724318bfb58</string>
+    <string name="title_activity_main">MainActivity</string>
 </resources>

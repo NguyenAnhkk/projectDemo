@@ -95,6 +95,7 @@ import com.facebook.login.LoginResult
 import com.google.firebase.auth.FacebookAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.OAuthProvider
+import java.util.Arrays
 
 @SuppressLint("ResourceType")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -106,39 +107,55 @@ fun LoginPage(
 ) {
     val context = LocalContext.current
     val callbackManager = remember { CallbackManager.Factory.create() }
-
-    fun loginWithFacebook() {
-        LoginManager.getInstance()
-            .logInWithReadPermissions(context as ComponentActivity, listOf("public_profile"))
-    }
-
     fun handleFacebookAccessToken(token: AccessToken, navController: NavHostController) {
         val credential = FacebookAuthProvider.getCredential(token.token)
         FirebaseAuth.getInstance().signInWithCredential(credential)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     Log.d("FacebookLogin", "signInWithCredential:success")
+                    Toast.makeText(context, "Login successful!", Toast.LENGTH_SHORT).show()
                     navController.navigate("home")
                 } else {
                     Log.w("FacebookLogin", "signInWithCredential:failure", task.exception)
                     // Xử lý khi đăng nhập thất bại
+                    Toast.makeText(
+                        context,
+                        "Login failed: ${task.exception?.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
     }
-
+    fun loginWithFacebook(
+        context: ComponentActivity,
+        callbackManager: CallbackManager,
+        navController: NavHostController
+    ) {
+        LoginManager.getInstance()
+            .logInWithReadPermissions(context, listOf("public_profile"))
+        LoginManager.getInstance()
+            .registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
+                override fun onSuccess(loginResult: LoginResult) {
+                    handleFacebookAccessToken(loginResult.accessToken, navController)
+                    navController.navigate("home")
+                }
+                override fun onCancel() {
+                    Log.d("FacebookLogin", "Login canceled")
+                }
+                override fun onError(error: FacebookException) {
+                    Log.d("FacebookLogin", "Login error: ${error.message}")
+                }
+            })
+    }
     val facebookCallback = remember {
         object : FacebookCallback<LoginResult> {
             override fun onSuccess(loginResult: LoginResult) {
-                handleFacebookAccessToken(loginResult.accessToken,navController)
+                handleFacebookAccessToken(loginResult.accessToken, navController)
             }
-
             override fun onCancel() {
-                // Xử lý khi người dùng huỷ đăng nhập
                 Log.d("FacebookLogin", "Login canceled")
             }
-
             override fun onError(error: FacebookException) {
-                // Xử lý khi xảy ra lỗi đăng nhập
                 Log.d("FacebookLogin", "Login error: ${error.message}")
             }
         }
@@ -171,10 +188,6 @@ fun LoginPage(
     var currentLocation by remember {
         mutableStateOf(LatLng(21.0278, 105.8342))
     }
-//    val cameraPositionState = rememberCameraPositionState {
-//        position = CameraPosition.fromLatLngZoom(currentLocation, 1f)
-//    }
-//    val mapUtils = MapUtils(context)
     val gso =
         GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(token)
@@ -287,15 +300,15 @@ fun LoginPage(
                                     Image(
                                         painter = painterResource(id = R.drawable.google_logo),
                                         contentDescription = "Google Logo",
-                                        modifier = Modifier.size(40.dp),
+                                        modifier = Modifier.size(30.dp),
                                         contentScale = ContentScale.Fit
                                     )
-                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Spacer(modifier = Modifier.width(10.dp))
                                     Text(
                                         text = "Sign in with Google",
                                         fontFamily = FontFamily.SansSerif,
                                         fontWeight = FontWeight.ExtraBold,
-                                        fontSize = 15.sp,
+                                        fontSize = 13.sp,
                                         letterSpacing = 0.1.em,
                                         color = Color.Black
                                     )
@@ -305,11 +318,41 @@ fun LoginPage(
                             navController.navigate("home")
                         }
                     }
+                    Spacer(modifier = Modifier.height(8.dp))
                     Column {
-                        Button(onClick = { loginWithFacebook() }) {
-                            Text(text = "Login Facebook")
+                        Button(
+                            onClick = {
+                                loginWithFacebook(
+                                    context as ComponentActivity,
+                                    callbackManager,
+                                    navController
+                                )
+                            }, colors = ButtonDefaults.buttonColors(Color.White),
+                            modifier = Modifier.border(
+                                BorderStroke(1.dp, color = Color.Black),
+                                CircleShape
+                            )
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+//                                Image(
+//                                    painter = painterResource(id = R.drawable.google_logo),
+//                                    contentDescription = "Google Logo",
+//                                    modifier = Modifier.size(30.dp),
+//                                    contentScale = ContentScale.Fit
+//                                )
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = "Sign in with Facebook",
+                                    fontFamily = FontFamily.SansSerif,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 13.sp,
+                                    letterSpacing = 0.1.em,
+                                    color = Color.Black
+                                )
+                            }
                         }
                     }
+
 
                 }
             }

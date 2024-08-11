@@ -63,15 +63,21 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("com.google.firebase:firebase-auth:23.0.0")
     implementation("com.google.firebase:firebase-database:21.0.0")
+    implementation("com.google.firebase:firebase-firestore:25.0.0")
+    implementation(platform("androidx.compose:compose-bom:2023.03.00"))
+    implementation("com.google.firebase:firebase-messaging:24.0.0")
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2023.03.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation(platform("androidx.compose:compose-bom:2023.03.00"))
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     val nav_version = "2.7.7"
     implementation("androidx.navigation:navigation-compose:$nav_version")
+
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation ("androidx.compose.runtime:runtime-livedata:1.6.8")
     implementation ("com.google.android.gms:play-services-maps:19.0.0")
     implementation ("com.google.maps.android:maps-compose:2.2.0")
@@ -82,5 +88,6 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.1.1"))
     implementation ("com.google.firebase:firebase-auth-ktx")
     implementation ("com.facebook.android:facebook-login:12.2.0")
-
+    implementation("com.google.firebase:firebase-database-ktx:20.1.0")
+    implementation ("com.google.accompanist:accompanist-permissions:0.28.0")
 }

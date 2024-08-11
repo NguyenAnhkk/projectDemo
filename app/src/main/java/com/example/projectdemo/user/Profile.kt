@@ -58,22 +58,30 @@ fun Profile(
             .background(color = Color(android.graphics.Color.parseColor("#ececec"))),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-    ConstraintLayout() {
-        Column(modifier = Modifier.fillMaxSize() , horizontalAlignment = Alignment.CenterHorizontally , verticalArrangement = Arrangement.Center) {
-            Button(onClick = { authViewModel.signout(navController)}) {
-                Icon(painter = painterResource(id = R.drawable.baseline_navigate_next_24), contentDescription = null )
+        ConstraintLayout() {
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Button(onClick = { authViewModel.signout(navController) }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_navigate_next_24),
+                        contentDescription = null
+                    )
+                }
             }
-        }
-        Column {
-            Button(onClick = { navController.navigate("setting")  }) {
-                Icon(painter = painterResource(id = R.drawable.baseline_settings_24), contentDescription = null )
+            Column {
+                Button(onClick = { navController.navigate("users") }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.baseline_settings_24),
+                        contentDescription = null
+                    )
+                }
             }
+
+
         }
-
-
-
-
-    }
     }
 
 }
