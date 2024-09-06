@@ -7,7 +7,6 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove"/>
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -22,15 +21,21 @@
         <!-- Meta-data for Google Maps and Facebook SDK -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyAM_bwyP1mI0OhU5AFc9CPA40_G_Ow-JtY" />
+            android:value="AIzaSyAAT4wRw7IsVGlIRxBUzV8ElQrC8jKeSOA" />
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
             android:value="@string/facebook_app_id" />
         <meta-data
             android:name="com.facebook.sdk.ClientToken"
             android:value="@string/facebook_client_token" />
-
+        <meta-data
+            android:name="com.google.android.gms.auth.api.signin.default_web_client_id"
+            android:value="@string/client_id" />
         <!-- Main Activity -->
+        <activity
+            android:name="com.google.android.gms.auth.api.signin.internal.SignInHubActivity"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustPan" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

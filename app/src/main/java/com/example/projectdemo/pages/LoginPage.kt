@@ -334,12 +334,6 @@ fun LoginPage(
                             )
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-//                                Image(
-//                                    painter = painterResource(id = R.drawable.google_logo),
-//                                    contentDescription = "Google Logo",
-//                                    modifier = Modifier.size(30.dp),
-//                                    contentScale = ContentScale.Fit
-//                                )
                                 Spacer(modifier = Modifier.width(10.dp))
                                 Text(
                                     text = "Sign in with Facebook",

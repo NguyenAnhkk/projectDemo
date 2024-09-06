@@ -1,5 +1,4 @@
 package com.example.projectdemo.notification
-
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -24,16 +23,14 @@ class FCMService : FirebaseMessagingService() {
         val requestCode = 1
         val channelId = "Firebase Messaging id"
         val channelName = "Firebase Messaging"
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            notificationManager.createNotificationChannel(
-                NotificationChannel(
-                    channelId,
-                    channelName,
-                    NotificationManager.IMPORTANCE_HIGH
-                )
+        notificationManager.createNotificationChannel(
+            NotificationChannel(
+                channelId,
+                channelName,
+                NotificationManager.IMPORTANCE_HIGH
             )
+        )
 
-        }
         val intent = Intent(this, MainActivity::class.java)
         val pendingIntentFlag =
             if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) 0 else PendingIntent.FLAG_IMMUTABLE

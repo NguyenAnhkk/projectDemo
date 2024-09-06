@@ -33,6 +33,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,7 +48,13 @@ fun CourseDetailsActivity(
 
 ) {
     val getData = dataViewModel.state.value
-    var courseList = mutableStateListOf<Course?>()
+    var isLoading by remember {
+        mutableStateOf(true)
+    }
+    LaunchedEffect(key1 = true) {
+        delay(5000)
+        isLoading = false
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -52,38 +64,43 @@ fun CourseDetailsActivity(
     ) {
         LazyColumn {
             items(getData) { course ->
-                ElevatedCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFFF1EDE9)),
-                    onClick = {
-                        navController.navigate("update_data/${course.Name}/${course.Age}/${course.Address}")
+                ShimmerListItem(isLoading = isLoading, contentAfterLoading = {
+                    ElevatedCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFF1EDE9)),
+                        onClick = {
+                            navController.navigate("update_data/${course.Name}/${course.Age}/${course.Address}")
+                        }
+                    ) {
+                        Text(
+                            text = "Name: ${course.Name}",
+                            color = Color(0xFF117a46),
+                            style = TextStyle(
+                                fontSize = 20.sp
+                            ),
+                            modifier = Modifier.padding(5.dp)
+                        )
+                        Text(
+                            text = "Age: ${course.Age}", color = Color.Black, style = TextStyle(
+                                fontSize = 15.sp
+                            ), modifier = Modifier.padding(5.dp)
+                        )
+                        Text(
+                            text = "Address: ${course.Address}",
+                            color = Color.Black,
+                            style = TextStyle(
+                                fontSize = 15.sp
+                            ),
+                            modifier = Modifier.padding(5.dp)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
                     }
-                ) {
-                    Text(
-                        text = "Name: ${course.Name}", color = Color(0xFF117a46), style = TextStyle(
-                            fontSize = 20.sp
-                        ), modifier = Modifier.padding(5.dp)
-                    )
-                    Text(
-                        text = "Age: ${course.Age}", color = Color.Black, style = TextStyle(
-                            fontSize = 15.sp
-                        ), modifier = Modifier.padding(5.dp)
-                    )
-                    Text(
-                        text = "Address: ${course.Address}", color = Color.Black, style = TextStyle(
-                            fontSize = 15.sp
-                        ), modifier = Modifier.padding(5.dp)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-
+                })
             }
         }
-
-
     }
 }
 

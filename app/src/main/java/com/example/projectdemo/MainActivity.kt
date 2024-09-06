@@ -1,3 +1,4 @@
+
 package com.example.projectdemo
 
 import android.content.Context
@@ -54,7 +55,7 @@ class MainActivity : ComponentActivity() {
             }
             val token = task.result
             Log.d("FCM",token.toString())
-//            Toast.makeText(baseContext,token.toString(),Toast.LENGTH_SHORT).show()
+            Toast.makeText(baseContext,token.toString(),Toast.LENGTH_SHORT).show()
         })
         setContent {
             ProjectDemoTheme {

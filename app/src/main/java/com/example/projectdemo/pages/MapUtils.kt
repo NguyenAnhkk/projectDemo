@@ -11,6 +11,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.NavigationBarItemDefaults
@@ -18,12 +19,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.projectdemo.R
 import com.exyte.animatednavbar.AnimatedNavigationBar
 import com.google.android.gms.location.*
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
@@ -37,6 +44,7 @@ class MapUtils(private val context: Context) {
 
     private lateinit var locationCallback: LocationCallback
     private lateinit var fusedLocationProviderClient: FusedLocationProviderClient
+
     init {
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
         setupLocationCallback()
@@ -91,7 +99,11 @@ class MapUtils(private val context: Context) {
             return
         }
 
-        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, context.mainLooper)
+        fusedLocationClient.requestLocationUpdates(
+            locationRequest,
+            locationCallback,
+            context.mainLooper
+        )
 
     }
 
@@ -106,11 +118,14 @@ class MapUtils(private val context: Context) {
         val newHeight = 100
         val scaledBitmap = Bitmap.createScaledBitmap(bitmap, newWidth, newHeight, true)
         val smallIcon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
-
+        // camera theo vị trí trên bản đồ
+        LaunchedEffect(currentLocation) {
+            camerapositionState.animate(CameraUpdateFactory.newLatLngZoom(currentLocation, 15f))
+        }
         val currentContext = LocalContext.current
         var currentLocation by remember { mutableStateOf(LatLng(21.0278, 105.8342)) }
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(currentContext)
-
+        val clipboardManager = LocalClipboardManager.current
         val launchMultiplePermissions = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestMultiplePermissions()
         ) { permissionsResult ->
@@ -136,12 +151,21 @@ class MapUtils(private val context: Context) {
                     icon = smallIcon,
                 )
             }
+
+            LaunchedEffect(currentLocation) {
+                camerapositionState.animate(CameraUpdateFactory.newLatLngZoom(currentLocation, 15f))
+            }
+
             Column(
                 modifier = Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(text = "Your location: ${currentLocation.latitude}/${currentLocation.longitude}")
+                Text(
+                    text = "Your location: ${currentLocation.latitude}/${currentLocation.longitude}",
+                    color = Color(0xFFd11972),
+                    fontSize = 12.sp
+                )
                 Button(onClick = {
                     if (permissions.all {
                             ContextCompat.checkSelfPermission(
@@ -150,7 +174,22 @@ class MapUtils(private val context: Context) {
                             ) == PackageManager.PERMISSION_GRANTED
                         }) {
                         fetchLocation(fusedLocationClient, currentContext) { location ->
-                            currentLocation = location
+                            if (location != null) {
+                                currentLocation = location
+                                val locationText = "${location.latitude}, ${location.longitude}"
+                                clipboardManager.setText(AnnotatedString(locationText))
+                                Toast.makeText(
+                                    context,
+                                    "Đã sao chép vị trí: $locationText",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Không thể lấy vị trí hiện tại",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                         }
                     } else {
                         launchMultiplePermissions.launch(permissions)
@@ -158,9 +197,9 @@ class MapUtils(private val context: Context) {
                 }) {
                     Text(text = "Get your location")
                 }
-
             }
         }
+
     }
 
     private fun fetchLocation(

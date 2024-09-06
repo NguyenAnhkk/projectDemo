@@ -1,5 +1,7 @@
 package com.example.projectdemo.user
 
+import android.annotation.SuppressLint
+import android.graphics.drawable.Icon
 import android.provider.MediaStore.Images
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -20,10 +22,25 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -45,44 +62,65 @@ import androidx.navigation.NavController
 import com.example.projectdemo.R
 import com.example.projectdemo.ui.theme.AuthViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun Profile(
     modifier: Modifier = Modifier,
     navController: NavController,
     authViewModel: AuthViewModel
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .fillMaxHeight()
-            .background(color = Color(android.graphics.Color.parseColor("#ececec"))),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        ConstraintLayout() {
-            Column(
-                modifier = Modifier.fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
+    Scaffold(
+       topBar = {
+                TopAppBar(navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(imageVector = Icons.Default.ArrowBack,contentDescription = "Arrow Icon")
+                    }
+                }, title = { Text(text = "Home")}, colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp)))
+       },
+        bottomBar = {
+            BottomAppBar(
+                modifier.clip(RoundedCornerShape(topEnd = 30.dp, topStart = 30.dp)),
+                containerColor = Color(0xFFFF9800)
             ) {
-                Button(onClick = { authViewModel.signout(navController) }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_navigate_next_24),
-                        contentDescription = null
-                    )
+                Row(
+                    modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    IconButton(onClick = { /*TODO*/ }) {
+                        Icon(imageVector = Icons.Default.Edit, contentDescription = null)
+
+                    }
+                    FloatingActionButton(
+                        onClick = { navController.navigate("users") },
+                        containerColor = Color(0xFFf214fa)
+                    ) {
+
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_add_24),
+                            contentDescription = "add",
+                        )
+                    }
+                    IconButton(onClick = { authViewModel.signout(navController) }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_logout_24),
+                            contentDescription = null
+                        )
+
+                    }
                 }
             }
-            Column {
-                Button(onClick = { navController.navigate("users") }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.baseline_settings_24),
-                        contentDescription = null
-                    )
-                }
-            }
-
-
+        },
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0xFFFFFFFF)),
+        ) {
         }
     }
+
 
 }
 

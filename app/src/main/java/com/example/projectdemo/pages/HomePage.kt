@@ -1,6 +1,7 @@
 package com.example.projectdemo.pages
 
 
+import android.util.Log
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
