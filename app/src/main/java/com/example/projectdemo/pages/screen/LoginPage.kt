@@ -239,13 +239,13 @@ fun LoginPage(
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
-                        label = { Text(text = "Email") }
+                        label = { Text(text = "Tài khoản") }
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
-                        label = { Text(text = "Password") },
+                        label = { Text(text = "Mật khẩu") },
                         // Show hide password bằng icon
                         trailingIcon = {
                             IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
@@ -308,34 +308,34 @@ fun LoginPage(
                             navController.navigate("home")
                         }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Column {
-                        Button(
-                            onClick = {
-                                loginWithFacebook(
-                                    context as ComponentActivity,
-                                    callbackManager,
-                                    navController
-                                )
-                            }, colors = ButtonDefaults.buttonColors(Color.White),
-                            modifier = Modifier.border(
-                                BorderStroke(1.dp, color = Color.Black),
-                                CircleShape
-                            )
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Spacer(modifier = Modifier.width(10.dp))
-                                Text(
-                                    text = "Sign in with Facebook",
-                                    fontFamily = FontFamily.SansSerif,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    fontSize = 13.sp,
-                                    letterSpacing = 0.1.em,
-                                    color = Color.Black
-                                )
-                            }
-                        }
-                    }
+//                    Spacer(modifier = Modifier.height(8.dp))
+//                    Column {
+//                        Button(
+//                            onClick = {
+//                                loginWithFacebook(
+//                                    context as ComponentActivity,
+//                                    callbackManager,
+//                                    navController
+//                                )
+//                            }, colors = ButtonDefaults.buttonColors(Color.White),
+//                            modifier = Modifier.border(
+//                                BorderStroke(1.dp, color = Color.Black),
+//                                CircleShape
+//                            )
+//                        ) {
+//                            Row(verticalAlignment = Alignment.CenterVertically) {
+//                                Spacer(modifier = Modifier.width(10.dp))
+//                                Text(
+//                                    text = "Sign in with Facebook",
+//                                    fontFamily = FontFamily.SansSerif,
+//                                    fontWeight = FontWeight.ExtraBold,
+//                                    fontSize = 13.sp,
+//                                    letterSpacing = 0.1.em,
+//                                    color = Color.Black
+//                                )
+//                            }
+//                        }
+//                    }
 
 
                 }

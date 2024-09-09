@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -119,7 +120,7 @@ class MapUtils(private val context: Context) {
             camerapositionState.animate(CameraUpdateFactory.newLatLngZoom(currentLocation, 15f))
         }
         val currentContext = LocalContext.current
-        var currentLocation by remember { mutableStateOf(LatLng(21.0278, 105.8342)) }
+        var currentLocation by rememberSaveable { mutableStateOf(LatLng(21.0278, 105.8342)) }
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(currentContext)
         val clipboardManager = LocalClipboardManager.current
         val launchMultiplePermissions = rememberLauncherForActivityResult(
@@ -133,8 +134,6 @@ class MapUtils(private val context: Context) {
                 Toast.makeText(currentContext, "Permissions not granted", Toast.LENGTH_SHORT).show()
             }
         }
-
-
         Box(modifier = Modifier.fillMaxSize()) {
             GoogleMap(
                 modifier = Modifier.fillMaxSize(),

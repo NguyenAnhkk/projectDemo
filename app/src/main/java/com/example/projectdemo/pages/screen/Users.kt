@@ -1,4 +1,5 @@
 package com.example.projectdemo.pages.screen
+
 import android.content.Context
 import android.text.TextUtils
 import android.widget.Toast
@@ -34,19 +35,21 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun Users(modifier: Modifier = Modifier,
-          navController: NavController,
-          authViewModel: AuthViewModel
+fun Users(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    authViewModel: AuthViewModel
 ) {
-firebaseUI(LocalContext.current , navController)
+    firebaseUI(LocalContext.current, navController)
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun firebaseUI(context: Context ,   navController: NavController,) {
+fun firebaseUI(context: Context, navController: NavController) {
     val name = remember {
         mutableStateOf("")
     }
-    val age = remember {
+    var age = remember {
         mutableStateOf("")
     }
     val address = remember {
@@ -61,7 +64,11 @@ fun firebaseUI(context: Context ,   navController: NavController,) {
     ) {
         TextField(
             value = name.value,
-            onValueChange = { name.value = it },
+            onValueChange = {
+                if (it.length <= 50) {
+                    name.value = it
+                }
+            },
             placeholder = { Text(text = "Enter your name") },
             modifier = Modifier
                 .padding(16.dp)
@@ -74,7 +81,17 @@ fun firebaseUI(context: Context ,   navController: NavController,) {
 
         TextField(
             value = age.value,
-            onValueChange = { age.value = it },
+            onValueChange = {
+                val newValue = it.filter { char -> char.isDigit() }
+                if (newValue.isNotEmpty() && newValue.length <= 3) {
+                    val ageValue = newValue.toIntOrNull()
+                    if (ageValue != null && ageValue <= 150) {
+                        age.value = newValue
+                    }
+                } else {
+                    age.value = ""
+                }
+            },
             placeholder = { Text(text = "Enter your age") },
             modifier = Modifier
                 .padding(16.dp)
@@ -88,7 +105,7 @@ fun firebaseUI(context: Context ,   navController: NavController,) {
 
         TextField(
             value = address.value,
-            onValueChange = { address.value = it },
+            onValueChange = { if(it.length <= 100 ){address.value = it} },
             placeholder = { Text(text = "Enter your address") },
             modifier = Modifier
                 .padding(16.dp)
@@ -138,6 +155,7 @@ fun firebaseUI(context: Context ,   navController: NavController,) {
         }
     }
 }
+
 fun addDataToFirebase(
     name: String,
     age: String,

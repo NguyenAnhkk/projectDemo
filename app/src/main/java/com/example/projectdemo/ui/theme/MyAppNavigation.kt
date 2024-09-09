@@ -13,7 +13,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.projectdemo.pages.forgotpassword.ForgotPasswordScreen
 import com.example.projectdemo.pages.forgotpassword.PasswordResetViewModel
-import com.example.projectdemo.viewdata.Profile
+import com.example.projectdemo.pages.screen.Profile
 import com.example.projectdemo.pages.screen.Users
 import com.example.projectdemo.viewdata.CourseDetailsActivity
 import com.example.projectdemo.viewdata.UpdateDataScreen

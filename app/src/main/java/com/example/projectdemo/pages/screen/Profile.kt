@@ -1,4 +1,4 @@
-package com.example.projectdemo.viewdata
+package com.example.projectdemo.pages.screen
 
 import android.annotation.SuppressLint
 import android.graphics.drawable.Icon
@@ -81,7 +81,7 @@ fun Profile(
         bottomBar = {
             BottomAppBar(
                 modifier.clip(RoundedCornerShape(topEnd = 30.dp, topStart = 30.dp)),
-                containerColor = Color(0xFFFF9800)
+                containerColor = Color(0xFFdab5f5)
             ) {
                 Row(
                     modifier.fillMaxWidth(),
@@ -94,7 +94,7 @@ fun Profile(
                     }
                     FloatingActionButton(
                         onClick = { navController.navigate("users") },
-                        containerColor = Color(0xFFf214fa)
+                        containerColor = Color(0xFFeffcc2)
                     ) {
 
                         Icon(
