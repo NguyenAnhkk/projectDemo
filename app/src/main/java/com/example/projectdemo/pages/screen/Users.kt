@@ -1,4 +1,4 @@
-package com.example.projectdemo.user
+package com.example.projectdemo.pages.screen
 import android.content.Context
 import android.text.TextUtils
 import android.widget.Toast

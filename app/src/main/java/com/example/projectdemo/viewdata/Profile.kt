@@ -1,4 +1,4 @@
-package com.example.projectdemo.user
+package com.example.projectdemo.viewdata
 
 import android.annotation.SuppressLint
 import android.graphics.drawable.Icon

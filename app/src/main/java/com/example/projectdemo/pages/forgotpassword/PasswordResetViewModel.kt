@@ -1,4 +1,4 @@
-package com.example.projectdemo.pages
+package com.example.projectdemo.pages.forgotpassword
 
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth

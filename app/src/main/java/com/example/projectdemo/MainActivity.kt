@@ -2,8 +2,6 @@
 package com.example.projectdemo
 
 import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -17,25 +15,14 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.preferencesDataStore
-import com.example.projectdemo.pages.LoginPage
-import com.example.projectdemo.pages.MapUtils
 import com.example.projectdemo.ui.theme.AuthViewModel
 import com.example.projectdemo.ui.theme.MyAppNavigation
 import com.example.projectdemo.ui.theme.ProjectDemoTheme
-import com.facebook.FacebookSdk
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.MapsInitializer
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.tasks.OnCompleteListener
-import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
-import com.google.maps.android.compose.rememberCameraPositionState
-import java.util.prefs.Preferences
 
 class MainActivity : ComponentActivity() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient

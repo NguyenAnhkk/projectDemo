@@ -1,4 +1,4 @@
-package com.example.projectdemo.pages
+package com.example.projectdemo.pages.screen
 
 import android.widget.Toast
 import androidx.compose.animation.core.tween

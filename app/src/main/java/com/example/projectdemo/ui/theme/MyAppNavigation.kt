@@ -3,19 +3,18 @@ package com.example.projectdemo.ui.theme
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
 import androidx.navigation.NavType
-import com.example.projectdemo.pages.HomePage
-import com.example.projectdemo.pages.LoginPage
-import com.example.projectdemo.pages.SignupPage
+import com.example.projectdemo.pages.screen.HomePage
+import com.example.projectdemo.pages.screen.LoginPage
+import com.example.projectdemo.pages.screen.SignupPage
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.projectdemo.pages.ForgotPasswordScreen
-import com.example.projectdemo.pages.PasswordResetViewModel
-import com.example.projectdemo.user.Profile
-import com.example.projectdemo.user.Users
+import com.example.projectdemo.pages.forgotpassword.ForgotPasswordScreen
+import com.example.projectdemo.pages.forgotpassword.PasswordResetViewModel
+import com.example.projectdemo.viewdata.Profile
+import com.example.projectdemo.pages.screen.Users
 import com.example.projectdemo.viewdata.CourseDetailsActivity
 import com.example.projectdemo.viewdata.UpdateDataScreen
 

@@ -1,4 +1,4 @@
-package com.example.projectdemo.pages
+package com.example.projectdemo.pages.forgotpassword
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,7 +22,7 @@ import androidx.navigation.NavHostController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ForgotPasswordScreen(viewModel: PasswordResetViewModel , navController: NavHostController ) {
+fun ForgotPasswordScreen(viewModel: PasswordResetViewModel, navController: NavHostController ) {
 
     var email by remember { mutableStateOf("") }
 
