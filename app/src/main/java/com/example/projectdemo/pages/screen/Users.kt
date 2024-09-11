@@ -138,7 +138,6 @@ fun firebaseUI(context: Context, navController: NavController) {
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // on below line we are adding text for our button
             Text(text = "Add Data", modifier = Modifier.padding(8.dp))
         }
         Spacer(modifier = Modifier.height(10.dp))
@@ -155,7 +154,6 @@ fun firebaseUI(context: Context, navController: NavController) {
         }
     }
 }
-
 fun addDataToFirebase(
     name: String,
     age: String,

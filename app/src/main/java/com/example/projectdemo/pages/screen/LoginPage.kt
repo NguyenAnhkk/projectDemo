@@ -67,6 +67,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.em
 import com.example.projectdemo.R
+import com.example.projectdemo.sign_in.SignInState
 import com.example.projectdemo.ui.theme.rememberImeState
 import com.facebook.AccessToken
 import com.facebook.CallbackManager
@@ -116,35 +117,37 @@ fun LoginPage(
                 }
             }
     }
-    fun loginWithFacebook(
-        context: ComponentActivity,
-        callbackManager: CallbackManager,
-        navController: NavHostController
-    ) {
-        LoginManager.getInstance()
-            .logInWithReadPermissions(context, listOf("public_profile"))
-        LoginManager.getInstance()
-            .registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
-                override fun onSuccess(loginResult: LoginResult) {
-                    handleFacebookAccessToken(loginResult.accessToken, navController)
-                    navController.navigate("home")
-                }
-                override fun onCancel() {
-                    Log.d("FacebookLogin", "Login canceled")
-                }
-                override fun onError(error: FacebookException) {
-                    Log.d("FacebookLogin", "Login error: ${error.message}")
-                }
-            })
-    }
+//    fun loginWithFacebook(
+//        context: ComponentActivity,
+//        callbackManager: CallbackManager,
+//        navController: NavHostController
+//    ) {
+//        LoginManager.getInstance()
+//            .logInWithReadPermissions(context, listOf("public_profile"))
+//        LoginManager.getInstance()
+//            .registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
+//                override fun onSuccess(loginResult: LoginResult) {
+//                    handleFacebookAccessToken(loginResult.accessToken, navController)
+//                    navController.navigate("home")
+//                }
+//                override fun onCancel() {
+//                    Log.d("FacebookLogin", "Login canceled")
+//                }
+//                override fun onError(error: FacebookException) {
+//                    Log.d("FacebookLogin", "Login error: ${error.message}")
+//                }
+//            })
+//    }
     val facebookCallback = remember {
         object : FacebookCallback<LoginResult> {
             override fun onSuccess(loginResult: LoginResult) {
                 handleFacebookAccessToken(loginResult.accessToken, navController)
             }
+
             override fun onCancel() {
                 Log.d("FacebookLogin", "Login canceled")
             }
+
             override fun onError(error: FacebookException) {
                 Log.d("FacebookLogin", "Login error: ${error.message}")
             }
@@ -265,16 +268,11 @@ fun LoginPage(
                     ) {
                         Text(text = "Login")
                     }
-                    TextButton(onClick = { navController.navigate("signup") }) {
-                        Text(text = "Don't have an account? Signup")
-                    }
-                    TextButton(onClick = { navController.navigate("forgot") }) {
-                        Text(text = "I forget my password !")
-                    }
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                        verticalArrangement = Arrangement.Center,
+
                     ) {
                         if (user == null) {
                             Button(
@@ -307,36 +305,13 @@ fun LoginPage(
                         } else {
                             navController.navigate("home")
                         }
+                        TextButton(onClick = { navController.navigate("signup") }) {
+                            Text(text = "Don't have an account? Signup")
+                        }
+                        TextButton(onClick = { navController.navigate("forgot") }) {
+                            Text(text = "I forget my password !")
+                        }
                     }
-//                    Spacer(modifier = Modifier.height(8.dp))
-//                    Column {
-//                        Button(
-//                            onClick = {
-//                                loginWithFacebook(
-//                                    context as ComponentActivity,
-//                                    callbackManager,
-//                                    navController
-//                                )
-//                            }, colors = ButtonDefaults.buttonColors(Color.White),
-//                            modifier = Modifier.border(
-//                                BorderStroke(1.dp, color = Color.Black),
-//                                CircleShape
-//                            )
-//                        ) {
-//                            Row(verticalAlignment = Alignment.CenterVertically) {
-//                                Spacer(modifier = Modifier.width(10.dp))
-//                                Text(
-//                                    text = "Sign in with Facebook",
-//                                    fontFamily = FontFamily.SansSerif,
-//                                    fontWeight = FontWeight.ExtraBold,
-//                                    fontSize = 13.sp,
-//                                    letterSpacing = 0.1.em,
-//                                    color = Color.Black
-//                                )
-//                            }
-//                        }
-//                    }
-
 
                 }
             }

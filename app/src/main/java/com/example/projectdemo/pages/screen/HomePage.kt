@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -20,12 +22,15 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.example.projectdemo.R
 import com.example.projectdemo.pages.map.MapUtils
 import com.example.projectdemo.ui.theme.AuthViewModel
 import com.example.projectdemo.ui.theme.rememberImeState
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
@@ -34,10 +39,9 @@ fun HomePage(
     navController: NavController,
     authViewModel: AuthViewModel
 ) {
-    val authState = authViewModel.authState.observeAsState()
-    val imeState = rememberImeState()
-    val scrollState = rememberScrollState()
     val context = LocalContext.current
+    val user = Firebase.auth.currentUser
+    val userPhotoUrl = user?.photoUrl?.toString()
     var currentLocation by remember {
         mutableStateOf(LatLng(21.0278, 105.8342))
     }
@@ -59,12 +63,11 @@ fun HomePage(
         )
     }
     Box() {
-        IconButtonWithImage(navController = navController)
+        IconButtonWithImage(navController = navController, userPhotoUrl = userPhotoUrl)
     }
 }
-
 @Composable
-fun IconButtonWithImage(navController: NavController) {
+fun IconButtonWithImage(navController: NavController, userPhotoUrl: String?) {
     val rainbowColorsBrush = remember {
         Brush.sweepGradient(
             listOf(
@@ -75,12 +78,13 @@ fun IconButtonWithImage(navController: NavController) {
                 Color(0xFFFFF176),
                 Color(0xFFAED581),
                 Color(0xFF4DD0E1),
-                Color(0xFF9575CD)
+                Color(0xFF9575CD),
             )
         )
     }
     val borderWidth = 2.dp
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+
         IconButton(
             onClick = { navController.navigate("profile") },
             modifier = Modifier
@@ -93,14 +97,29 @@ fun IconButtonWithImage(navController: NavController) {
                         .clip(CircleShape)
                         .border(BorderStroke(borderWidth, rainbowColorsBrush), CircleShape)
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.imgprofile),
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
+                    if (userPhotoUrl != null) {
+                        ProfilePicture(photoUrl = userPhotoUrl)
+                    } else {
+                        Image(
+                            painter = painterResource(id = R.drawable.imgprofile),
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
                 }
             },
         )
     }
+}
+
+
+@Composable
+fun ProfilePicture(photoUrl: String?) {
+    AsyncImage(
+        model = photoUrl,
+        contentDescription = "Profile Picture",
+        modifier = Modifier.size(100.dp),
+        contentScale = ContentScale.Crop
+    )
 }

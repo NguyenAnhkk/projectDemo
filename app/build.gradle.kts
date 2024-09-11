@@ -90,4 +90,5 @@ dependencies {
     implementation ("com.facebook.android:facebook-login:12.2.0")
     implementation("com.google.firebase:firebase-database-ktx:20.1.0")
     implementation ("com.google.accompanist:accompanist-permissions:0.28.0")
+    implementation("io.coil-kt:coil-compose:2.2.0")
 }

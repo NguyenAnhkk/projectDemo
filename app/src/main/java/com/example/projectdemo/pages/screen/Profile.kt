@@ -50,6 +50,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.TextStyle
@@ -70,6 +71,7 @@ fun Profile(
     navController: NavController,
     authViewModel: AuthViewModel
 ) {
+    val context = LocalContext.current
     Scaffold(
        topBar = {
                 TopAppBar(navigationIcon = {
@@ -90,24 +92,21 @@ fun Profile(
                 ) {
                     IconButton(onClick = { /*TODO*/ }) {
                         Icon(imageVector = Icons.Default.Edit, contentDescription = null)
-
                     }
                     FloatingActionButton(
                         onClick = { navController.navigate("users") },
                         containerColor = Color(0xFFeffcc2)
                     ) {
-
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_add_24),
                             contentDescription = "add",
                         )
                     }
-                    IconButton(onClick = { authViewModel.signout(navController) }) {
+                    IconButton(onClick = { authViewModel.signout(navController , context ) }) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_logout_24),
                             contentDescription = null
                         )
-
                     }
                 }
             }

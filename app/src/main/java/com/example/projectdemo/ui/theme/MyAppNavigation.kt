@@ -2,7 +2,11 @@
 package com.example.projectdemo.ui.theme
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import com.example.projectdemo.pages.screen.HomePage
 import com.example.projectdemo.pages.screen.LoginPage
@@ -15,13 +19,13 @@ import com.example.projectdemo.pages.forgotpassword.ForgotPasswordScreen
 import com.example.projectdemo.pages.forgotpassword.PasswordResetViewModel
 import com.example.projectdemo.pages.screen.Profile
 import com.example.projectdemo.pages.screen.Users
+import com.example.projectdemo.sign_in.SignInViewModel
 import com.example.projectdemo.viewdata.CourseDetailsActivity
 import com.example.projectdemo.viewdata.UpdateDataScreen
 
 @Composable
 fun MyAppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
     val navController = rememberNavController()
-
     NavHost(navController = navController, startDestination = "login", builder = {
         composable("login") {
             LoginPage(modifier, navController, authViewModel)
