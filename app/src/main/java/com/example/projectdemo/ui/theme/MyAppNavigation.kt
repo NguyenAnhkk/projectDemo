@@ -2,11 +2,7 @@
 package com.example.projectdemo.ui.theme
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import com.example.projectdemo.pages.screen.HomePage
 import com.example.projectdemo.pages.screen.LoginPage
@@ -18,10 +14,10 @@ import androidx.navigation.navArgument
 import com.example.projectdemo.pages.forgotpassword.ForgotPasswordScreen
 import com.example.projectdemo.pages.forgotpassword.PasswordResetViewModel
 import com.example.projectdemo.pages.screen.Profile
-import com.example.projectdemo.pages.screen.Users
-import com.example.projectdemo.sign_in.SignInViewModel
+import com.example.projectdemo.pages.screen.UserDetailScreen
 import com.example.projectdemo.viewdata.CourseDetailsActivity
 import com.example.projectdemo.viewdata.UpdateDataScreen
+import com.google.android.gms.maps.model.LatLng
 
 @Composable
 fun MyAppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
@@ -42,11 +38,15 @@ fun MyAppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel)
         composable("profile") {
             Profile(modifier, navController, authViewModel)
         }
-        composable("users") {
-            Users(modifier, navController, authViewModel)
-        }
-        composable("course") {
-            CourseDetailsActivity(navController)
+//        composable("users") {
+//            Users(modifier, navController, authViewModel)
+//        }
+        composable("course/{lat}/{lng}") { backStackEntry ->
+            val lat = backStackEntry.arguments?.getString("lat")?.toDoubleOrNull() ?: 0.0
+            val lng = backStackEntry.arguments?.getString("lng")?.toDoubleOrNull() ?: 0.0
+            val currentLocation = LatLng(lat, lng)
+
+            CourseDetailsActivity(navController = navController, currentLocation = currentLocation)
         }
         composable("update_data/{name}/{age}/{address}", arguments = listOf(
             navArgument("name") { type = NavType.StringType },
@@ -58,6 +58,10 @@ fun MyAppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel)
             val age = backStackEntry.arguments?.getString("age") ?: ""
             val address = backStackEntry.arguments?.getString("address") ?: ""
             UpdateDataScreen(name, age, address)
+        }
+        composable("user_detail/{userId}") { backStackEntry ->
+            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+            UserDetailScreen(navController = navController, userId = userId)
         }
     }
     )

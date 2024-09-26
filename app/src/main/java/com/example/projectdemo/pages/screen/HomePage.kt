@@ -60,66 +60,67 @@ fun HomePage(
             context = context,
             currentLocation = currentLocation,
             camerapositionState = cameraPositionState,
+            navController = navController
         )
     }
-    Box() {
-        IconButtonWithImage(navController = navController, userPhotoUrl = userPhotoUrl)
-    }
+//    Box() {
+//        IconButtonWithImage(navController = navController, userPhotoUrl = userPhotoUrl)
+//    }
 }
-@Composable
-fun IconButtonWithImage(navController: NavController, userPhotoUrl: String?) {
-    val rainbowColorsBrush = remember {
-        Brush.sweepGradient(
-            listOf(
-                Color(0xFF9575CD),
-                Color(0xFFBA68C8),
-                Color(0xFFE57373),
-                Color(0xFFFFB74D),
-                Color(0xFFFFF176),
-                Color(0xFFAED581),
-                Color(0xFF4DD0E1),
-                Color(0xFF9575CD),
-            )
-        )
-    }
-    val borderWidth = 2.dp
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-
-        IconButton(
-            onClick = { navController.navigate("profile") },
-            modifier = Modifier
-                .padding(16.dp),
-            content = {
-                Box(
-                    modifier = Modifier
-                        .size(150.dp)
-                        .padding(borderWidth)
-                        .clip(CircleShape)
-                        .border(BorderStroke(borderWidth, rainbowColorsBrush), CircleShape)
-                ) {
-                    if (userPhotoUrl != null) {
-                        ProfilePicture(photoUrl = userPhotoUrl)
-                    } else {
-                        Image(
-                            painter = painterResource(id = R.drawable.imgprofile),
-                            contentDescription = null,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-                }
-            },
-        )
-    }
-}
-
-
-@Composable
-fun ProfilePicture(photoUrl: String?) {
-    AsyncImage(
-        model = photoUrl,
-        contentDescription = "Profile Picture",
-        modifier = Modifier.size(100.dp),
-        contentScale = ContentScale.Crop
-    )
-}
+//@Composable
+//fun IconButtonWithImage(navController: NavController, userPhotoUrl: String?) {
+//    val rainbowColorsBrush = remember {
+//        Brush.sweepGradient(
+//            listOf(
+//                Color(0xFF9575CD),
+//                Color(0xFFBA68C8),
+//                Color(0xFFE57373),
+//                Color(0xFFFFB74D),
+//                Color(0xFFFFF176),
+//                Color(0xFFAED581),
+//                Color(0xFF4DD0E1),
+//                Color(0xFF9575CD),
+//            )
+//        )
+//    }
+//    val borderWidth = 2.dp
+//    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+//
+//        IconButton(
+//            onClick = { navController.navigate("profile") },
+//            modifier = Modifier
+//                .padding(16.dp),
+//            content = {
+//                Box(
+//                    modifier = Modifier
+//                        .size(150.dp)
+//                        .padding(borderWidth)
+//                        .clip(CircleShape)
+//                        .border(BorderStroke(borderWidth, rainbowColorsBrush), CircleShape)
+//                ) {
+//                    if (userPhotoUrl != null) {
+//                        ProfilePicture(photoUrl = userPhotoUrl)
+//                    } else {
+//                        Image(
+//                            painter = painterResource(id = R.drawable.imgprofile),
+//                            contentDescription = null,
+//                            contentScale = ContentScale.Crop,
+//                            modifier = Modifier.fillMaxSize()
+//                        )
+//                    }
+//                }
+//            },
+//        )
+//    }
+//}
+//
+//
+//@Composable
+//fun ProfilePicture(photoUrl: String?) {
+//    AsyncImage(
+//        model = photoUrl,
+//        contentDescription = "Profile Picture",
+//        modifier = Modifier.size(100.dp),
+//        contentScale = ContentScale.Crop
+//    )
+//}

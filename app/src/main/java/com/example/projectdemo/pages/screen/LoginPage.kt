@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -176,11 +177,7 @@ fun LoginPage(
     val launcher = rememberFirebaseAuthLauncher(onAuthComplete = { result -> user = result.user },
         onAuthError = { user = null }
     )
-    val auth = FirebaseAuth.getInstance()
     val token = stringResource(id = R.string.client_id)
-    var currentLocation by remember {
-        mutableStateOf(LatLng(21.0278, 105.8342))
-    }
     val gso =
         GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(token)
@@ -244,12 +241,11 @@ fun LoginPage(
                         onValueChange = { email = it },
                         label = { Text(text = "Tài khoản") }
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
                         label = { Text(text = "Mật khẩu") },
-                        // Show hide password bằng icon
                         trailingIcon = {
                             IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
                                 Icon(
@@ -263,8 +259,18 @@ fun LoginPage(
                         else PasswordVisualTransformation()
                     )
                     Button(
-                        onClick = { authViewModel.login(email, password) },
-                        modifier = Modifier.fillMaxWidth(0.5f)
+                        onClick = {
+                            if (email.isNotEmpty() && password.isNotEmpty()) {
+                                authViewModel.login(email, password)
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    "Please fill in all fields",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(0.7f)
                     ) {
                         Text(text = "Login")
                     }
@@ -273,16 +279,18 @@ fun LoginPage(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center,
 
-                    ) {
+                        ) {
                         if (user == null) {
                             Button(
                                 onClick = {
                                     launcher.launch(googleSignInClient.signInIntent)
                                 }, colors = ButtonDefaults.buttonColors(Color.White),
-                                modifier = Modifier.border(
-                                    BorderStroke(1.dp, color = Color.Black),
-                                    CircleShape
-                                )
+                                modifier = Modifier
+                                    .border(
+                                        BorderStroke(1.dp, color = Color.Black),
+                                        CircleShape
+                                    )
+                                    .fillMaxWidth(0.7f)
                             ) {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Image(

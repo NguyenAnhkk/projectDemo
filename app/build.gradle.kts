@@ -64,6 +64,7 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("com.google.firebase:firebase-database:21.0.0")
     implementation("com.google.firebase:firebase-firestore:25.0.0")
+    implementation("com.google.firebase:firebase-storage:20.1.0")
     implementation(platform("androidx.compose:compose-bom:2023.03.00"))
     implementation("com.google.firebase:firebase-messaging:24.0.0")
     testImplementation("junit:junit:4.13.2")
@@ -91,4 +92,6 @@ dependencies {
     implementation("com.google.firebase:firebase-database-ktx:20.1.0")
     implementation ("com.google.accompanist:accompanist-permissions:0.28.0")
     implementation("io.coil-kt:coil-compose:2.2.0")
+    implementation ("com.maxkeppeler.sheets-compose-dialogs:core:1.0.2")
+    implementation ("com.maxkeppeler.sheets-compose-dialogs:calendar:1.0.2")
 }
