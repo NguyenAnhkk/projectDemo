@@ -6,14 +6,16 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.LaunchedEffect
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
+import com.google.accompanist.permissions.isGranted
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.ktx.messaging
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun FirebaseMessagingNotificaionPermissionDialog(
+fun FirebaseMessagingNotificationPermissionDialog(
     showNotificationDialog: MutableState<Boolean>,
     notificationPermissionState: PermissionState
 ) {
@@ -21,18 +23,30 @@ fun FirebaseMessagingNotificaionPermissionDialog(
         AlertDialog(
             onDismissRequest = {
                 showNotificationDialog.value = false
-                notificationPermissionState.launchPermissionRequest()
             },
-            title = { Text(text = "Notificaion permission") },
-            text = { Text(text = "Please allow this app to send you a notification") },
+            title = { Text(text = "Notification Permission") },
+            text = { Text(text = "Please allow this app to send you notifications") },
             confirmButton = {
                 TextButton(onClick = {
                     showNotificationDialog.value = false
                     notificationPermissionState.launchPermissionRequest()
-                    Firebase.messaging.subscribeToTopic("Tutorial")
                 }) {
                     Text(text = "OK")
                 }
-            })
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showNotificationDialog.value = false
+                }) {
+                    Text(text = "Cancel")
+                }
+            }
+        )
+    }
+
+    LaunchedEffect(notificationPermissionState.status.isGranted) {
+        if (notificationPermissionState.status.isGranted) {
+            Firebase.messaging.subscribeToTopic("Tutorial")
+        }
     }
 }

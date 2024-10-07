@@ -1,6 +1,7 @@
 
 package com.example.projectdemo.ui.theme
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
@@ -46,7 +47,7 @@ fun MyAppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel)
             val lng = backStackEntry.arguments?.getString("lng")?.toDoubleOrNull() ?: 0.0
             val currentLocation = LatLng(lat, lng)
 
-            CourseDetailsActivity(navController = navController, currentLocation = currentLocation)
+            CourseDetailsActivity(navController = navController, currentLocation = currentLocation )
         }
         composable("update_data/{name}/{age}/{address}", arguments = listOf(
             navArgument("name") { type = NavType.StringType },
@@ -61,7 +62,7 @@ fun MyAppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel)
         }
         composable("user_detail/{userId}") { backStackEntry ->
             val userId = backStackEntry.arguments?.getString("userId") ?: ""
-            UserDetailScreen(navController = navController, userId = userId)
+            UserDetailScreen(navController = navController, userId = userId )
         }
     }
     )

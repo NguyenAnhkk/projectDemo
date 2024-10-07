@@ -171,7 +171,7 @@ fun Profile(
                         containerColor = Color(0xFFeffcc2)
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.baseline_add_24),
+                            painter = painterResource(id = R.drawable.baseline_people_outline_24),
                             contentDescription = "add",
                         )
                     }

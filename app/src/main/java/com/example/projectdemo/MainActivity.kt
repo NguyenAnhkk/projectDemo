@@ -37,12 +37,14 @@ class MainActivity : ComponentActivity() {
         val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
         FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
             if (!task.isSuccessful) {
-                Log.w("FCM","Fetching FCM registration token failed" , task.exception)
+                Log.w("FCM", "Fetching FCM registration token failed", task.exception)
                 return@OnCompleteListener
             }
+            // Lấy token thành công
             val token = task.result
-            Log.d("FCM",token.toString())
-            Toast.makeText(baseContext,token.toString(),Toast.LENGTH_SHORT).show()
+            Log.d("FCM", token.toString())
+            sharedPreferences.edit().putString("fcm_token", token).apply()
+            Toast.makeText(baseContext, "FCM Token: $token", Toast.LENGTH_SHORT).show()
         })
         setContent {
             ProjectDemoTheme {

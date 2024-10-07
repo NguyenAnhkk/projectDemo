@@ -17,12 +17,15 @@ class FCMService : FirebaseMessagingService() {
 
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
-        val notificationManager =
-            getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val nofiticationId = 1
-        val requestCode = 1
         val channelId = "Firebase Messaging id"
         val channelName = "Firebase Messaging"
+        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_HIGH)
+            notificationManager.createNotificationChannel(channel)
+        }
+        val nofiticationId = 1
+        val requestCode = 1
         notificationManager.createNotificationChannel(
             NotificationChannel(
                 channelId,
@@ -32,8 +35,11 @@ class FCMService : FirebaseMessagingService() {
         )
 
         val intent = Intent(this, MainActivity::class.java)
-        val pendingIntentFlag =
-            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) 0 else PendingIntent.FLAG_IMMUTABLE
+        val pendingIntentFlag = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            PendingIntent.FLAG_IMMUTABLE
+        } else {
+            0
+        }
         val pendingIntent = PendingIntent.getActivity(this, requestCode, intent, pendingIntentFlag)
 
         val notification = NotificationCompat.Builder(this, channelId)

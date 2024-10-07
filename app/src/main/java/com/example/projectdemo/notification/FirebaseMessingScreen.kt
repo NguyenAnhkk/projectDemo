@@ -19,27 +19,34 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.messaging.FirebaseMessaging
 import com.google.firebase.messaging.ktx.messaging
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun FirebaseMessagingScreen() {
     val showNotificationDialog = remember { mutableStateOf(false) }
+
     val permission = rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS)
+
     if (showNotificationDialog.value) {
-        FirebaseMessagingNotificaionPermissionDialog(
+        FirebaseMessagingNotificationPermissionDialog(
             showNotificationDialog = showNotificationDialog,
             notificationPermissionState = permission
         )
     }
+
     LaunchedEffect(key1 = Unit) {
-        if (permission.status.isGranted || Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-            Firebase.messaging.subscribeToTopic("Tutorial")
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (permission.status.isGranted) {
+                Firebase.messaging.subscribeToTopic("Tutorial")
+            } else {
+                showNotificationDialog.value = true
+            }
         } else {
-            showNotificationDialog.value = true
+            Firebase.messaging.subscribeToTopic("Tutorial")
         }
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -47,6 +54,6 @@ fun FirebaseMessagingScreen() {
         verticalArrangement = Arrangement.spacedBy(20.dp, alignment = Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Hello main screen")
+        Text(text = "Hello main screen", color = Color.White)
     }
 }
