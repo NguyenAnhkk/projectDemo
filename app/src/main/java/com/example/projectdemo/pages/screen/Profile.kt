@@ -31,6 +31,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -163,8 +164,8 @@ fun Profile(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
-                    IconButton(onClick = { /* TODO */ }) {
-                        Icon(imageVector = Icons.Default.Edit, contentDescription = null)
+                    IconButton(onClick = { navController.popBackStack()}) {
+                        Icon(imageVector = Icons.Default.Home, contentDescription = null, tint = Color.Black)
                     }
                     FloatingActionButton(
                         onClick = { navController.navigate("course/${currentLocation.latitude}/${currentLocation.longitude}") },
@@ -178,7 +179,7 @@ fun Profile(
                     IconButton(onClick = { authViewModel.signout(navController, context) }) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_logout_24),
-                            contentDescription = null
+                            contentDescription = null, tint = Color.Black
                         )
                     }
                 }
@@ -199,7 +200,6 @@ fun Profile(
                         modifier = Modifier
                             .size(100.dp)
                             .clip(CircleShape)
-                            .background(Color.Gray)
                             .clickable { pickImage() }
                     ) {
                         when {
@@ -233,24 +233,23 @@ fun Profile(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(5.dp))
 
                 Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight(0.5f),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
+                        .fillMaxSize()
+                        , horizontalArrangement = Arrangement.Center
                 ) {
                     when (authState) {
                         is AuthState.Authenticated -> {
                             Text(
                                 text = userName.value,
                                 fontWeight = FontWeight.Bold,
-                                fontSize = 20.sp
+                                fontSize = 20.sp,
+                                color = Color.Black
                             )
                             Spacer(modifier = Modifier.width(16.dp))
-                            Text(text = "Age: ${age.value}")
+                            Text(text = "Tuổi : ${age.value}", color = Color.Black)
                         }
 
                         is AuthState.Error -> {
@@ -258,7 +257,7 @@ fun Profile(
                         }
 
                         else -> {
-                            Text(text = "Loading...")
+                            Text(text = "Đang tải dữ liệu người dùng...", color = Color.Black)
                         }
                     }
                 }

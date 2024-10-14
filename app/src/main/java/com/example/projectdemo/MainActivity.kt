@@ -40,11 +40,9 @@ class MainActivity : ComponentActivity() {
                 Log.w("FCM", "Fetching FCM registration token failed", task.exception)
                 return@OnCompleteListener
             }
-            // Lấy token thành công
             val token = task.result
             Log.d("FCM", token.toString())
             sharedPreferences.edit().putString("fcm_token", token).apply()
-            Toast.makeText(baseContext, "FCM Token: $token", Toast.LENGTH_SHORT).show()
         })
         setContent {
             ProjectDemoTheme {

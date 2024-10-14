@@ -17,17 +17,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ForgotPasswordScreen(viewModel: PasswordResetViewModel, navController: NavHostController ) {
-
     var email by remember { mutableStateOf("") }
-
+    val context = LocalContext.current
     Column(
-        modifier = Modifier.padding(16.dp).fillMaxSize(),
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
 
@@ -36,11 +38,13 @@ fun ForgotPasswordScreen(viewModel: PasswordResetViewModel, navController: NavHo
             value = email,
             onValueChange = { email = it },
             label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
         )
 
         Button(
-            onClick = { viewModel.resetPassword(email) },
+            onClick = { viewModel.resetPassword(email, context) },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Đặt lại mật khẩu")
@@ -48,5 +52,6 @@ fun ForgotPasswordScreen(viewModel: PasswordResetViewModel, navController: NavHo
         TextButton(onClick = { navController.navigate("login") }) {
             Text(text = "Login !")
         }
+        Text(text = "Khi đặt lại mật khẩu có thể nằm trong hòm thư tin nhắn rác !")
     }
 }

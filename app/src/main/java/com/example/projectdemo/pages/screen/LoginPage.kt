@@ -214,13 +214,14 @@ fun LoginPage(
                 )
                 Column(
                     modifier = Modifier.fillMaxHeight(0.3f),
-                    verticalArrangement = Arrangement.Center
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(text = "Login Page", fontSize = 32.sp)
+                    Text(text = "Nearby Chat", fontSize = 32.sp , color = Color.Black)
                     Text(
                         text = stringResource(id = R.string.The_future),
                         style = MaterialTheme.typography.labelMedium,
-                        color = uiColor
+                        color = Color.Black
                     )
                 }
             }
@@ -250,7 +251,8 @@ fun LoginPage(
                             IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
                                 Icon(
                                     painter = icon,
-                                    contentDescription = "Visibility Icon"
+                                    contentDescription = "Visibility Icon",
+                                    tint = Color.Black
                                 )
                             }
                         },
@@ -272,7 +274,7 @@ fun LoginPage(
                         },
                         modifier = Modifier.fillMaxWidth(0.7f)
                     ) {
-                        Text(text = "Login")
+                        Text(text = "Đăng nhập")
                     }
                     Column(
                         modifier = Modifier.fillMaxWidth(),
@@ -280,44 +282,45 @@ fun LoginPage(
                         verticalArrangement = Arrangement.Center,
 
                         ) {
-                        if (user == null) {
-                            Button(
-                                onClick = {
-                                    launcher.launch(googleSignInClient.signInIntent)
-                                }, colors = ButtonDefaults.buttonColors(Color.White),
-                                modifier = Modifier
-                                    .border(
-                                        BorderStroke(1.dp, color = Color.Black),
-                                        CircleShape
-                                    )
-                                    .fillMaxWidth(0.7f)
-                            ) {
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.google_logo),
-                                        contentDescription = "Google Logo",
-                                        modifier = Modifier.size(30.dp),
-                                        contentScale = ContentScale.Fit
-                                    )
-                                    Spacer(modifier = Modifier.width(10.dp))
-                                    Text(
-                                        text = "Sign in with Google",
-                                        fontFamily = FontFamily.SansSerif,
-                                        fontWeight = FontWeight.ExtraBold,
-                                        fontSize = 13.sp,
-                                        letterSpacing = 0.1.em,
-                                        color = Color.Black
-                                    )
-                                }
-                            }
-                        } else {
-                            navController.navigate("home")
-                        }
+                        //Signin Google
+//                        if (user == null) {
+//                            Button(
+//                                onClick = {
+//                                    launcher.launch(googleSignInClient.signInIntent)
+//                                }, colors = ButtonDefaults.buttonColors(Color.White),
+//                                modifier = Modifier
+//                                    .border(
+//                                        BorderStroke(1.dp, color = Color.Black),
+//                                        CircleShape
+//                                    )
+//                                    .fillMaxWidth(0.7f)
+//                            ) {
+//                                Row(verticalAlignment = Alignment.CenterVertically) {
+//                                    Image(
+//                                        painter = painterResource(id = R.drawable.google_logo),
+//                                        contentDescription = "Google Logo",
+//                                        modifier = Modifier.size(30.dp),
+//                                        contentScale = ContentScale.Fit
+//                                    )
+//                                    Spacer(modifier = Modifier.width(10.dp))
+//                                    Text(
+//                                        text = "Sign in with Google",
+//                                        fontFamily = FontFamily.SansSerif,
+//                                        fontWeight = FontWeight.ExtraBold,
+//                                        fontSize = 13.sp,
+//                                        letterSpacing = 0.1.em,
+//                                        color = Color.Black
+//                                    )
+//                                }
+//                            }
+//                        } else {
+//                            navController.navigate("home")
+//                        }
                         TextButton(onClick = { navController.navigate("signup") }) {
-                            Text(text = "Don't have an account? Signup")
+                            Text(text = "Bạn chưa có tài khoản ? Tạo ngay !" , color = Color.Black)
                         }
                         TextButton(onClick = { navController.navigate("forgot") }) {
-                            Text(text = "I forget my password !")
+                            Text(text = " Bạn quên mật khẩu hả?" , color = Color.Black)
                         }
                     }
 

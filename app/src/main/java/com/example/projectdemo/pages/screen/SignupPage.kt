@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LifecycleOwner
 import androidx.navigation.NavHostController
 import com.example.projectdemo.R
 import com.example.projectdemo.ui.theme.AuthState
@@ -177,12 +178,22 @@ fun SignupPage(
                                     userName,
                                     dateOfBirth
                                 )
-                                Toast.makeText(
-                                    context,
-                                    "Tạo tài khoản thành công !",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                navController.navigate("login")
+                                authViewModel.authState.observe(context as LifecycleOwner) { state ->
+                                    when (state) {
+                                        is AuthState.AccountCreated -> {
+                                            Toast.makeText(context, "Tạo tài khoản thành công!", Toast.LENGTH_SHORT).show()
+                                            navController.navigate("login")
+                                        }
+                                        is AuthState.Error -> {
+                                            if (state.message == "Account already exists") {
+                                                Toast.makeText(context, "Tài khoản đã tồn tại.", Toast.LENGTH_SHORT).show()
+                                            } else {
+                                                Toast.makeText(context, state.message, Toast.LENGTH_SHORT).show()
+                                            }
+                                        }
+                                        else -> Unit
+                                    }
+                                }
                             }
                         },
                         modifier = Modifier.fillMaxWidth(0.5f)
@@ -191,7 +202,7 @@ fun SignupPage(
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     TextButton(onClick = { navController.navigate("login") }) {
-                        Text(text = "Alrealdy have an account , login")
+                        Text(text = "Tôi đã có tài khoản. Đăng nhập ngay!")
                     }
                 }
             }

@@ -15,9 +15,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -176,6 +178,28 @@ class MapUtils(private val context: Context) {
                 Toast.makeText(context, "Permissions not granted", Toast.LENGTH_SHORT).show()
             }
         }
+        var currentAddress by remember { mutableStateOf("Đang lấy vị trí...") }
+        fun getAddressFromLatLng(context: Context, latLng: LatLng): String {
+            val geocoder = Geocoder(context, Locale.getDefault())
+            val addresses: List<Address>? =
+                geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
+            return if (addresses.isNullOrEmpty()) {
+                "Không xác định"
+            } else {
+
+                val addressLine = addresses[0].getAddressLine(0)
+                val addressParts = addressLine.split(",")
+                if (addressParts.isNotEmpty()) {
+                    addressParts[0] + "," + addressParts[1]
+                } else {
+                    "Không xác định"
+                }
+            }
+        }
+
+        LaunchedEffect(currentLocation) {
+            currentAddress = getAddressFromLatLng(context, currentLocation)
+        }
         LaunchedEffect(currentLocation, radiusInMeters) {
             fetchNearbyUsersLocations { locations ->
                 nearbyUsersLocations = locations.filter { location ->
@@ -183,9 +207,7 @@ class MapUtils(private val context: Context) {
                 }
             }
         }
-        Scaffold(topBar = {
-            IconButtonWithImage(navController = navController, userPhotoUrl = userPhotoUrl)
-        }) {
+        Scaffold() {
             Box(modifier = Modifier.fillMaxSize()) {
                 GoogleMap(
                     modifier = Modifier.fillMaxSize(),
@@ -214,26 +236,27 @@ class MapUtils(private val context: Context) {
                 LaunchedEffect(currentLocation) {
                     updateMyLocationInFirestore(currentLocation)
                 }
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(10.dp),
+                    verticalArrangement = Arrangement.Top,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Box(modifier = Modifier.clip(RoundedCornerShape(16.dp))) {
+                        CustomTopBar(
+                            currentAddress = currentAddress,
+                            userPhotoUrl = userPhotoUrl,
+                            navController = navController,
+                        )
+                    }
 
+                }
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Bottom,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Slider(
-                        value = radiusInMeters,
-                        onValueChange = { newRadius ->
-                            radiusInMeters = newRadius
-                        },
-                        valueRange = 1000f..10000f,
-                        steps = 8,
-                        modifier = Modifier.padding(16.dp)
-                    )
-                    Text(
-                        text = "Radius: ${radiusInMeters.toInt()} meters",
-                        fontWeight = FontWeight.Bold
-                    )
-
                     Button(onClick = {
                         if (permissions.all {
                                 ContextCompat.checkSelfPermission(
@@ -248,7 +271,7 @@ class MapUtils(private val context: Context) {
                             launchMultiplePermissions.launch(permissions)
                         }
                     }) {
-                        Text(text = "Get your location")
+                        Text(text = "Cập nhật vị trí hiện tại của bạn.")
                     }
                 }
             }
@@ -266,7 +289,6 @@ class MapUtils(private val context: Context) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             IconButton(
                 onClick = { navController.navigate("profile") },
-                modifier = Modifier.padding(16.dp)
             ) {
                 Box(
                     modifier = Modifier
@@ -289,12 +311,39 @@ class MapUtils(private val context: Context) {
                                 painter = painterResource(id = R.drawable.defaultimg),
                                 contentDescription = "Default Image",
                                 contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
-                            )
+                                modifier = Modifier.fillMaxSize(),
+
+                                )
                         }
                     }
                 }
             }
         }
     }
+
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun CustomTopBar(
+        currentAddress: String,
+        userPhotoUrl: String?,
+        navController: NavController,
+        modifier: Modifier = Modifier
+    ) {
+        Box(
+            modifier = modifier
+                .fillMaxWidth()
+                .background(Color.White)
+        ) {
+            Text(
+                text = currentAddress,
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Normal,
+                color = Color.Black,
+                modifier = Modifier.align(Alignment.CenterStart).padding(4.dp , 0.dp , 0.dp , 0.dp)
+            )
+            IconButtonWithImage(navController = navController, userPhotoUrl = userPhotoUrl)
+        }
+
+    }
+
 }
