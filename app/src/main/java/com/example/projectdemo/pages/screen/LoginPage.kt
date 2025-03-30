@@ -29,10 +29,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -41,6 +43,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -58,6 +61,7 @@ import com.example.projectdemo.ui.theme.AuthViewModel
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -66,8 +70,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.em
 import com.example.projectdemo.R
+import com.example.projectdemo.lib.AppBox
+import com.example.projectdemo.lib.AppColumn
+import com.example.projectdemo.lib.AppRow
+import com.example.projectdemo.lib.AppScreen
+import com.example.projectdemo.lib.AppText
+import com.example.projectdemo.lib.AppTextBold
+import com.example.projectdemo.lib.MyAppTheme
 import com.example.projectdemo.sign_in.SignInState
 import com.example.projectdemo.ui.theme.rememberImeState
 import com.facebook.AccessToken
@@ -89,11 +101,9 @@ import com.facebook.login.LoginResult
 import com.google.firebase.auth.FacebookAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 
-@SuppressLint("ResourceType")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginPage(
-    modifier: Modifier = Modifier,
     navController: NavHostController,
     authViewModel: AuthViewModel,
 ) {
@@ -118,27 +128,6 @@ fun LoginPage(
                 }
             }
     }
-//    fun loginWithFacebook(
-//        context: ComponentActivity,
-//        callbackManager: CallbackManager,
-//        navController: NavHostController
-//    ) {
-//        LoginManager.getInstance()
-//            .logInWithReadPermissions(context, listOf("public_profile"))
-//        LoginManager.getInstance()
-//            .registerCallback(callbackManager, object : FacebookCallback<LoginResult> {
-//                override fun onSuccess(loginResult: LoginResult) {
-//                    handleFacebookAccessToken(loginResult.accessToken, navController)
-//                    navController.navigate("home")
-//                }
-//                override fun onCancel() {
-//                    Log.d("FacebookLogin", "Login canceled")
-//                }
-//                override fun onError(error: FacebookException) {
-//                    Log.d("FacebookLogin", "Login error: ${error.message}")
-//                }
-//            })
-//    }
     val facebookCallback = remember {
         object : FacebookCallback<LoginResult> {
             override fun onSuccess(loginResult: LoginResult) {
@@ -200,133 +189,167 @@ fun LoginPage(
             else -> Unit
         }
     }
-    Surface(modifier = Modifier.fillMaxSize()) {
-        Column {
-            val uiColor = if (isSystemInDarkTheme()) Color.White else Color.Black
-            Box(contentAlignment = Alignment.TopCenter) {
-                Image(
-                    painter = painterResource(id = R.drawable.imglogin),
-                    contentDescription = null,
+
+    AppScreen(
+        backgroundColor = MyAppTheme.appColor.background,
+        isPaddingNavigation = true,
+        modifier = Modifier.fillMaxSize()
+    ) {
+            AppColumn(
+                    modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 24.dp)
+        ) {
+
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .weight(1f)
+//            ) {
+//                AppColumn(
+//                    modifier = Modifier.fillMaxSize(),
+//                    verticalArrangement = Arrangement.Center
+//                ) {
+//                    AppTextBold(
+//                        text = "Chào mừng bạn đến với Bave!",
+//                        fontSize = 28.sp,
+//                        modifier = Modifier.padding(bottom = 8.dp),
+//                    )
+//                    AppText(
+//                        text = "Đăng nhập để tiếp tục",
+//                        fontSize = 16.sp,
+//                        color = Color.Gray,
+//                        modifier = Modifier.padding(bottom = 32.dp)
+//                    )
+//                }
+//            }
+
+
+                AppBox(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .fillMaxHeight(0.3f),
-                    contentScale = ContentScale.FillBounds
-                )
-                Column(
-                    modifier = Modifier.fillMaxHeight(0.3f),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .weight(1f)
                 ) {
-                    Text(text = "Nearby Chat", fontSize = 32.sp , color = Color.Black)
-                    Text(
-                        text = stringResource(id = R.string.The_future),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = Color.Black
+                AppColumn(
+                            modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+
+                            OutlinedTextField(
+                                value = email,
+                                onValueChange = { email = it },
+                        label = { AppText(text = "Tài khoản" , color = Color.Gray) },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            unfocusedBorderColor = Color.Gray,
+                            focusedBorderColor = Color.Gray
+                        ),
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+
                     )
-                }
-            }
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color(0xFFffffff))
-            ) {
-                Column(
-                    modifier = modifier
-                        .fillMaxSize()
-                        .verticalScroll(scrollState),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = { Text(text = "Tài khoản") }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        label = { Text(text = "Mật khẩu") },
+
+                    // Password Field
+                            OutlinedTextField(
+                                value = password,
+                                onValueChange = { password = it },
+                        label = { AppText(text = "Mật khẩu" , color = Color.Gray) },
+                            modifier = Modifier.fillMaxWidth(),
+                        colors = TextFieldDefaults.outlinedTextFieldColors(
+                            unfocusedBorderColor = Color.Gray,
+                            focusedBorderColor = Color.Gray
+                        ),
+                        visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
                             IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
                                 Icon(
                                     painter = icon,
-                                    contentDescription = "Visibility Icon",
-                                    tint = Color.Black
+                                    contentDescription = if (passwordVisibility) "Hide password" else "Show password"
                                 )
                             }
-                        },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                        visualTransformation = if (passwordVisibility) VisualTransformation.None
-                        else PasswordVisualTransformation()
+                        }
                     )
+                    TextButton(
+                        onClick = { navController.navigate("forgot") },
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        AppText(
+                            text = "Quên mật khẩu?",
+                            color = Color(0xFF405DA3)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     Button(
                         onClick = {
-                            if (email.isNotEmpty() && password.isNotEmpty()) {
-                                authViewModel.login(email, password)
-                            } else {
-                                Toast.makeText(
-                                    context,
-                                    "Please fill in all fields",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
+                            authViewModel.login(email, password)
                         },
-                        modifier = Modifier.fillMaxWidth(0.7f)
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFd14597)
+                        )
                     ) {
-                        Text(text = "Đăng nhập")
-                    }
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-
-                        ) {
-                        //Signin Google
-//                        if (user == null) {
-//                            Button(
-//                                onClick = {
-//                                    launcher.launch(googleSignInClient.signInIntent)
-//                                }, colors = ButtonDefaults.buttonColors(Color.White),
-//                                modifier = Modifier
-//                                    .border(
-//                                        BorderStroke(1.dp, color = Color.Black),
-//                                        CircleShape
-//                                    )
-//                                    .fillMaxWidth(0.7f)
-//                            ) {
-//                                Row(verticalAlignment = Alignment.CenterVertically) {
-//                                    Image(
-//                                        painter = painterResource(id = R.drawable.google_logo),
-//                                        contentDescription = "Google Logo",
-//                                        modifier = Modifier.size(30.dp),
-//                                        contentScale = ContentScale.Fit
-//                                    )
-//                                    Spacer(modifier = Modifier.width(10.dp))
-//                                    Text(
-//                                        text = "Sign in with Google",
-//                                        fontFamily = FontFamily.SansSerif,
-//                                        fontWeight = FontWeight.ExtraBold,
-//                                        fontSize = 13.sp,
-//                                        letterSpacing = 0.1.em,
-//                                        color = Color.Black
-//                                    )
-//                                }
-//                            }
-//                        } else {
-//                            navController.navigate("home")
-//                        }
-                        TextButton(onClick = { navController.navigate("signup") }) {
-                            Text(text = "Bạn chưa có tài khoản ? Tạo ngay !" , color = Color.Black)
-                        }
-                        TextButton(onClick = { navController.navigate("forgot") }) {
-                            Text(text = " Bạn quên mật khẩu hả?" , color = Color.Black)
-                        }
+                        AppTextBold(
+                            text = "Đăng nhập",
+                            color = Color.White
+                        )
                     }
 
+                    DividerWithText()
+                            Button(
+                        onClick = { navController.navigate("signup")  },
+                        shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier
+                            .fillMaxWidth()
+                            .height(50.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color.Transparent,
+                            contentColor = Color(0xFF405DA3)
+                        ),
+                        border = BorderStroke(2.dp, Color(0xFFd14597))
+                    ) {
+                        AppTextBold(
+                            text = "Đăng ký",
+                        )
+                        }
+                    }
                 }
             }
-        }
+    }
+
+}
+
+@Composable
+fun DividerWithText() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(40.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Divider(
+            color = Color.Gray.copy(alpha = 0.5f),
+            thickness = 1.dp,
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = 16.dp)
+        )
+        AppText(
+            text = "Hoặc",
+            modifier = Modifier.padding(horizontal = 16.dp),
+            color = Color.Gray
+        )
+        Divider(
+            color = Color.Gray.copy(alpha = 0.5f),
+            thickness = 1.dp,
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 16.dp)
+        )
     }
 }
 

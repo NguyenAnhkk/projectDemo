@@ -15,6 +15,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import com.example.projectdemo.lib.MyAppTheme
 import com.example.projectdemo.ui.theme.AuthViewModel
 import com.example.projectdemo.ui.theme.MyAppNavigation
 import com.example.projectdemo.ui.theme.ProjectDemoTheme
@@ -48,7 +49,7 @@ class MainActivity : ComponentActivity() {
             ProjectDemoTheme {
                 Scaffold { innerPadding ->
                     Box(modifier = Modifier.padding(innerPadding)) {
-                        Column {
+                        MyAppTheme() {
                             MyAppNavigation(
                                 authViewModel = authViewModel,
                             )

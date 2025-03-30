@@ -526,7 +526,6 @@ fun UserDetailScreen(
                     }
                 )
             }
-
             if (isImageZoomed && selectedImageUri != null) {
                 Dialog(onDismissRequest = { isImageZoomed = false }) {
                     Box(

@@ -18,8 +18,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.projectdemo.pages.forgotpassword.ForgotPasswordScreen
 import com.example.projectdemo.pages.forgotpassword.PasswordResetViewModel
+import com.example.projectdemo.pages.screen.ChangePasswordScreen
 import com.example.projectdemo.pages.screen.Profile
-import com.example.projectdemo.pages.screen.SplashScreen
 import com.example.projectdemo.pages.screen.UserDetailScreen
 import com.example.projectdemo.viewdata.CourseDetailsActivity
 import com.example.projectdemo.viewdata.UpdateDataScreen
@@ -28,18 +28,19 @@ import com.google.android.gms.maps.model.LatLng
 @Composable
 fun MyAppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "splash", builder = {
-        composable("splash") {
-            SplashScreen(navController)
-        }
+    NavHost(navController = navController, startDestination = "login", builder = {
         composable("login") {
-            LoginPage(modifier, navController, authViewModel)
+            LoginPage( navController, authViewModel)
         }
         composable("forgot") {
             ForgotPasswordScreen(viewModel = PasswordResetViewModel() , navController)
         }
         composable("signup") {
             SignupPage(modifier, navController, authViewModel)
+        }
+
+        composable("change_password") {
+            ChangePasswordScreen(navController)
         }
         composable("home") {
             HomePage(modifier, navController, authViewModel)

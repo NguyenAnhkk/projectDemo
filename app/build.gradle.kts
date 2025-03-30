@@ -95,4 +95,5 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.2.0")
     implementation ("com.maxkeppeler.sheets-compose-dialogs:core:1.0.2")
     implementation ("com.maxkeppeler.sheets-compose-dialogs:calendar:1.0.2")
+    implementation("com.google.accompanist:accompanist-systemuicontroller:0.31.1-alpha")
 }
