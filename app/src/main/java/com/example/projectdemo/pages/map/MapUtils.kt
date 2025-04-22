@@ -3,13 +3,16 @@ package com.example.projectdemo.pages.map
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.location.Address
 import android.location.Geocoder
 import android.location.Location
+import android.location.LocationManager
 import android.net.Uri
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -113,6 +116,13 @@ class MapUtils(private val context: Context) {
             .set(mapOf("latitude" to latLng.latitude, "longitude" to latLng.longitude))
     }
 
+    fun updateUserOnlineStatus() {
+        val firestore = FirebaseFirestore.getInstance()
+        val userId = Firebase.auth.currentUser?.uid ?: return
+        firestore.collection("profile").document(userId)
+            .update("lastSeen", System.currentTimeMillis())
+    }
+
     private fun startLocationUpdates(
         fusedLocationClient: FusedLocationProviderClient,
         context: Context,
@@ -162,20 +172,25 @@ class MapUtils(private val context: Context) {
         var nearbyUsersLocations by remember { mutableStateOf(emptyList<LatLng>()) }
         var radiusInMeters by remember { mutableStateOf(5000f) }
         var currentLocation by rememberSaveable { mutableStateOf(LatLng(21.0176342, 105.837429)) }
+        var isLocationUpdated by remember { mutableStateOf(false) }
         val bitmap = BitmapFactory.decodeResource(context.resources, R.raw.markermap)
         val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, true)
         val smallIcon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
         val userPhotoUrl = Firebase.auth.currentUser?.photoUrl?.toString()
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
         val launchMultiplePermissions = rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.RequestMultiplePermissions()
-        ) { permissionsResult ->
-            if (permissionsResult.all { it.value }) {
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissionsMap ->
+            if (permissionsMap.all { it.value }) {
+
                 startLocationUpdates(fusedLocationClient, context) { location ->
                     currentLocation = location
+                    isLocationUpdated = true
                 }
             } else {
-                Toast.makeText(context, "Permissions not granted", Toast.LENGTH_SHORT).show()
+
+                Toast.makeText(context, "Cần cấp quyền vị trí để tiếp tục", Toast.LENGTH_SHORT)
+                    .show()
             }
         }
         var currentAddress by remember { mutableStateOf("Đang lấy vị trí...") }
@@ -213,16 +228,20 @@ class MapUtils(private val context: Context) {
                     modifier = Modifier.fillMaxSize(),
                     cameraPositionState = camerapositionState
                 ) {
-                    Marker(
-                        state = MarkerState(position = currentLocation),
-                        title = "Vị trí của bạn",
-                        snippet = "Địa chỉ hiện tại",
-                        icon = smallIcon,
-                    )
+                    if (isLocationUpdated) {
+                        Marker(
+                            state = MarkerState(position = currentLocation),
+                            title = "Vị trí của bạn",
+                            snippet = "Địa chỉ hiện tại",
+                            icon = smallIcon,
+                        )
+                    }
                 }
 
-                LaunchedEffect(currentLocation) {
-                    camerapositionState.animate(CameraUpdateFactory.newLatLng(currentLocation))
+                LaunchedEffect(isLocationUpdated) {
+                    if (isLocationUpdated) {
+                        camerapositionState.animate(CameraUpdateFactory.newLatLng(currentLocation))
+                    }
                 }
 
                 nearbyUsersLocations.forEach { location ->
@@ -264,14 +283,27 @@ class MapUtils(private val context: Context) {
                                     it
                                 ) == PackageManager.PERMISSION_GRANTED
                             }) {
-                            startLocationUpdates(fusedLocationClient, context) { location ->
-                                currentLocation = location
+                            // Kiểm tra xem GPS có bật không
+                            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                            val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+
+                            if (isGpsEnabled) {
+                                startLocationUpdates(fusedLocationClient, context) { location ->
+                                    currentLocation = location
+                                    isLocationUpdated = true
+                                }
+                            } else {
+                                // Yêu cầu bật GPS
+                                val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                                context.startActivity(intent)
                             }
                         } else {
                             launchMultiplePermissions.launch(permissions)
                         }
-                    }) {
-                        Text(text = "Cập nhật vị trí hiện tại của bạn.")
+                    }
+                    , shape = RoundedCornerShape(16.dp) , colors =  ButtonDefaults.buttonColors(Color(0xFFb631eb)) , modifier =  Modifier.fillMaxWidth(0.5f)
+                    ) {
+                        Text(text = "Cập nhật vị trí.")
                     }
                 }
             }
@@ -339,7 +371,9 @@ class MapUtils(private val context: Context) {
                 fontSize = 15.sp,
                 fontWeight = FontWeight.Normal,
                 color = Color.Black,
-                modifier = Modifier.align(Alignment.CenterStart).padding(4.dp , 0.dp , 0.dp , 0.dp)
+                modifier = Modifier
+                    .align(Alignment.CenterStart)
+                    .padding(4.dp, 0.dp, 0.dp, 0.dp)
             )
             IconButtonWithImage(navController = navController, userPhotoUrl = userPhotoUrl)
         }

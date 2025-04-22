@@ -2,7 +2,6 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
-
 }
 
 android {
@@ -96,4 +95,6 @@ dependencies {
     implementation ("com.maxkeppeler.sheets-compose-dialogs:core:1.0.2")
     implementation ("com.maxkeppeler.sheets-compose-dialogs:calendar:1.0.2")
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.31.1-alpha")
+    implementation ("com.squareup.okhttp3:okhttp:4.9.3")
+    implementation ("io.agora.rtc:full-sdk:4.2.1")
 }

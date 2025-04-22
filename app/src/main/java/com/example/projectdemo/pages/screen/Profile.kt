@@ -7,6 +7,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Build
+import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
@@ -27,12 +28,21 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.BottomAppBar
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -64,17 +74,26 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
 import com.example.projectdemo.R
+import com.example.projectdemo.lib.AppScreen
+import com.example.projectdemo.lib.MyAppTheme
 import com.example.projectdemo.ui.theme.AuthState
 import com.example.projectdemo.ui.theme.AuthViewModel
+import com.example.projectdemo.viewdata.createMatch
+import com.example.projectdemo.viewdata.handleIgnore
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
+import com.google.android.gms.tasks.Tasks
 import java.time.LocalDate
 import java.time.Period
 import java.time.format.DateTimeFormatter
 import java.util.UUID
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -92,6 +111,88 @@ fun Profile(
     val authState by authViewModel.authState.observeAsState(AuthState.Unauthenticated)
     var imageUrl by remember { mutableStateOf<String?>(null) }
     val currentLocation = LatLng(21.0278, 105.8342)
+    var notifications by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
+    var showNotifications by remember { mutableStateOf(false) }
+    var showLikedUsers by remember { mutableStateOf(false) }
+    var likedUsers by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
+    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+
+    // Listen for notifications
+    LaunchedEffect(currentUserId) {
+        if (currentUserId != null) {
+            val firestore = FirebaseFirestore.getInstance()
+            firestore.collection("users")
+                .document(currentUserId)
+                .collection("notifications")
+                .orderBy("timestamp", Query.Direction.DESCENDING)
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null || snapshot == null) return@addSnapshotListener
+
+                    notifications = snapshot.documents.mapNotNull { doc ->
+                        doc.data?.toMutableMap()?.apply {
+                            put("id", doc.id)
+                        }
+                    }
+                }
+        }
+    }
+
+    // Listen for liked users
+    LaunchedEffect(currentUserId) {
+        if (currentUserId != null) {
+            val firestore = FirebaseFirestore.getInstance()
+            firestore.collection("likes")
+                .whereEqualTo("fromUserId", currentUserId)
+                .addSnapshotListener { snapshot, error ->
+                    if (error != null || snapshot == null) return@addSnapshotListener
+
+                    val likedUsersList = snapshot.documents.mapNotNull { doc ->
+                        doc.data?.toMutableMap()?.apply {
+                            put("id", doc.id)
+                            put("lastMessageTime", 0L) // Initialize with default value
+                        }
+                    }.toMutableList()
+
+                    // Get the most recent message for each liked user
+                    val tasks = likedUsersList.map { like ->
+                        val toUserId = like["toUserId"] as? String
+                        if (toUserId != null) {
+                            firestore.collection("chats")
+                                .document("$currentUserId-$toUserId")
+                                .collection("messages")
+                                .orderBy("timestamp", Query.Direction.DESCENDING)
+                                .limit(1)
+                                .get()
+                                .addOnSuccessListener { messageSnapshot ->
+                                    if (!messageSnapshot.isEmpty) {
+                                        val lastMessage = messageSnapshot.documents[0]
+                                        like["lastMessageTime"] = lastMessage.getLong("timestamp") ?: 0L
+                                    }
+                                }
+                        }
+                    }
+
+                    // Update the list after all tasks complete
+                    launch {
+                        // Wait for all tasks to complete
+                        tasks.forEach { task ->
+                            try {
+                                Log.e("Profile", "Error waiting for task")
+                            } catch (e: Exception) {
+                                Log.e("Profile", "Error waiting for task", e)
+                            }
+                        }
+
+                        // Sort the list by last message time
+                        val sortedList = likedUsersList.sortedByDescending {
+                            (it["lastMessageTime"] as? Long) ?: 0L
+                        }
+                        likedUsers = sortedList
+                    }
+                }
+        }
+    }
+
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
@@ -154,6 +255,46 @@ fun Profile(
         }
     }
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Profile") },
+                actions = {
+                    IconButton(onClick = { navController.navigate("matches") }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_chat_24),
+                            contentDescription = "Matches",
+                            tint = Color.Black
+                        )
+                    }
+                    IconButton(onClick = { showNotifications = !showNotifications }) {
+                        Box {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_notifications_24),
+                                contentDescription = "Notifications",
+                                tint = Color.Black
+                            )
+                            val unreadCount = notifications.count { !(it["read"] as? Boolean ?: false) }
+                            if (unreadCount > 0) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(18.dp)
+                                        .background(Color.Red, CircleShape)
+                                        .align(Alignment.TopEnd)
+                                        .padding(2.dp)
+                                ) {
+                                    Text(
+                                        text = if (unreadCount > 9) "9+" else unreadCount.toString(),
+                                        color = Color.White,
+                                        fontSize = 10.sp,
+                                        modifier = Modifier.align(Alignment.Center)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            )
+        },
         bottomBar = {
             BottomAppBar(
                 modifier.clip(RoundedCornerShape(topEnd = 30.dp, topStart = 30.dp)),
@@ -186,78 +327,302 @@ fun Profile(
             }
         },
         content = { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color(0xFFFFFFFF))
+            AppScreen (
+                backgroundColor = MyAppTheme.appColor.background,
+                isPaddingNavigation = true,
+                modifier = Modifier.fillMaxSize()
                     .padding(paddingValues)
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(100.dp)
-                            .clip(CircleShape)
-                            .clickable { pickImage() }
-                    ) {
-                        when {
-                            imageUri != null -> {
-                                Image(
-                                    painter = rememberAsyncImagePainter(model = imageUri),
-                                    contentDescription = "Selected Image",
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
+                when {
+                    showNotifications -> {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                        ) {
+                            items(notifications) { notification ->
+                                val type = notification["type"] as? String
+                                val fromUserId = notification["fromUserId"] as? String
+                                val timestamp = notification["timestamp"] as? Long
+                                val read = notification["read"] as? Boolean ?: false
 
-                            imageUrl != null -> {
-                                Image(
-                                    painter = rememberAsyncImagePainter(model = imageUrl),
-                                    contentDescription = "User Image",
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxSize()
-                                )
-                            }
+                                if (type == "like" && fromUserId != null) {
+                                    var likedUserName by remember { mutableStateOf("") }
 
-                            else -> {
-                                Image(
-                                    painter = painterResource(id = R.drawable.defaultimg),
-                                    contentDescription = "Default Image",
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxSize()
-                                )
+                                    LaunchedEffect(fromUserId) {
+                                        FirebaseFirestore.getInstance()
+                                            .collection("profile")
+                                            .document(fromUserId)
+                                            .get()
+                                            .addOnSuccessListener { doc ->
+                                                likedUserName = doc.getString("userName") ?: "Unknown User"
+                                            }
+                                    }
+
+                                    Card(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(8.dp)
+                                            .clickable {
+                                                // Mark notification as read
+                                                if (!read && currentUserId != null) {
+                                                    FirebaseFirestore.getInstance()
+                                                        .collection("users")
+                                                        .document(currentUserId)
+                                                        .collection("notifications")
+                                                        .document(notification["id"] as String)
+                                                        .update("read", true)
+                                                }
+                                            },
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = if (!read) Color(0xFFE3F2FD) else Color.White
+                                        )
+                                    ) {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(16.dp)
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Favorite,
+                                                    contentDescription = null,
+                                                    tint = Color.Red,
+                                                    modifier = Modifier.size(24.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(
+                                                    text = "$likedUserName liked your profile",
+                                                    style = MaterialTheme.typography.bodyLarge
+                                                )
+                                            }
+
+                                            if (!read) {
+                                                Spacer(modifier = Modifier.height(8.dp))
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    horizontalArrangement = Arrangement.SpaceEvenly
+                                                ) {
+                                                    Button(
+                                                        onClick = {
+                                                            // Handle agree
+                                                            if (currentUserId != null) {
+                                                                handleLike(currentUserId, fromUserId)
+                                                                // Mark notification as read
+                                                                FirebaseFirestore.getInstance()
+                                                                    .collection("users")
+                                                                    .document(currentUserId)
+                                                                    .collection("notifications")
+                                                                    .document(notification["id"] as String)
+                                                                    .update("read", true)
+                                                            }
+                                                        },
+                                                        colors = ButtonDefaults.buttonColors(
+                                                            containerColor = Color(0xFF4CAF50)
+                                                        )
+                                                    ) {
+                                                        Text("Agree")
+                                                    }
+
+                                                    Button(
+                                                        onClick = {
+                                                            // Handle ignore
+                                                            if (currentUserId != null) {
+                                                                handleIgnore(currentUserId, fromUserId)
+                                                                // Mark notification as read
+                                                                FirebaseFirestore.getInstance()
+                                                                    .collection("users")
+                                                                    .document(currentUserId)
+                                                                    .collection("notifications")
+                                                                    .document(notification["id"] as String)
+                                                                    .update("read", true)
+                                                            }
+                                                        },
+                                                        colors = ButtonDefaults.buttonColors(
+                                                            containerColor = Color(0xFFF44336)
+                                                        )
+                                                    ) {
+                                                        Text("Ignore")
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
-                }
+                    showLikedUsers -> {
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
+                        ) {
+                            items(likedUsers) { like ->
+                                var likedUserName by remember { mutableStateOf("") }
+                                var likedUserImage by remember { mutableStateOf<String?>(null) }
 
-                Spacer(modifier = Modifier.height(5.dp))
+                                LaunchedEffect(like["toUserId"]) {
+                                    val toUserId = like["toUserId"] as? String
+                                    if (toUserId != null) {
+                                        // Get user profile
+                                        FirebaseFirestore.getInstance()
+                                            .collection("profile")
+                                            .document(toUserId)
+                                            .get()
+                                            .addOnSuccessListener { doc ->
+                                                likedUserName = doc.getString("userName") ?: "Unknown User"
+                                            }
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        , horizontalArrangement = Arrangement.Center
-                ) {
-                    when (authState) {
-                        is AuthState.Authenticated -> {
-                            Text(
-                                text = userName.value,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 20.sp,
-                                color = Color.Black
-                            )
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Text(text = "Tuổi : ${age.value}", color = Color.Black)
+                                        // Get user image
+                                        FirebaseFirestore.getInstance()
+                                            .collection("users")
+                                            .document(toUserId)
+                                            .collection("images")
+                                            .orderBy("timestamp", Query.Direction.DESCENDING)
+                                            .limit(1)
+                                            .get()
+                                            .addOnSuccessListener { result ->
+                                                if (!result.isEmpty) {
+                                                    likedUserImage = result.documents[0].getString("imageUrl")
+                                                }
+                                            }
+                                    }
+                                }
+
+                                Card(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(8.dp)
+                                        .clickable {
+                                            val toUserId = like["toUserId"] as? String
+                                            if (toUserId != null) {
+                                                try {
+                                                    val bundle = Bundle().apply {
+                                                        putString("userId", toUserId)
+                                                    }
+                                                    navController.navigate("user_detail/$toUserId")
+                                                } catch (e: Exception) {
+                                                    Log.e("Navigation", "Error navigating to chat: ${e.message}")
+                                                    Toast.makeText(context, "Error opening chat", Toast.LENGTH_SHORT).show()
+                                                }
+                                            } else {
+                                                Toast.makeText(context, "Invalid user", Toast.LENGTH_SHORT).show()
+                                            }
+                                        },
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = Color.White
+                                    )
+                                ) {
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(16.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(50.dp)
+                                                .clip(CircleShape)
+                                        ) {
+                                            if (likedUserImage != null) {
+                                                Image(
+                                                    painter = rememberAsyncImagePainter(model = likedUserImage),
+                                                    contentDescription = "User Image",
+                                                    contentScale = ContentScale.Crop,
+                                                    modifier = Modifier.fillMaxSize()
+                                                )
+                                            } else {
+                                                Image(
+                                                    painter = painterResource(id = R.drawable.defaultimg),
+                                                    contentDescription = "Default Image",
+                                                    contentScale = ContentScale.Crop,
+                                                    modifier = Modifier.fillMaxSize()
+                                                )
+                                            }
+                                        }
+                                        Spacer(modifier = Modifier.width(16.dp))
+                                        Text(
+                                            text = likedUserName,
+                                            style = MaterialTheme.typography.bodyLarge
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else -> {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .clip(CircleShape)
+                                    .clickable { pickImage() }
+                            ) {
+                                when {
+                                    imageUri != null -> {
+                                        Image(
+                                            painter = rememberAsyncImagePainter(model = imageUri),
+                                            contentDescription = "Selected Image",
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    }
+
+                                    imageUrl != null -> {
+                                        Image(
+                                            painter = rememberAsyncImagePainter(model = imageUrl),
+                                            contentDescription = "User Image",
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    }
+
+                                    else -> {
+                                        Image(
+                                            painter = painterResource(id = R.drawable.defaultimg),
+                                            contentDescription = "Default Image",
+                                            contentScale = ContentScale.Crop,
+                                            modifier = Modifier.fillMaxSize()
+                                        )
+                                    }
+                                }
+                            }
                         }
 
-                        is AuthState.Error -> {
-                            Text(text = (authState as AuthState.Error).message, color = Color.Red)
-                        }
+                        Spacer(modifier = Modifier.height(5.dp))
 
-                        else -> {
-                            Text(text = "Đang tải dữ liệu người dùng...", color = Color.Black)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                , horizontalArrangement = Arrangement.Center
+                        ) {
+                            when (authState) {
+                                is AuthState.Authenticated -> {
+                                    Text(
+                                        text = userName.value,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 20.sp,
+                                        color = Color.Black
+                                    )
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                    Text(text = "Tuổi : ${age.value}", color = Color.Black)
+                                }
+
+                                is AuthState.Error -> {
+                                    Text(text = (authState as AuthState.Error).message, color = Color.Red)
+                                }
+
+                                else -> {
+                                    Text(text = "Đang tải dữ liệu người dùng...", color = Color.Black)
+                                }
+                            }
                         }
                     }
                 }
@@ -344,4 +709,69 @@ fun loadImageUrlFromFirestore(onSuccess: (String?) -> Unit, onFailure: (Exceptio
                 onFailure(exception)
             }
     }
+}
+
+fun handleLike(currentUserId: String, likedUserId: String) {
+    val firestore = FirebaseFirestore.getInstance()
+
+    // Check if the other user has already liked this user
+    firestore.collection("likes")
+        .document("$likedUserId-$currentUserId")
+        .get()
+        .addOnSuccessListener { otherUserLikeDoc ->
+            if (otherUserLikeDoc.exists()) {
+                // Both users have liked each other - create a match
+                createMatch(currentUserId, likedUserId)
+                // Remove the like documents since they're now matched
+                firestore.collection("likes")
+                    .document("$likedUserId-$currentUserId")
+                    .delete()
+                firestore.collection("likes")
+                    .document("$currentUserId-$likedUserId")
+                    .delete()
+            } else {
+                // Just record the like and create a notification
+                val likeData = hashMapOf(
+                    "timestamp" to System.currentTimeMillis(),
+                    "fromUserId" to currentUserId,
+                    "toUserId" to likedUserId
+                )
+
+                firestore.collection("likes")
+                    .document("$currentUserId-$likedUserId")
+                    .set(likeData)
+                    .addOnSuccessListener {
+                        createLikeNotification(currentUserId, likedUserId)
+                        Log.d("Like", "Like recorded successfully")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("Like", "Error recording like", e)
+                    }
+            }
+        }
+        .addOnFailureListener { e ->
+            Log.e("Like", "Error checking for mutual like", e)
+        }
+}
+
+private fun createLikeNotification(fromUserId: String, toUserId: String) {
+    val firestore = FirebaseFirestore.getInstance()
+
+    val notificationData = hashMapOf(
+        "type" to "like",
+        "fromUserId" to fromUserId,
+        "timestamp" to System.currentTimeMillis(),
+        "read" to false
+    )
+
+    firestore.collection("users")
+        .document(toUserId)
+        .collection("notifications")
+        .add(notificationData)
+        .addOnSuccessListener {
+            Log.d("LikeNotification", "Like notification created successfully")
+        }
+        .addOnFailureListener { e ->
+            Log.e("LikeNotification", "Error creating like notification", e)
+        }
 }

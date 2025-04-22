@@ -128,44 +128,59 @@ fun CourseDetailsActivity(
     }
     LaunchedEffect(Unit) {
         val firestore = FirebaseFirestore.getInstance()
-        firestore.collection("location")
-            .addSnapshotListener { snapshot, error ->
-                if (error != null || snapshot == null) return@addSnapshotListener
+        // First get all likes and ignores to filter out users
+        firestore.collection("likes")
+            .whereEqualTo("fromUserId", currentUserId)
+            .get()
+            .addOnSuccessListener { likesSnapshot ->
+                val likedUserIds = likesSnapshot.documents.mapNotNull { it.getString("toUserId") }.toSet()
+                
+                firestore.collection("ignored")
+                    .whereEqualTo("fromUserId", currentUserId)
+                    .get()
+                    .addOnSuccessListener { ignoresSnapshot ->
+                        val ignoredUserIds = ignoresSnapshot.documents.mapNotNull { it.getString("toUserId") }.toSet()
+                        
+                        // Then get location data and filter out liked/ignored users
+                        firestore.collection("location")
+                            .addSnapshotListener { snapshot, error ->
+                                if (error != null || snapshot == null) return@addSnapshotListener
 
-                nearbyUsers.clear()
-                for (doc in snapshot.documents) {
-                    val lat = doc.getDouble("latitude") ?: continue
-                    val lng = doc.getDouble("longitude") ?: continue
-                    val userId = doc.id
-                    if (userId == currentUserId) continue
+                                nearbyUsers.clear()
+                                for (doc in snapshot.documents) {
+                                    val lat = doc.getDouble("latitude") ?: continue
+                                    val lng = doc.getDouble("longitude") ?: continue
+                                    val userId = doc.id
+                                    
+                                    // Skip if it's current user or user has been liked/ignored
+                                    if (userId == currentUserId || 
+                                        likedUserIds.contains(userId) || 
+                                        ignoredUserIds.contains(userId)) continue
 
-                    val userLocation = LatLng(lat, lng)
-                    val distance = calculateDistance(currentLocation, userLocation)
-                    if (isWithinRadius(currentLocation, userLocation, radiusInMeters)) {
-                        firestore.collection("profile").document(userId)
-                            .get()
-                            .addOnSuccessListener { userDoc ->
-                                val userName = userDoc.getString("userName") ?: "N/A"
-                                val dateOfBirth = userDoc.getString("dateOfBirth") ?: "N/A"
-                                val district = getDistrictFromLatLng(context, userLocation)
+                                    val userLocation = LatLng(lat, lng)
+                                    val distance = calculateDistance(currentLocation, userLocation)
+                                    if (isWithinRadius(currentLocation, userLocation, radiusInMeters)) {
+                                        firestore.collection("profile").document(userId)
+                                            .get()
+                                            .addOnSuccessListener { userDoc ->
+                                                val userName = userDoc.getString("userName") ?: "N/A"
+                                                val dateOfBirth = userDoc.getString("dateOfBirth") ?: "N/A"
+                                                val district = getDistrictFromLatLng(context, userLocation)
 
-                                val user = User(
-                                    userId,
-                                    userName,
-                                    dateOfBirth,
-                                    userLocation,
-                                    distance,
-                                    district
-                                )
-                                nearbyUsers.add(user)
-                                firestore.collection("chats").document("$userId-$currentUserId")
-                                    .collection("messages")
-                                    .addSnapshotListener { messagesSnapshot, messagesError ->
-                                        if (messagesError != null || messagesSnapshot == null) return@addSnapshotListener
+                                                val user = User(
+                                                    userId,
+                                                    userName,
+                                                    dateOfBirth,
+                                                    userLocation,
+                                                    distance,
+                                                    district
+                                                )
+                                                nearbyUsers.add(user)
+                                            }
                                     }
+                                }
                             }
                     }
-                }
             }
     }
 
@@ -194,43 +209,16 @@ fun CourseDetailsActivity(
 //
 //        }
     }, drawerState = drawerState) {
-        val configuration = LocalConfiguration.current
-        val screenHeight = configuration.screenHeightDp.dp
-        val cardHeight = screenHeight - 200.dp
-        val purple = Color(0xFF6200EE)
         Surface(modifier = Modifier.fillMaxSize()) {
             Box(
                 modifier = Modifier.verticalGradientBackground(
                     listOf(
                         Color.White,
-                        purple.copy(alpha = 0.2f)
+                        Color(0xFF6200EE).copy(alpha = 0.2f)
                     )
                 )
-
             ) {
-                val listEmpty = remember { mutableStateOf(false) }
-                nearbyUsers.forEachIndexed { index, user ->
-                    DraggableCard(
-                        item = user, modifier = Modifier
-                            .fillMaxWidth()
-                            .height(cardHeight)
-                            .padding(
-                                top = 16.dp + (index + 2).dp,
-                                bottom = 16.dp,
-                                start = 16.dp,
-                                end = 16.dp
-                            ), onSwiped = { _, swipedUser ->
-                            if (nearbyUsers.isNotEmpty()) {
-                                nearbyUsers.toMutableList().remove(swipedUser)
-                                if (nearbyUsers.isEmpty()) {
-                                    listEmpty.value = true
-                                }
-                            }
-                        }
-                    ) {
-                        CardContent(user = user)
-                    }
-                }
+                DatingLoader(nearbyUsers = nearbyUsers)
             }
 
             if (isSheetOpen) {
@@ -278,7 +266,6 @@ fun CourseDetailsActivity(
             }
         }
     }
-
 }
 
 @Composable
@@ -286,6 +273,7 @@ fun DatingLoader(modifier: Modifier = Modifier, nearbyUsers: List<User>) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
     val cardHeight = screenHeight - 200.dp
+    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
     Surface(modifier = Modifier) {
         val purple = Color(0xFF6200EE)
         Box(
@@ -299,7 +287,8 @@ fun DatingLoader(modifier: Modifier = Modifier, nearbyUsers: List<User>) {
             val listEmpty = remember { mutableStateOf(false) }
             nearbyUsers.forEachIndexed { index, user ->
                 DraggableCard(
-                    item = user, modifier = Modifier
+                    item = user, 
+                    modifier = Modifier
                         .fillMaxWidth()
                         .height(cardHeight)
                         .padding(
@@ -307,7 +296,8 @@ fun DatingLoader(modifier: Modifier = Modifier, nearbyUsers: List<User>) {
                             bottom = 16.dp,
                             start = 16.dp,
                             end = 16.dp
-                        ), onSwiped = { _, swipedUser ->
+                        ), 
+                    onSwiped = { _, swipedUser ->
                         if (nearbyUsers.isNotEmpty()) {
                             nearbyUsers.toMutableList().remove(swipedUser)
                             if (nearbyUsers.isEmpty()) {
@@ -316,61 +306,71 @@ fun DatingLoader(modifier: Modifier = Modifier, nearbyUsers: List<User>) {
                         }
                     }
                 ) {
-                    CardContent(user = user)
-                }
-            }
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = cardHeight)
-                    .alpha(animateFloatAsState(if (listEmpty.value) 0f else 1f, label = "").value)
-            ) {
-                IconButton(
-                    onClick = {
-                        /* TODO Hook to swipe event */
-                    },
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .size(60.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colors.background)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        tint = Color.Gray,
-                        contentDescription = null,
-                        modifier = Modifier.size(36.dp)
-                    )
-                }
-                IconButton(
-                    onClick = {
-                        /* TODO Hook to swipe event */
-                    },
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp)
-                        .size(60.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colors.background)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Favorite,
-                        contentDescription = null,
-                        tint = Color.Red,
-                        modifier = Modifier.size(36.dp)
+                    CardContent(
+                        user = user,
+                        onFavoriteClick = { userId ->
+                            if (currentUserId != null) {
+                                handleLike(currentUserId, userId)
+                                nearbyUsers.toMutableList().remove(user)
+                                if (nearbyUsers.isEmpty()) {
+                                    listEmpty.value = true
+                                }
+                            }
+                        },
+                        onIgnoreClick = { userId ->
+                            if (currentUserId != null) {
+                                handleIgnore(currentUserId, userId)
+                                nearbyUsers.toMutableList().remove(user)
+                                if (nearbyUsers.isEmpty()) {
+                                    listEmpty.value = true
+                                }
+                            }
+                        }
                     )
                 }
             }
         }
-
     }
-
 }
 
 @Composable
-fun CardContent(modifier: Modifier = Modifier, user: User) {
+fun CardContent(
+    modifier: Modifier = Modifier, 
+    user: User,
+    onFavoriteClick: (String) -> Unit,
+    onIgnoreClick: (String) -> Unit
+) {
     val purple = Color(0xFF6200EE)
     var imageUrl by remember { mutableStateOf<String?>(null) }
+    var isFavorite by remember { mutableStateOf(false) }
+    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
+    val firestore = FirebaseFirestore.getInstance()
+
+    // Load user's image
+    LaunchedEffect(user.userId) {
+        firestore.collection("users")
+            .document(user.userId)
+            .collection("images")
+            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .limit(1)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                if (!snapshot.isEmpty) {
+                    imageUrl = snapshot.documents[0].getString("imageUrl")
+                }
+            }
+
+        // Load initial favorite status
+        if (currentUserId != null) {
+            firestore.collection("favorites")
+                .document("$currentUserId-${user.userId}")
+                .get()
+                .addOnSuccessListener { document ->
+                    isFavorite = document.exists()
+                }
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -383,25 +383,85 @@ fun CardContent(modifier: Modifier = Modifier, user: User) {
         ) {
             Image(
                 painter = rememberAsyncImagePainter(
-                    model = if (imageUrl != null) {
-                        Image(
-                            painter = rememberAsyncImagePainter(model = imageUrl),
-                            contentDescription = "User Image",
-                            contentScale = ContentScale.Crop,
-
-                        )
-                    } else {
-                        Image(
-                            painter = painterResource(id = R.drawable.defaultimg),
-                            contentDescription = "Default Image",
-                            contentScale = ContentScale.Crop,
-                        )
-                    }
+                    model = imageUrl ?: R.drawable.defaultimg
                 ),
                 contentScale = ContentScale.Crop,
-                contentDescription = null,
+                contentDescription = "User Image",
                 modifier = Modifier.fillMaxSize()
             )
+            
+            // Favorites and Remove buttons
+            Row(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                IconButton(
+                    onClick = { 
+                        if (currentUserId != null) {
+                            isFavorite = !isFavorite
+                            if (isFavorite) {
+                                // Add to favorites
+                                val favoriteData = hashMapOf(
+                                    "timestamp" to System.currentTimeMillis(),
+                                    "fromUserId" to currentUserId,
+                                    "toUserId" to user.userId
+                                )
+                                firestore.collection("favorites")
+                                    .document("$currentUserId-${user.userId}")
+                                    .set(favoriteData)
+                                    .addOnSuccessListener {
+                                        Log.d("Favorite", "Added to favorites successfully")
+                                        onFavoriteClick(user.userId)
+                                    }
+                                    .addOnFailureListener { e ->
+                                        Log.e("Favorite", "Error adding to favorites", e)
+                                        isFavorite = false // Revert on failure
+                                    }
+                            } else {
+                                // Remove from favorites
+                                firestore.collection("favorites")
+                                    .document("$currentUserId-${user.userId}")
+                                    .delete()
+                                    .addOnSuccessListener {
+                                        Log.d("Favorite", "Removed from favorites successfully")
+                                    }
+                                    .addOnFailureListener { e ->
+                                        Log.e("Favorite", "Error removing from favorites", e)
+                                        isFavorite = true // Revert on failure
+                                    }
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.8f))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Favorite,
+                        contentDescription = "Favorite",
+                        tint = if (isFavorite) Color.Red else Color.Gray,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                
+                IconButton(
+                    onClick = { onIgnoreClick(user.userId) },
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(Color.White.copy(alpha = 0.8f))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Remove",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
         }
 
         Column(
@@ -409,40 +469,6 @@ fun CardContent(modifier: Modifier = Modifier, user: User) {
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = user.userName,
-                    style = MaterialTheme.typography.h5.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    ),
-                    modifier = Modifier.weight(1f)
-                )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Place,
-                        tint = Color.White,
-                        contentDescription = null,
-                        modifier = Modifier.size(20.dp)
-                    )
-                    Text(
-                        text = "%.1f km".format(user.distance),
-                        style = MaterialTheme.typography.body1.copy(
-                            color = Color.White
-                        )
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
             AppRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -537,5 +563,135 @@ fun updateLastReadTime(userId: String, chatPartnerId: String) {
         }
         .addOnFailureListener { e ->
             Log.e("UpdateLastReadTime", "Error updating last read time", e)
+        }
+}
+
+fun handleLike(currentUserId: String, likedUserId: String) {
+    val firestore = FirebaseFirestore.getInstance()
+
+    firestore.collection("likes")
+        .document("$likedUserId-$currentUserId")
+        .get()
+        .addOnSuccessListener { otherUserLikeDoc ->
+            if (otherUserLikeDoc.exists()) {
+                createMatch(currentUserId, likedUserId)
+                firestore.collection("likes")
+                    .document("$likedUserId-$currentUserId")
+                    .delete()
+            }
+
+            val likeData = hashMapOf(
+                "timestamp" to System.currentTimeMillis(),
+                "fromUserId" to currentUserId,
+                "toUserId" to likedUserId
+            )
+
+            firestore.collection("likes")
+                .document("$currentUserId-$likedUserId")
+                .set(likeData)
+                .addOnSuccessListener {
+                    createLikeNotification(currentUserId, likedUserId)
+
+                    if (!otherUserLikeDoc.exists()) {
+                        Log.d("Like", "Like recorded successfully")
+                    }
+                }
+                .addOnFailureListener { e ->
+                    Log.e("Like", "Error recording like", e)
+                }
+        }
+        .addOnFailureListener { e ->
+            Log.e("Like", "Error checking for mutual like", e)
+        }
+}
+
+fun createMatch(userId1: String, userId2: String) {
+    val firestore = FirebaseFirestore.getInstance()
+    val matchId = if (userId1 < userId2) "$userId1-$userId2" else "$userId2-$userId1"
+
+    val matchData = hashMapOf(
+        "users" to listOf(userId1, userId2),
+        "timestamp" to System.currentTimeMillis(),
+        "user1" to userId1,
+        "user2" to userId2
+    )
+
+    firestore.collection("matches")
+        .document(matchId)
+        .set(matchData)
+        .addOnSuccessListener {
+            Log.d("Match", "Match created successfully")
+
+            // Create match notifications for both users
+            createMatchNotification(userId1, userId2)
+            createMatchNotification(userId2, userId1)
+        }
+        .addOnFailureListener { e ->
+            Log.e("Match", "Error creating match", e)
+        }
+}
+
+private fun createLikeNotification(fromUserId: String, toUserId: String) {
+    val firestore = FirebaseFirestore.getInstance()
+
+    val notificationData = hashMapOf(
+        "type" to "like",
+        "fromUserId" to fromUserId,
+        "timestamp" to System.currentTimeMillis(),
+        "read" to false
+    )
+
+    firestore.collection("users")
+        .document(toUserId)
+        .collection("notifications")
+        .add(notificationData)
+        .addOnSuccessListener {
+            Log.d("LikeNotification", "Like notification created successfully")
+        }
+        .addOnFailureListener { e ->
+            Log.e("LikeNotification", "Error creating like notification", e)
+        }
+}
+
+private fun createMatchNotification(userId: String, matchedWithUserId: String) {
+    val firestore = FirebaseFirestore.getInstance()
+
+    val notificationData = hashMapOf(
+        "type" to "match",
+        "matchedWithUserId" to matchedWithUserId,
+        "timestamp" to System.currentTimeMillis(),
+        "read" to false
+    )
+
+    firestore.collection("users")
+        .document(userId)
+        .collection("notifications")
+        .add(notificationData)
+        .addOnSuccessListener {
+            Log.d("MatchNotification", "Match notification created successfully")
+        }
+        .addOnFailureListener { e ->
+            Log.e("MatchNotification", "Error creating match notification", e)
+        }
+}
+
+fun handleIgnore(currentUserId: String, ignoredUserId: String) {
+    val firestore = FirebaseFirestore.getInstance()
+    
+    // Add to ignored collection
+    val ignoreData = hashMapOf(
+        "timestamp" to System.currentTimeMillis(),
+        "fromUserId" to currentUserId,
+        "toUserId" to ignoredUserId
+    )
+    
+    firestore.collection("ignored")
+        .document("$currentUserId-$ignoredUserId")
+        .set(ignoreData)
+        .addOnSuccessListener {
+            Log.d("Ignore", "User ignored successfully")
+        }
+        .addOnFailureListener { e ->
+            Log.e("Ignore", "Error ignoring user", e)
         }
 }

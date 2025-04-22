@@ -18,11 +18,14 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -31,6 +34,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -38,6 +43,7 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -65,14 +71,20 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -83,6 +95,12 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.projectdemo.R
+import com.example.projectdemo.lib.AppBox
+import com.example.projectdemo.lib.AppColumn
+import com.example.projectdemo.lib.AppRow
+import com.example.projectdemo.lib.AppDimens
+import com.example.projectdemo.lib.AppText
+import com.example.projectdemo.lib.AppTextBold
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -90,8 +108,9 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.launch
+import com.google.firebase.database.FirebaseDatabase
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SimpleDateFormat")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun UserDetailScreen(
@@ -202,53 +221,59 @@ fun UserDetailScreen(
             TopAppBar(
                 modifier = Modifier.shadow(8.dp),
                 title = {
-                    Row(
+                    AppRow(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth().background(Color(0xFFFFFFFF)),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFFFFFFFF)),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         IconButton(onClick = { navController.popBackStack() }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.baseline_arrow_back_24),
-                                contentDescription = "arrowPack", tint = Color.Black
+                                contentDescription = "Back",
+                                tint = Color(0xFF0084FF)
                             )
                         }
-                        Image(
-                            painter = rememberAsyncImagePainter(
-                                model = if (imageUrl != null) {
-                                    Image(
-                                        painter = rememberAsyncImagePainter(model = imageUrl),
-                                        contentDescription = "User Image",
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier
-                                            .size(40.dp)
-                                            .clip(CircleShape)
-                                    )
-                                } else {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.defaultimg),
-                                        contentDescription = "Default Image",
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier
-                                            .size(40.dp)
-                                            .clip(CircleShape)
-                                    )
-                                }
-                            ),
-                            contentDescription = "User Image",
-                            contentScale = ContentScale.Crop,
+                        AppBox(
                             modifier = Modifier
-                                .size(20.dp)
+                                .size(40.dp)
                                 .clip(CircleShape)
-                        )
-                        Text(
-                            text = "${userName.value}",
-                            fontSize = 17.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color.Black
-                        )
+                                .border(2.dp, Color(0xFF0084FF), CircleShape)
+                        ) {
+                            if (imageUrl != null) {
+                                Image(
+                                    painter = rememberAsyncImagePainter(model = imageUrl),
+                                    contentDescription = "User Image",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            } else {
+                                Image(
+                                    painter = painterResource(id = R.drawable.defaultimg),
+                                    contentDescription = "Default Image",
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
+                        }
+                        AppColumn {
+                            AppTextBold(
+                                text = userName.value,
+                                fontSize = 18.sp,
+                                color = Color.Black
+                            )
+                            AppText(
+                                text = "Active now",
+                                fontSize = 12.sp,
+                                color = Color(0xFF4CAF50)
+                            )
+                        }
                     }
                 },
-                colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color(0xFFFFFFFF))
+                colors = TopAppBarDefaults.smallTopAppBarColors(
+                    containerColor = Color(0xFFFFFFFF)
+                )
             )
         }
     ) { innerPadding ->
@@ -256,13 +281,12 @@ fun UserDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(Color.White)
+                .background(Color(0xFFFFF3D9))
                 .pointerInput(Unit) {
                     detectTapGestures(onTap = {
                         keyboardController?.hide()
                     })
                 }
-
         ) {
             Column(
                 modifier = Modifier
@@ -281,14 +305,14 @@ fun UserDetailScreen(
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(10.dp),
+                                .padding(16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Box(
                                 modifier = Modifier
                                     .size(100.dp)
                                     .clip(CircleShape)
-                                    .background(Color.Gray)
+                                    .border(3.dp, Color(0xFF0084FF), CircleShape)
                             ) {
                                 if (imageUrl != null) {
                                     Image(
@@ -306,14 +330,20 @@ fun UserDetailScreen(
                                     )
                                 }
                             }
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
                             Text(
-                                text = "Name: ${userName.value}",
+                                text = userName.value,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 20.sp,
                                 color = Color.Black
                             )
-                            Text(text = "Date of Birth: ${dateOfBirth.value}", color = Color.Black)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Date of Birth: ${dateOfBirth.value}",
+                                fontSize = 14.sp,
+                                color = Color(0xFF65676B)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
                         }
                     }
 
@@ -325,168 +355,423 @@ fun UserDetailScreen(
                         val isNextMessageFromReceiver =
                             if (index < messages.size - 1) messages[index + 1]["senderId"] == msg["senderId"] else false
 
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 4.dp, vertical = 1.dp),
-                            horizontalArrangement = if (isFromReceiver) Arrangement.Start else Arrangement.End
+                        // Check time difference with previous message
+                        val timeDiff = if (index > 0) {
+                            val prevTime = messages[index - 1]["timestamp"] as? Long ?: 0L
+                            val currentTime = msg["timestamp"] as? Long ?: 0L
+                            (currentTime - prevTime) / (1000 * 60) // difference in minutes
+                        } else {
+                            Long.MAX_VALUE
+                        }
+
+                        // Show timestamp if time difference is more than 10 minutes
+                        val shouldShowTimestamp = timeDiff > 10
+
+                        // Reset showTime when a new message is selected
+                        LaunchedEffect(selectedMessage) {
+                            if (selectedMessage != msg) {
+                                showTime = false
+                            }
+                        }
+
+                        Column(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            if (isFromReceiver && !isNextMessageFromReceiver) {
-                                if (imageUrl != null) {
-                                    Image(
-                                        painter = rememberAsyncImagePainter(model = imageUrl),
-                                        contentDescription = "User Image",
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier
-                                            .size(30.dp)
-                                            .clip(CircleShape)
-                                    )
-                                } else {
-                                    Image(
-                                        painter = painterResource(id = R.drawable.defaultimg),
-                                        contentDescription = "Default Image",
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier
-                                            .size(30.dp)
-                                            .clip(CircleShape)
+                            if (shouldShowTimestamp) {
+                                val time = msg["timestamp"] as? Long
+                                if (time != null) {
+                                    val currentTime = System.currentTimeMillis()
+                                    val messageTime = time
+                                    val diffInMinutes = (currentTime - messageTime) / (1000 * 60)
+                                    val diffInDays = (currentTime - messageTime) / (1000 * 60 * 60 * 24)
+
+                                    val timeText = when {
+                                        diffInMinutes < 1 -> "Vừa xong"
+                                        diffInMinutes < 60 -> "$diffInMinutes phút trước"
+                                        diffInDays < 1 -> java.text.SimpleDateFormat("HH:mm").format(messageTime)
+                                        diffInDays < 7 -> {
+                                            val dayOfWeek = java.text.SimpleDateFormat("EEEE", java.util.Locale("vi")).format(messageTime)
+                                            "$dayOfWeek lúc ${java.text.SimpleDateFormat("HH:mm").format(messageTime)}"
+                                        }
+                                        diffInDays < 365 -> java.text.SimpleDateFormat("dd/MM lúc HH:mm").format(messageTime)
+                                        else -> java.text.SimpleDateFormat("dd/MM/yyyy lúc HH:mm").format(messageTime)
+                                    }
+
+                                    Text(
+                                        text = timeText,
+                                        color = Color(0xFF65676B),
+                                        fontSize = 10.sp,
+                                        modifier = Modifier.padding(vertical = 4.dp)
                                     )
                                 }
                             }
 
-                            Spacer(modifier = Modifier.width(5.dp))
-                            Column(
+                            Row(
                                 modifier = Modifier
-                                    .padding(
-                                        start = if (isFromReceiver && isNextMessageFromReceiver) 30.dp else 0.dp,
-                                    )
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 8.dp, vertical = 2.dp),
+                                horizontalArrangement = if (isFromReceiver) Arrangement.Start else Arrangement.End
                             ) {
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = if (isFromReceiver) Arrangement.Start else Arrangement.End
-                                ) {
+                                if (isFromReceiver && !isNextMessageFromReceiver) {
                                     Box(
                                         modifier = Modifier
-                                            .clip(RoundedCornerShape(8.dp))
-                                            .background(
-                                                if (msg["senderId"] == currentUserId && msg["imageUrl"] == null) Color(
-                                                    0xFF30b1fc
-                                                )
-                                                else if (msg["imageUrl"] == null) Color(0xFFF0F0F0)
-                                                else Color.Transparent
-                                            )
-                                            .widthIn(
-                                                min = 0.dp,
-                                                max = (0.7f * LocalConfiguration.current.screenWidthDp).dp
-                                            )
-                                            .combinedClickable(
-                                                onClick = { showTime = !showTime },
-                                                onLongClick = {
-                                                    selectedMessage = msg
-                                                    showDialog = true
-                                                }
-                                            )
+                                            .size(28.dp)
+                                            .clip(CircleShape)
+                                            .border(1.dp, Color(0xFFE4E6EB), CircleShape)
                                     ) {
-                                        if (msg["imageUrl"] != null) {
+                                        if (imageUrl != null) {
                                             Image(
-                                                painter = rememberAsyncImagePainter(model = msg["imageUrl"]),
-                                                contentDescription = "Image Message",
-                                                contentScale = ContentScale.Fit,
-                                                modifier = Modifier
-                                                    .size(200.dp)
-                                                    .combinedClickable(
-                                                        onClick = {
-                                                            selectedImageUri = msg["imageUrl"] as String
-                                                            isImageZoomed = true
-                                                        },
-                                                        onLongClick = {
-                                                            selectedMessage = msg
-                                                            showDialog = true
-                                                        }
-                                                    )
+                                                painter = rememberAsyncImagePainter(model = imageUrl),
+                                                contentDescription = "User Image",
+                                                contentScale = ContentScale.Crop,
+                                                modifier = Modifier.fillMaxSize()
                                             )
                                         } else {
-                                            Text(
-                                                text = msg["message"] as String? ?: "",
-                                                color = if (msg["senderId"] == currentUserId) Color.White else Color.Black,
-                                                fontWeight = FontWeight.Normal,
-                                                modifier = Modifier.padding(8.dp)
+                                            Image(
+                                                painter = painterResource(id = R.drawable.defaultimg),
+                                                contentDescription = "Default Image",
+                                                contentScale = ContentScale.Crop,
+                                                modifier = Modifier.fillMaxSize()
                                             )
                                         }
                                     }
                                 }
 
-                                AnimatedVisibility(visible = showTime) {
-                                    val time = msg["timestamp"] as? Long
-                                    if (time != null) {
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = if (isFromReceiver) Arrangement.Start else Arrangement.End
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Column(
+                                    modifier = Modifier
+                                        .padding(
+                                            start = if (isFromReceiver && isNextMessageFromReceiver) 36.dp else 0.dp,
+                                        )
+                                ) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = if (isFromReceiver) Arrangement.Start else Arrangement.End
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(
+                                                    if (isFromReceiver) {
+                                                        RoundedCornerShape(
+                                                            topStart = 18.dp,
+                                                            topEnd = 18.dp,
+                                                            bottomStart = 5.dp,
+                                                            bottomEnd = 18.dp
+                                                        )
+                                                    } else {
+                                                        RoundedCornerShape(
+                                                            topStart = 18.dp,
+                                                            topEnd = 18.dp,
+                                                            bottomStart = 18.dp,
+                                                            bottomEnd = 5.dp
+                                                        )
+                                                    }
+                                                )
+                                                .background(
+                                                    if (msg["senderId"] == currentUserId && msg["imageUrl"] == null) Color(
+                                                        0xFF0084FF
+                                                    )
+                                                    else if (msg["imageUrl"] == null) Color.White
+                                                    else Color.Transparent
+                                                )
+                                                .widthIn(
+                                                    min = 0.dp,
+                                                    max = (0.7f * LocalConfiguration.current.screenWidthDp).dp
+                                                )
+                                                .combinedClickable(
+                                                    onClick = {
+                                                        selectedMessage = msg
+                                                        showTime = !showTime
+                                                    },
+                                                    onLongClick = {
+                                                        selectedMessage = msg
+                                                        showDialog = true
+                                                    }
+                                                )
                                         ) {
-                                            Text(
-                                                text = java.text.SimpleDateFormat("HH:mm  dd/MM/yyyy")
-                                                    .format(time),
-                                                color = Color(0xFF40403f),
-                                                fontSize = 10.sp,
-                                            )
+                                            if (msg["imageUrl"] != null) {
+                                                Image(
+                                                    painter = rememberAsyncImagePainter(model = msg["imageUrl"]),
+                                                    contentDescription = "Image Message",
+                                                    contentScale = ContentScale.Crop,
+                                                    modifier = Modifier
+                                                        .size(300.dp)
+                                                        .clip(
+                                                            if (isFromReceiver) {
+                                                                RoundedCornerShape(
+                                                                    topStart = 18.dp,
+                                                                    topEnd = 18.dp,
+                                                                    bottomStart = 5.dp,
+                                                                    bottomEnd = 18.dp
+                                                                )
+                                                            } else {
+                                                                RoundedCornerShape(
+                                                                    topStart = 18.dp,
+                                                                    topEnd = 18.dp,
+                                                                    bottomStart = 18.dp,
+                                                                    bottomEnd = 5.dp
+                                                                )
+                                                            }
+                                                        )
+                                                        .clickable {
+                                                            selectedImageUri = msg["imageUrl"] as String
+                                                            isImageZoomed = true
+                                                        }
+                                                )
+                                            } else {
+                                                Text(
+                                                    text = msg["message"] as String? ?: "",
+                                                    color = if (msg["senderId"] == currentUserId) Color.White else Color.Black,
+                                                    fontWeight = FontWeight.Normal,
+                                                    modifier = Modifier.padding(
+                                                        horizontal = 12.dp,
+                                                        vertical = 8.dp
+                                                    )
+                                                )
+                                            }
+                                        }
+                                    }
+
+                                    if (showTime && selectedMessage == msg) {
+                                        val time = msg["timestamp"] as? Long
+                                        if (time != null) {
+                                            val currentTime = System.currentTimeMillis()
+                                            val messageTime = time
+                                            val diffInMinutes = (currentTime - messageTime) / (1000 * 60)
+                                            val diffInDays = (currentTime - messageTime) / (1000 * 60 * 60 * 24)
+
+                                            val timeText = when {
+                                                diffInMinutes < 1 -> "Vừa xong"
+                                                diffInMinutes < 60 -> "$diffInMinutes phút trước"
+                                                diffInDays < 1 -> java.text.SimpleDateFormat("HH:mm").format(messageTime)
+                                                diffInDays < 7 -> {
+                                                    val dayOfWeek = java.text.SimpleDateFormat("EEEE", java.util.Locale("vi")).format(messageTime)
+                                                    "$dayOfWeek lúc ${java.text.SimpleDateFormat("HH:mm").format(messageTime)}"
+                                                }
+                                                diffInDays < 365 -> java.text.SimpleDateFormat("dd/MM lúc HH:mm").format(messageTime)
+                                                else -> java.text.SimpleDateFormat("dd/MM/yyyy lúc HH:mm").format(messageTime)
+                                            }
+
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = if (isFromReceiver) Arrangement.Start else Arrangement.End
+                                            ) {
+                                                Text(
+                                                    text = timeText,
+                                                    color = Color(0xFF65676B),
+                                                    fontSize = 10.sp,
+                                                    modifier = Modifier.padding(horizontal = 4.dp)
+                                                )
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     }
-
                 }
-
             }
-            Box(
+            AppBox(
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
-                    .background(Color.White)
+                    .background(Color(0xFFFFF3D9))
             ) {
-                OutlinedTextField(
-                    value = message,
-                    onValueChange = { message = it },
+                val dimens = AppDimens()
+                AppRow(
                     modifier = Modifier
-                        .padding(10.dp)
-                        .imePadding()
-                        .width(textFieldWidth)
-                        .animateContentSize()
-                        .onFocusChanged { focusState ->
-                            isFocused = focusState.isFocused
-                        },
-                    placeholder = { Text(text = "Tin nhắn", color = Color.Black) },
-                    leadingIcon = {
-                        IconButton(onClick = {
-                            getImageLauncher.launch("image/*")
-                        }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.baseline_camera_alt_24),
-                                contentDescription = "Thư viện ảnh",
-                                modifier = Modifier.size(25.dp),
-                                tint = Color(0xFF0084FF)
-                            )
+                        .fillMaxWidth()
+                        .padding(horizontal = dimens.paddingTiny),
+                    horizontalArrangement = Arrangement.spacedBy(dimens.paddingTiny),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    var isKeyboardVisible by remember { mutableStateOf(false) }
+                    var showHiddenIcons by remember { mutableStateOf(false) }
+                    val keyboardController = LocalSoftwareKeyboardController.current
+
+                    if (!isKeyboardVisible) {
+                        AppRow(
+                            horizontalArrangement = Arrangement.spacedBy(dimens.paddingSmall),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconButton(
+                                onClick = { /* Add action */ },
+                                modifier = Modifier.size(dimens.sizeImage)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.outline_add_circle_24),
+                                    contentDescription = "Add",
+                                    tint = Color(0xFF8B5CF6)
+                                )
+                            }
+                            IconButton(
+                                onClick = { getImageLauncher.launch("image/*") },
+                                modifier = Modifier.size(dimens.sizeImage)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_camera_alt_24),
+                                    contentDescription = "Camera",
+                                    tint = Color(0xFF8B5CF6)
+                                )
+                            }
+                            IconButton(
+                                onClick = { 
+                                    // Tạo channel name từ ID của 2 người dùng
+                                    val channelName = "$currentUserId-$userId"
+                                    // Lưu thông tin cuộc gọi vào Firebase
+                                    val callData = hashMapOf(
+                                        "type" to "video_call",
+                                        "status" to "ringing",
+                                        "timestamp" to System.currentTimeMillis(),
+                                        "callerId" to currentUserId,
+                                        "receiverId" to userId,
+                                        "channelName" to channelName
+                                    )
+                                    
+                                    FirebaseDatabase.getInstance().getReference("calls")
+                                        .child("$currentUserId-$userId")
+                                        .setValue(callData)
+                                        .addOnSuccessListener {
+                                            // Chuyển đến màn hình video call
+                                            navController.navigate("video_call/$channelName")
+                                        }
+                                },
+                                modifier = Modifier.size(dimens.sizeImage)
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_call_24),
+                                    contentDescription = "Video Call",
+                                    tint = Color(0xFF8B5CF6)
+                                )
+                            }
                         }
-                    },
-                    trailingIcon = {
-                        IconButton(onClick = {
-                            if (message.isNotBlank() && currentUserId != null) {
+                    } else {
+                        if (message.isNotBlank()) {
+                            if (showHiddenIcons) {
+                                AppRow(
+                                    horizontalArrangement = Arrangement.spacedBy(dimens.paddingSmall),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    IconButton(
+                                        onClick = { /* Add action */ },
+                                        modifier = Modifier.size(dimens.sizeIconGreat)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.outline_add_circle_24),
+                                            contentDescription = "Add",
+                                            tint = Color(0xFF8B5CF6)
+                                        )
+                                    }
+                                    IconButton(
+                                        onClick = { getImageLauncher.launch("image/*") },
+                                        modifier = Modifier.size(dimens.sizeIconGreat)
+                                    ) {
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.baseline_camera_alt_24),
+                                            contentDescription = "Camera",
+                                            tint = Color(0xFF8B5CF6)
+                                        )
+                                    }
+                                }
+                            } else {
+                                IconButton(
+                                    onClick = { showHiddenIcons = true },
+                                    modifier = Modifier.size(dimens.sizeIconGreat)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.baseline_arrow_forward_ios_24),
+                                        contentDescription = "Forward",
+                                        tint = Color(0xFF8B5CF6)
+                                    )
+                                }
+                            }
+                        } else {
+                            AppRow(
+                                horizontalArrangement = Arrangement.spacedBy(dimens.paddingSmall),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                IconButton(
+                                    onClick = { /* Add action */ },
+                                    modifier = Modifier.size(dimens.sizeIconGreat)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.outline_add_circle_24),
+                                        contentDescription = "Add",
+                                        tint = Color(0xFF8B5CF6)
+                                    )
+                                }
+                                IconButton(
+                                    onClick = { getImageLauncher.launch("image/*") },
+                                    modifier = Modifier.size(dimens.sizeIconGreat)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.baseline_camera_alt_24),
+                                        contentDescription = "Camera",
+                                        tint = Color(0xFF8B5CF6)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    AppBox(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(bottom = 8.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        BasicTextField(
+                            value = message,
+                            onValueChange = { message = it },
+                            singleLine = true,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(dimens.sizeEdittext)
+                                .background(Color.White, RoundedCornerShape(dimens.sizeRadiusCircle))
+                                .padding(horizontal = dimens.paddingMediumMore, vertical = 0.dp),
+                            textStyle = TextStyle(
+                                fontSize = dimens.fontSizeMedium,
+                                color = Color.Black
+                            ),
+                            keyboardOptions = KeyboardOptions(
+                                capitalization = KeyboardCapitalization.Sentences
+                            ),
+                            decorationBox = { innerTextField ->
+                                AppBox(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.CenterStart
+                                ) {
+                                    if (message.isEmpty()) {
+                                        Text(
+                                            text = "Nhắn tin",
+                                            fontSize = dimens.fontSizeMedium,
+                                            color = Color(0xFF9CA3AF)
+                                        )
+                                    }
+                                    innerTextField()
+                                }
+                            },
+                            cursorBrush = SolidColor(Color(0xFF8B5CF6))
+                        )
+                    }
+
+                    IconButton(
+                        onClick = {
+                            if (currentUserId != null && message.isNotBlank()) {
                                 sendMessage(currentUserId, userId, message)
-                                soundPool.play(sendSoundId, 1f, 1f, 0, 0, 1f)
                                 message = ""
                             }
-                        }) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.send),
-                                contentDescription = "send Icon",
-                                Modifier.size(25.dp), tint = Color(0xFF0084FF)
-                            )
-                        }
-                    },
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        containerColor = Color.LightGray
-                    ), singleLine = true
-                )
+                        },
+                        modifier = Modifier.size(dimens.sizeIconGreat)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_send_24),
+                            contentDescription = "Send",
+                            tint = Color(0xFF8B5CF6)
+                        )
+                    }
+                }
             }
 
             if (showDialog && selectedMessage != null) {
@@ -528,10 +813,13 @@ fun UserDetailScreen(
             }
             if (isImageZoomed && selectedImageUri != null) {
                 Dialog(onDismissRequest = { isImageZoomed = false }) {
+                    val scale = remember { mutableStateOf(1f) }
+                    val offsetX = remember { mutableStateOf(0f) }
+                    val offsetY = remember { mutableStateOf(0f) }
                     Box(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.Black)
+                            .wrapContentSize()
+                            .background(Color.Transparent)
                             .clickable {
                                 isImageZoomed = false
                             },
@@ -541,7 +829,21 @@ fun UserDetailScreen(
                             painter = rememberAsyncImagePainter(model = selectedImageUri),
                             contentDescription = "Zoomed Image",
                             contentScale = ContentScale.Fit,
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .graphicsLayer(
+                                    scaleX = maxOf(.5f, minOf(3f, scale.value)),
+                                    scaleY = maxOf(.5f, minOf(3f, scale.value)),
+                                    translationX = offsetX.value,
+                                    translationY = offsetY.value
+                                )
+                                .pointerInput(Unit) {
+                                    detectTransformGestures { centroid, pan, zoom, _ ->
+                                        scale.value *= zoom
+                                        offsetX.value += pan.x
+                                        offsetY.value += pan.y
+                                    }
+                                }
                         )
                     }
                 }
@@ -549,7 +851,9 @@ fun UserDetailScreen(
             if (isLoading) {
                 Box(
                     contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize().background(Color.White.copy(alpha = 0.7f))
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Transparent.copy(alpha = 0.7f))
                 ) {
                     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.animationloading))
                     LottieAnimation(
