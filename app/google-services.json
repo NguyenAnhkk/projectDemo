@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "697800429635",
+    "firebase_url": "https://projectdemo-def7a-default-rtdb.asia-southeast1.firebasedatabase.app",
     "project_id": "projectdemo-def7a",
     "storage_bucket": "projectdemo-def7a.appspot.com"
   },
@@ -14,11 +15,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "697800429635-k5ql9196bh4i8tnq5d9e1vhfgu1ckgj6.apps.googleusercontent.com",
+          "client_id": "697800429635-fd5jss3n1kdjl0ddjudj2at7sb63ibu1.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.projectdemo",
-            "certificate_hash": "c9d40f4bbcf857199c78ec73ea176217efbe506e"
+            "certificate_hash": "122dc89e4eea936bcaf85d6ee435e7bc3828ef94"
           }
         },
         {

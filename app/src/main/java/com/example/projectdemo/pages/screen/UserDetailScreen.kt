@@ -110,6 +110,15 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.launch
 import com.google.firebase.database.FirebaseDatabase
 
+data class CallModel(
+    val callerId: String? = null,
+    val receiverId: String? = null,
+    val status: String? = null,
+    val channelName: String? = null,
+    val type: String? = null,
+    val timestamp: Long? = null
+)
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "SimpleDateFormat")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
@@ -177,7 +186,59 @@ fun UserDetailScreen(
     }
     val keyboardController = LocalSoftwareKeyboardController.current
     val sendSoundId = remember { soundPool.load(context, R.raw.buttonsound, 1) }
+    var showIncomingCallDialog by remember { mutableStateOf(false) }
+    var incomingCallChannel by remember { mutableStateOf<String?>(null) }
+    var callerId by remember { mutableStateOf<String?>(null) }
+    var shouldStartCall by remember { mutableStateOf(false) }
 
+    LaunchedEffect(currentUserId, userId) {
+        if (currentUserId != null) {
+            val channelName = "$userId-$currentUserId" // callerId-receiverId
+            val callRef = FirebaseDatabase.getInstance().getReference("calls").child(channelName)
+            callRef.addValueEventListener(object : com.google.firebase.database.ValueEventListener {
+                override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
+                    val call = snapshot.getValue(CallModel::class.java)
+                    Log.d("VideoCall", "[Listen] onDataChange: $call, myUserId: $currentUserId")
+                    if (call != null && call.receiverId == currentUserId && call.status == "ringing") {
+                        showIncomingCallDialog = true
+                        incomingCallChannel = channelName
+                        callerId = call.callerId
+                    }
+                }
+                override fun onCancelled(error: com.google.firebase.database.DatabaseError) {
+                    Log.e("VideoCall", "[Listen] Firebase error: $error")
+                }
+            })
+        }
+    }
+    if (showIncomingCallDialog && incomingCallChannel != null && callerId != null) {
+        AlertDialog(
+            onDismissRequest = { showIncomingCallDialog = false },
+            title = { AppText("Cuộc gọi đến") },
+            text = { AppText("Người dùng $callerId đang gọi cho bạn") },
+            confirmButton = {
+               Button(onClick = {
+                    // Đồng ý: chuyển sang màn hình VideoCall với isIncomingCall=false
+                    navController.navigate("video_call/$incomingCallChannel/$currentUserId/$userId?isIncomingCall=true")
+                    showIncomingCallDialog = false
+                }) {
+                    AppText("Đồng ý")
+                }
+            },
+            dismissButton = {
+                Button(onClick = {
+                    // Từ chối: cập nhật status = rejected
+                    FirebaseDatabase.getInstance().getReference("calls")
+                        .child(incomingCallChannel!!)
+                        .child("status")
+                        .setValue("rejected")
+                    showIncomingCallDialog = false
+                }) {
+                 Text("Từ chối")
+                }
+            }
+        )
+    }
     LaunchedEffect(userId) {
         firestore.collection("profile").document(userId).get().addOnSuccessListener { document ->
             userName.value = document.getString("userName") ?: "N/A"
@@ -394,8 +455,8 @@ fun UserDetailScreen(
                                             val dayOfWeek = java.text.SimpleDateFormat("EEEE", java.util.Locale("vi")).format(messageTime)
                                             "$dayOfWeek lúc ${java.text.SimpleDateFormat("HH:mm").format(messageTime)}"
                                         }
-                                        diffInDays < 365 -> java.text.SimpleDateFormat("dd/MM lúc HH:mm").format(messageTime)
-                                        else -> java.text.SimpleDateFormat("dd/MM/yyyy lúc HH:mm").format(messageTime)
+                                        diffInDays < 365 -> java.text.SimpleDateFormat("dd/MM").format(messageTime) + " lúc " + java.text.SimpleDateFormat("HH:mm").format(messageTime)
+                                        else -> java.text.SimpleDateFormat("dd/MM/yyyy").format(messageTime) + " lúc " + java.text.SimpleDateFormat("HH:mm").format(messageTime)
                                     }
 
                                     Text(
@@ -549,8 +610,8 @@ fun UserDetailScreen(
                                                     val dayOfWeek = java.text.SimpleDateFormat("EEEE", java.util.Locale("vi")).format(messageTime)
                                                     "$dayOfWeek lúc ${java.text.SimpleDateFormat("HH:mm").format(messageTime)}"
                                                 }
-                                                diffInDays < 365 -> java.text.SimpleDateFormat("dd/MM lúc HH:mm").format(messageTime)
-                                                else -> java.text.SimpleDateFormat("dd/MM/yyyy lúc HH:mm").format(messageTime)
+                                                diffInDays < 365 -> java.text.SimpleDateFormat("dd/MM").format(messageTime) + " lúc " + java.text.SimpleDateFormat("HH:mm").format(messageTime)
+                                                else -> java.text.SimpleDateFormat("dd/MM/yyyy").format(messageTime) + " lúc " + java.text.SimpleDateFormat("HH:mm").format(messageTime)
                                             }
 
                                             Row(
@@ -616,7 +677,8 @@ fun UserDetailScreen(
                                 )
                             }
                             IconButton(
-                                onClick = { 
+                                onClick = {
+                                    Log.d("VideoCall", "Call button clicked")
                                     // Tạo channel name từ ID của 2 người dùng
                                     val channelName = "$currentUserId-$userId"
                                     // Lưu thông tin cuộc gọi vào Firebase
@@ -628,13 +690,16 @@ fun UserDetailScreen(
                                         "receiverId" to userId,
                                         "channelName" to channelName
                                     )
-                                    
                                     FirebaseDatabase.getInstance().getReference("calls")
-                                        .child("$currentUserId-$userId")
+                                        .child(channelName)
                                         .setValue(callData)
                                         .addOnSuccessListener {
+                                            Log.d("VideoCall", "Call room created successfully: $channelName")
                                             // Chuyển đến màn hình video call
-                                            navController.navigate("video_call/$channelName")
+                                            navController.navigate("video_call/$channelName/$currentUserId/$userId")
+                                        }
+                                        .addOnFailureListener { e ->
+                                            Log.e("VideoCall", "Failed to create call room: $channelName", e)
                                         }
                                 },
                                 modifier = Modifier.size(dimens.sizeImage)

@@ -97,4 +97,5 @@ dependencies {
     implementation("com.google.accompanist:accompanist-systemuicontroller:0.31.1-alpha")
     implementation ("com.squareup.okhttp3:okhttp:4.9.3")
     implementation ("io.agora.rtc:full-sdk:4.2.1")
+    implementation("com.github.ZEGOCLOUD:zego_uikit_prebuilt_call_android:+")
 }

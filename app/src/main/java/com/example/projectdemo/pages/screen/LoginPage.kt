@@ -238,11 +238,11 @@ fun LoginPage(
                             OutlinedTextField(
                                 value = email,
                                 onValueChange = { email = it },
-                        label = { AppText(text = "Tài khoản" , color = Color.Gray) },
+                        label = { AppText(text = "Tài khoản" , color = Color(0xFF1f1f1f)) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             unfocusedBorderColor = Color.Gray,
-                            focusedBorderColor = Color.Gray
+                            focusedBorderColor = Color(0xFFd14597),
                         ),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
 
@@ -252,11 +252,11 @@ fun LoginPage(
                             OutlinedTextField(
                                 value = password,
                                 onValueChange = { password = it },
-                        label = { AppText(text = "Mật khẩu" , color = Color.Gray) },
+                        label = { AppText(text = "Mật khẩu" , color =  Color(0xFF1f1f1f)) },
                             modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             unfocusedBorderColor = Color.Gray,
-                            focusedBorderColor = Color.Gray
+                            focusedBorderColor = Color(0xFFd14597),
                         ),
                         visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {

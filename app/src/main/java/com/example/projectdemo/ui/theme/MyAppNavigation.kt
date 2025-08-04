@@ -58,11 +58,15 @@ fun MyAppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel)
 
             CourseDetailsActivity(navController = navController, currentLocation = currentLocation)
         }
-        composable("video_call/{channelName}") { backStackEntry ->
+        composable("video_call/{channelName}/{userId}/{receiverId}") { backStackEntry ->
             val channelName = backStackEntry.arguments?.getString("channelName") ?: ""
+            val userId = backStackEntry.arguments?.getString("userId") ?: ""
+            val receiverId = backStackEntry.arguments?.getString("receiverId") ?: ""
             VideoCallScreen(
                 navController = navController,
-                channelName = channelName
+                channelName = channelName,
+                userId = userId,
+                receiverId = receiverId
             )
         }
         composable("update_data/{name}/{age}/{address}", arguments = listOf(
