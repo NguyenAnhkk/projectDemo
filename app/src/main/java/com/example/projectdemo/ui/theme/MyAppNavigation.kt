@@ -1,29 +1,25 @@
 package com.example.projectdemo.ui.theme
 
-import android.content.Context
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
-import com.example.projectdemo.pages.screen.HomePage
-import com.example.projectdemo.pages.screen.LoginPage
-import com.example.projectdemo.pages.screen.SignupPage
+import com.example.projectdemo.feature.map.HomePage
+import com.example.projectdemo.feature.sign_in.LoginPage
+import com.example.projectdemo.feature.sign_up.SignupPage
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.projectdemo.pages.forgotpassword.ForgotPasswordScreen
-import com.example.projectdemo.pages.forgotpassword.PasswordResetViewModel
-import com.example.projectdemo.pages.screen.ChangePasswordScreen
-import com.example.projectdemo.pages.screen.Profile
-import com.example.projectdemo.pages.screen.UserDetailScreen
-import com.example.projectdemo.pages.screen.MatchesScreen
-import com.example.projectdemo.pages.screen.VideoCallScreen
-import com.example.projectdemo.viewdata.CourseDetailsActivity
-import com.example.projectdemo.viewdata.UpdateDataScreen
+import com.example.projectdemo.feature.forgotpassword.ForgotPasswordScreen
+import com.example.projectdemo.feature.forgotpassword.PasswordResetViewModel
+import com.example.projectdemo.feature.ChangePasswordScreen
+import com.example.projectdemo.feature.profile.Profile
+import com.example.projectdemo.feature.profile.UserDetailScreen
+import com.example.projectdemo.feature.matches.MatchesScreen
+import com.example.projectdemo.feature.home.VideoCallScreen
+import com.example.projectdemo.feature.viewmodel.AuthViewModel
+import com.example.projectdemo.feature.course.CourseDetailsActivity
+import com.example.projectdemo.feature.profile.UpdateDataScreen
 import com.google.android.gms.maps.model.LatLng
 
 @Composable
