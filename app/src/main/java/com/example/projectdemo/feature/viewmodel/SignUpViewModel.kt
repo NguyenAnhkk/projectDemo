@@ -11,11 +11,25 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+sealed class AuthState {
+    object Loading : AuthState()
+    object Unauthenticated : AuthState()
+    object LoggedIn : AuthState()
+    data class Authenticated(
+        val userId: String,
+        val userName: String,
+        val dateOfBirth: String
+    ) : AuthState()
+    data class Error(val message: String) : AuthState()
+    data class AccountCreated(val message: String) : AuthState()   // <-- để truyền message khi signup thành công
+}
+
 
 class AuthViewModel : ViewModel() {
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val _authState = MutableLiveData<AuthState>()
     val authState: LiveData<AuthState> = _authState
+
     private val firebaseAuth = FirebaseAuth.getInstance()
 
 
@@ -50,15 +64,23 @@ class AuthViewModel : ViewModel() {
 
     fun login(email: String, password: String) {
         if (email.isEmpty() || password.isEmpty()) {
-            _authState.value = AuthState.Error("Email or password can't be empty")
+            _authState.value = AuthState.Error("Email hoặc mật khẩu không được để trống")
             return
         }
         _authState.value = AuthState.Loading
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    val userId = task.result?.user?.uid
-                    if (userId != null) {
+                    val firebaseUser = task.result?.user
+                    if (firebaseUser != null) {
+                        if (!firebaseUser.isEmailVerified) {
+                            auth.signOut()
+                            _authState.value =
+                                AuthState.Error("Tài khoản chưa được xác thực. Vui lòng kiểm tra email.")
+                            return@addOnCompleteListener
+                        }
+
+                        val userId = firebaseUser.uid
                         Firebase.firestore.collection("profile").document(userId).get()
                             .addOnSuccessListener { document ->
                                 if (document.exists()) {
@@ -68,22 +90,23 @@ class AuthViewModel : ViewModel() {
                                         AuthState.Authenticated(userId, userName, dateOfBirth)
                                 } else {
                                     _authState.value =
-                                        AuthState.Error("Couldn't find user data")
+                                        AuthState.Error("Không tìm thấy dữ liệu người dùng")
                                 }
                             }
                             .addOnFailureListener { e ->
                                 _authState.value = AuthState.Error(
-                                    e.message ?: "Error while fetching user data"
+                                    e.message ?: "Lỗi khi lấy dữ liệu người dùng"
                                 )
                             }
                     } else {
-                        _authState.value = AuthState.Error("User ID is null")
+                        _authState.value = AuthState.Error("User null sau khi đăng nhập")
                     }
                 } else {
-                    _authState.value = AuthState.Error(task.exception?.message ?: "Login failed")
+                    _authState.value = AuthState.Error(task.exception?.message ?: "Đăng nhập thất bại")
                 }
             }
     }
+
 
     fun signup(account: String, password: String, userName: String, dateOfBirth: String) {
         Firebase.auth.fetchSignInMethodsForEmail(account)
@@ -95,46 +118,61 @@ class AuthViewModel : ViewModel() {
                             .addOnCompleteListener { createTask ->
                                 if (createTask.isSuccessful) {
                                     val userId = createTask.result?.user?.uid
-                                    if (userId != null) {
-                                        val user = hashMapOf(
-                                            "userName" to userName,
-                                            "dateOfBirth" to dateOfBirth
-                                        )
-                                        Firebase.firestore.collection("profile").document(userId)
-                                            .set(user)
-                                            .addOnSuccessListener {
-                                                _authState.postValue(AuthState.AccountCreated)
-                                            }
-                                            .addOnFailureListener { exception ->
-                                                _authState.postValue(
-                                                    AuthState.Error(
-                                                        exception.message
-                                                            ?: "Error while saving user data"
+                                    val firebaseUser = createTask.result?.user
+                                    if (userId != null && firebaseUser != null) {
+
+                                        // Gửi email xác thực
+                                        firebaseUser.sendEmailVerification()
+                                            .addOnCompleteListener { verifyTask ->
+                                                if (verifyTask.isSuccessful) {
+                                                    val user = hashMapOf(
+                                                        "userName" to userName,
+                                                        "dateOfBirth" to dateOfBirth
                                                     )
-                                                )
+                                                    Firebase.firestore.collection("profile")
+                                                        .document(userId)
+                                                        .set(user)
+                                                        .addOnSuccessListener {
+                                                            _authState.postValue(
+                                                                AuthState.AccountCreated("Tạo tài khoản thành công! Vui lòng kiểm tra email để xác thực.")
+                                                            )
+                                                        }
+                                                        .addOnFailureListener { exception ->
+                                                            _authState.postValue(
+                                                                AuthState.Error(
+                                                                    exception.message ?: "Lỗi khi lưu dữ liệu người dùng"
+                                                                )
+                                                            )
+                                                        }
+                                                } else {
+                                                    _authState.postValue(
+                                                        AuthState.Error("Không gửi được email xác thực: ${verifyTask.exception?.message}")
+                                                    )
+                                                }
                                             }
+
+                                    } else {
+                                        _authState.postValue(AuthState.Error("Không lấy được userId"))
                                     }
                                 } else {
                                     _authState.postValue(
                                         AuthState.Error(
-                                            createTask.exception?.message
-                                                ?: "Error while creating user"
+                                            createTask.exception?.message ?: "Lỗi khi tạo user"
                                         )
                                     )
                                 }
                             }
                     } else {
-                        _authState.postValue(AuthState.Error("Account already exists"))
+                        _authState.postValue(AuthState.Error("Tài khoản đã tồn tại"))
                     }
                 } else {
                     _authState.postValue(
-                        AuthState.Error(
-                            task.exception?.message ?: "Error checking account"
-                        )
+                        AuthState.Error(task.exception?.message ?: "Lỗi khi kiểm tra tài khoản")
                     )
                 }
             }
     }
+
 
 
     fun signout(navController: NavController, context: Context) {
@@ -151,13 +189,4 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-}
-
-sealed class AuthState {
-    object Loading : AuthState()
-    object Unauthenticated : AuthState()
-    object LoggedIn : AuthState()
-    data class Authenticated(val userId: String, val userName: String, val dateOfBirth: String) : AuthState()
-    data class Error(val message: String) : AuthState()
-    object AccountCreated : AuthState()
 }

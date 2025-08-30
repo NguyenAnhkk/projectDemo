@@ -102,6 +102,7 @@ fun LoginPage(
                 }
             }
     }
+
     val facebookCallback = remember {
         object : FacebookCallback<LoginResult> {
             override fun onSuccess(loginResult: LoginResult) {
@@ -133,7 +134,8 @@ fun LoginPage(
     var user by remember {
         mutableStateOf(Firebase.auth.currentUser)
     }
-    val launcher = rememberFirebaseAuthLauncher(onAuthComplete = { result -> user = result.user },
+    val launcher = rememberFirebaseAuthLauncher(
+        onAuthComplete = { result -> user = result.user },
         onAuthError = { user = null }
     )
     val token = stringResource(id = R.string.client_id)
@@ -169,68 +171,45 @@ fun LoginPage(
         isPaddingNavigation = true,
         modifier = Modifier.fillMaxSize()
     ) {
-            AppColumn(
-                    modifier = Modifier
+        AppColumn(
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 24.dp)
         ) {
-
-//            Box(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .weight(1f)
-//            ) {
-//                AppColumn(
-//                    modifier = Modifier.fillMaxSize(),
-//                    verticalArrangement = Arrangement.Center
-//                ) {
-//                    AppTextBold(
-//                        text = "Chào mừng bạn đến với Bave!",
-//                        fontSize = 28.sp,
-//                        modifier = Modifier.padding(bottom = 8.dp),
-//                    )
-//                    AppText(
-//                        text = "Đăng nhập để tiếp tục",
-//                        fontSize = 16.sp,
-//                        color = Color.Gray,
-//                        modifier = Modifier.padding(bottom = 32.dp)
-//                    )
-//                }
-//            }
-
-
-                AppBox(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                ) {
+            AppBox(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
                 AppColumn(
-                            modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
+                ) {
 
-                            OutlinedTextField(
-                                value = email,
-                                onValueChange = { email = it },
-                        label = { AppText(text = "Tài khoản" , color = Color(0xFF1f1f1f)) },
+                    OutlinedTextField(
+                        value = email,
+                        onValueChange = { email = it },
+                        label = { AppText(text = "Tài khoản", color = Color(0xFF1f1f1f)) },
                         modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             unfocusedBorderColor = Color.Gray,
                             focusedBorderColor = Color(0xFFd14597),
+                            cursorColor = Color(0xFFd14597)
                         ),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
 
-                    )
+                        )
 
                     // Password Field
-                            OutlinedTextField(
-                                value = password,
-                                onValueChange = { password = it },
-                        label = { AppText(text = "Mật khẩu" , color =  Color(0xFF1f1f1f)) },
-                            modifier = Modifier.fillMaxWidth(),
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { AppText(text = "Mật khẩu", color = Color(0xFF1f1f1f)) },
+                        modifier = Modifier.fillMaxWidth(),
                         colors = TextFieldDefaults.outlinedTextFieldColors(
                             unfocusedBorderColor = Color.Gray,
                             focusedBorderColor = Color(0xFFd14597),
+                            cursorColor = Color(0xFFd14597)
                         ),
                         visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
@@ -273,10 +252,10 @@ fun LoginPage(
                     }
 
                     DividerWithText()
-                            Button(
-                        onClick = { navController.navigate("signup")  },
+                    Button(
+                        onClick = { navController.navigate("signup") },
                         shape = RoundedCornerShape(8.dp),
-                                modifier = Modifier
+                        modifier = Modifier
                             .fillMaxWidth()
                             .height(50.dp),
                         colors = ButtonDefaults.buttonColors(
@@ -288,10 +267,10 @@ fun LoginPage(
                         AppTextBold(
                             text = "Đăng ký",
                         )
-                        }
                     }
                 }
             }
+        }
     }
 
 }

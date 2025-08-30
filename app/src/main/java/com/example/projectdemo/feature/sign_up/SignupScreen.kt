@@ -77,6 +77,10 @@ fun SignupPage(
     val context = LocalContext.current
     val imeState = rememberImeState()
     val scrollState = rememberScrollState()
+    fun isValidPassword(password: String): Boolean {
+        val passwordPattern = Regex("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#\$%^&+=!]).{8,}\$")
+        return passwordPattern.matches(password)
+    }
 
     val passwordIcon = if (passwordVisibility) {
         painterResource(id = R.drawable.baseline_remove_red_eye_24)
@@ -167,7 +171,8 @@ fun SignupPage(
                         focusedBorderColor = Color(0xFFd14597),
                         unfocusedBorderColor = Color.Black,
                         focusedLabelColor = Color.Black,
-                        unfocusedLabelColor = Color.Gray
+                        unfocusedLabelColor = Color.Gray,
+                        cursorColor = Color(0xFFd14597)
                     ),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                 )
@@ -183,7 +188,8 @@ fun SignupPage(
                         focusedBorderColor = Color(0xFFd14597),
                         unfocusedBorderColor = Color.Black,
                         focusedLabelColor = Color.Black,
-                        unfocusedLabelColor = Color.Gray
+                        unfocusedLabelColor = Color.Gray,
+                        cursorColor = Color(0xFFd14597)
                     ),
                     trailingIcon = {
                         IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
@@ -206,7 +212,8 @@ fun SignupPage(
                         focusedBorderColor = Color(0xFFd14597),
                         unfocusedBorderColor = Color.Black,
                         focusedLabelColor = Color.Black,
-                        unfocusedLabelColor = Color.Gray
+                        unfocusedLabelColor = Color.Gray,
+                        cursorColor = Color(0xFFd14597)
                     )
                 )
 
@@ -222,7 +229,9 @@ fun SignupPage(
                             modifier = Modifier.clickable { calendarState.show() }
                         )
                     },
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 24.dp)
                 )
 
                 Button(
@@ -241,6 +250,12 @@ fun SignupPage(
                                 context,
                                 "Bạn phải trên 16 tuổi để đăng ký tài khoản.",
                                 Toast.LENGTH_SHORT
+                            ).show()
+                        } else if (!isValidPassword(password)) {
+                            Toast.makeText(
+                                context,
+                                "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.",
+                                Toast.LENGTH_LONG
                             ).show()
                         } else {
                             authViewModel.signup(account, password, userName, dateOfBirth)

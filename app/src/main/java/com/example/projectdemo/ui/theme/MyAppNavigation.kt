@@ -20,12 +20,16 @@ import com.example.projectdemo.feature.home.VideoCallScreen
 import com.example.projectdemo.feature.viewmodel.AuthViewModel
 import com.example.projectdemo.feature.course.CourseDetailsActivity
 import com.example.projectdemo.feature.profile.UpdateDataScreen
+import com.example.projectdemo.feature.sign_in.SplashScreen
 import com.google.android.gms.maps.model.LatLng
 
 @Composable
 fun MyAppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "login", builder = {
+//        composable("splash") {
+//            SplashScreen(navController)
+//        }
         composable("login") {
             LoginPage(navController, authViewModel)
         }

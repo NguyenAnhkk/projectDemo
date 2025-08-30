@@ -89,7 +89,8 @@ fun ForgotPasswordScreen(viewModel: PasswordResetViewModel, navController: NavHo
                         focusedBorderColor = Color(0xFFd14597),
                         unfocusedBorderColor = Color.Gray,
                         focusedLabelColor = Color.Gray,
-                        unfocusedLabelColor = Color.Black
+                        unfocusedLabelColor = Color.Black,
+                        cursorColor = Color(0xFFd14597)
                     ),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
                 )

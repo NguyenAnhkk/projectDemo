@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.lifecycleScope
 import com.example.projectdemo.lib.MyAppTheme
 import com.example.projectdemo.feature.viewmodel.AuthViewModel
 import com.example.projectdemo.ui.theme.MyAppNavigation
@@ -21,6 +23,7 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.MapsInitializer
 import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -28,34 +31,36 @@ class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
-        MapsInitializer.initialize(this, MapsInitializer.Renderer.LATEST) {}
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
-        val sharedPreferences = getSharedPreferences("my_prefs", Context.MODE_PRIVATE)
-        val isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
-        FirebaseMessaging.getInstance().token.addOnCompleteListener(OnCompleteListener { task ->
-            if (!task.isSuccessful) {
-                Log.w("FCM", "Fetching FCM registration token failed", task.exception)
-                return@OnCompleteListener
-            }
-            val token = task.result
-            Log.d("FCM", token.toString())
-            sharedPreferences.edit().putString("fcm_token", token).apply()
-        })
+
         setContent {
             ProjectDemoTheme {
                 Scaffold { innerPadding ->
                     Box(modifier = Modifier.padding(innerPadding)) {
-                        MyAppTheme() {
-                            MyAppNavigation(
-                                authViewModel = authViewModel,
-                            )
+                        MyAppTheme {
+                            MyAppNavigation(authViewModel = authViewModel)
                         }
                     }
                 }
             }
         }
+
+        lifecycleScope.launch {
+            MapsInitializer.initialize(this@MainActivity, MapsInitializer.Renderer.LATEST) {}
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this@MainActivity)
+
+            val sharedPreferences = getSharedPreferences("my_prefs", Context.MODE_PRIVATE)
+
+            FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    val token = task.result
+                    Log.d("FCM", token.toString())
+                    sharedPreferences.edit().putString("fcm_token", token).apply()
+                } else {
+                    Log.w("FCM", "Fetching FCM registration token failed", task.exception)
+                }
+            }
+        }
     }
-
-
 }
