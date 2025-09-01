@@ -159,7 +159,7 @@ class MapUtils(private val context: Context) {
         camerapositionState: CameraPositionState,
         context: Context,
         navController: NavController,
-        currentLocation: LatLng,
+        currentLocation: LatLng?,
     ) {
         var nearbyUsersLocations by remember { mutableStateOf(emptyList<LatLng>()) }
         var radiusInMeters by remember { mutableStateOf(5000f) }

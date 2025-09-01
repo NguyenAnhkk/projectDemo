@@ -23,13 +23,16 @@ fun HomePage(
     val user = Firebase.auth.currentUser
     val userPhotoUrl = user?.photoUrl?.toString()
     var currentLocation by remember {
-        mutableStateOf(LatLng(21.0278, 105.8342))
+        mutableStateOf<LatLng?>(null)
     }
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(
-            currentLocation, 15f
-        )
+        position = if (currentLocation != null) {
+            CameraPosition.fromLatLngZoom(currentLocation!!, 15f)
+        } else {
+            CameraPosition.fromLatLngZoom(LatLng(15.0, 108.0), 5f)
+        }
     }
+
     val mapUtils = MapUtils(context)
     Column(
         modifier = Modifier.fillMaxSize(),

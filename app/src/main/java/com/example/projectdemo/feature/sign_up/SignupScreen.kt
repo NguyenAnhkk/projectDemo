@@ -121,6 +121,7 @@ fun SignupPage(
         backgroundColor = MyAppTheme.appColor.background,
         isPaddingNavigation = true,
         modifier = Modifier.fillMaxSize(),
+
     ) {
         AppColumn(
             modifier = Modifier
@@ -134,8 +135,7 @@ fun SignupPage(
 
             AppColumn(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
+                    .fillMaxWidth(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -219,6 +219,13 @@ fun SignupPage(
 
                 OutlinedTextField(
                     value = dateOfBirth,
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        focusedBorderColor = Color(0xFFd14597),
+                        unfocusedBorderColor = Color.Black,
+                        focusedLabelColor = Color.Black,
+                        unfocusedLabelColor = Color.Gray,
+
+                    ),
                     onValueChange = { },
                     label = { AppText(text = "Ngày sinh", color = Color.Gray) },
                     readOnly = true,
