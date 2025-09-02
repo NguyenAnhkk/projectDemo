@@ -57,6 +57,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -154,7 +155,8 @@ fun Profile(
                                 .addOnSuccessListener { messageSnapshot ->
                                     if (!messageSnapshot.isEmpty) {
                                         val lastMessage = messageSnapshot.documents[0]
-                                        like["lastMessageTime"] = lastMessage.getLong("timestamp") ?: 0L
+                                        like["lastMessageTime"] =
+                                            lastMessage.getLong("timestamp") ?: 0L
                                     }
                                 }
                         }
@@ -261,7 +263,8 @@ fun Profile(
                                 contentDescription = "Notifications",
                                 tint = Color.Black
                             )
-                            val unreadCount = notifications.count { !(it["read"] as? Boolean ?: false) }
+                            val unreadCount =
+                                notifications.count { !(it["read"] as? Boolean ?: false) }
                             if (unreadCount > 0) {
                                 Box(
                                     modifier = Modifier
@@ -293,8 +296,12 @@ fun Profile(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceAround
                 ) {
-                    IconButton(onClick = { navController.popBackStack()}) {
-                        Icon(imageVector = Icons.Default.Home, contentDescription = null, tint = Color.Black)
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Default.Home,
+                            contentDescription = null,
+                            tint = Color.Black
+                        )
                     }
                     FloatingActionButton(
                         onClick = { navController.navigate("course/${currentLocation.latitude}/${currentLocation.longitude}") },
@@ -315,10 +322,11 @@ fun Profile(
             }
         },
         content = { paddingValues ->
-            AppScreen (
+            AppScreen(
                 backgroundColor = MyAppTheme.appColor.background,
                 isPaddingNavigation = true,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
                     .padding(paddingValues)
             ) {
                 when {
@@ -343,7 +351,8 @@ fun Profile(
                                             .document(fromUserId)
                                             .get()
                                             .addOnSuccessListener { doc ->
-                                                likedUserName = doc.getString("userName") ?: "Unknown User"
+                                                likedUserName =
+                                                    doc.getString("userName") ?: "Unknown User"
                                             }
                                     }
 
@@ -398,7 +407,10 @@ fun Profile(
                                                         onClick = {
                                                             // Handle agree
                                                             if (currentUserId != null) {
-                                                                handleLike(currentUserId, fromUserId)
+                                                                handleLike(
+                                                                    currentUserId,
+                                                                    fromUserId
+                                                                )
                                                                 // Mark notification as read
                                                                 FirebaseFirestore.getInstance()
                                                                     .collection("users")
@@ -419,7 +431,10 @@ fun Profile(
                                                         onClick = {
                                                             // Handle ignore
                                                             if (currentUserId != null) {
-                                                                handleIgnore(currentUserId, fromUserId)
+                                                                handleIgnore(
+                                                                    currentUserId,
+                                                                    fromUserId
+                                                                )
                                                                 // Mark notification as read
                                                                 FirebaseFirestore.getInstance()
                                                                     .collection("users")
@@ -443,6 +458,7 @@ fun Profile(
                             }
                         }
                     }
+
                     showLikedUsers -> {
                         LazyColumn(
                             modifier = Modifier
@@ -462,7 +478,8 @@ fun Profile(
                                             .document(toUserId)
                                             .get()
                                             .addOnSuccessListener { doc ->
-                                                likedUserName = doc.getString("userName") ?: "Unknown User"
+                                                likedUserName =
+                                                    doc.getString("userName") ?: "Unknown User"
                                             }
 
                                         // Get user image
@@ -475,7 +492,8 @@ fun Profile(
                                             .get()
                                             .addOnSuccessListener { result ->
                                                 if (!result.isEmpty) {
-                                                    likedUserImage = result.documents[0].getString("imageUrl")
+                                                    likedUserImage =
+                                                        result.documents[0].getString("imageUrl")
                                                 }
                                             }
                                     }
@@ -494,11 +512,22 @@ fun Profile(
                                                     }
                                                     navController.navigate("user_detail/$toUserId")
                                                 } catch (e: Exception) {
-                                                    Log.e("Navigation", "Error navigating to chat: ${e.message}")
-                                                    Toast.makeText(context, "Error opening chat", Toast.LENGTH_SHORT).show()
+                                                    Log.e(
+                                                        "Navigation",
+                                                        "Error navigating to chat: ${e.message}"
+                                                    )
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Error opening chat",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
                                                 }
                                             } else {
-                                                Toast.makeText(context, "Invalid user", Toast.LENGTH_SHORT).show()
+                                                Toast.makeText(
+                                                    context,
+                                                    "Invalid user",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
                                             }
                                         },
                                     colors = CardDefaults.cardColors(
@@ -542,6 +571,7 @@ fun Profile(
                             }
                         }
                     }
+
                     else -> {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -589,26 +619,64 @@ fun Profile(
                         Row(
                             modifier = Modifier
                                 .fillMaxSize()
-                                , horizontalArrangement = Arrangement.Center
+
                         ) {
                             when (authState) {
                                 is AuthState.Authenticated -> {
-                                    Text(
-                                        text = userName.value,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 20.sp,
-                                        color = Color.Black
-                                    )
-                                    Spacer(modifier = Modifier.width(16.dp))
-                                    Text(text = "Tuổi : ${age.value}", color = Color.Black)
+                                    Box(modifier = Modifier.fillMaxSize()) {
+                                        Row(
+                                            modifier = Modifier.fillMaxSize().background(Color.Red),
+                                            horizontalArrangement = Arrangement.Center
+                                        ) {
+                                            Text(
+                                                text = userName.value,
+                                                fontWeight = FontWeight.Bold,
+                                                fontSize = 20.sp,
+                                                color = Color.Black
+                                            )
+                                        }
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable {
+                                                    val shareText = "Xin chào, tôi là ${userName.value}!"
+
+                                                    val sendIntent = Intent().apply {
+                                                        action = Intent.ACTION_SEND
+                                                        putExtra(Intent.EXTRA_TEXT, shareText)
+                                                        type = "text/plain"
+                                                    }
+
+                                                    val shareIntent = Intent.createChooser(sendIntent, "Chia sẻ qua")
+                                                    context.startActivity(shareIntent)
+                                                },
+                                            verticalArrangement = Arrangement.Center
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.baseline_share_24),
+                                                contentDescription = "share",
+                                                modifier = Modifier.size(24.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(text = "Share information")
+                                        }
+                                    }
+
+
                                 }
 
                                 is AuthState.Error -> {
-                                    Text(text = (authState as AuthState.Error).message, color = Color.Red)
+                                    Text(
+                                        text = (authState as AuthState.Error).message,
+                                        color = Color.Red
+                                    )
                                 }
 
                                 else -> {
-                                    Text(text = "Đang tải dữ liệu người dùng...", color = Color.Black)
+                                    Text(
+                                        text = "Đang tải dữ liệu người dùng...",
+                                        color = Color.Black
+                                    )
                                 }
                             }
                         }

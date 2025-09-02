@@ -362,12 +362,11 @@ fun CardContent(
                 painter = rememberAsyncImagePainter(
                     model = imageUrl ?: R.drawable.defaultimg
                 ),
-                contentScale = ContentScale.Crop,
+                contentScale = ContentScale.Fit,
                 contentDescription = "User Image",
                 modifier = Modifier.fillMaxSize()
             )
-            
-            // Favorites and Remove buttons
+
             Row(
                 modifier = Modifier
                     .align(Alignment.TopEnd)

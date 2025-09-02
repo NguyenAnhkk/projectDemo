@@ -69,7 +69,7 @@ fun UpdateDataScreen(name: String, age: String, address: String) {
         Button(
             onClick = {
                 if (updatedName.isEmpty() || updatedAge.isEmpty() || updatedAddress.isEmpty()) {
-                    Toast.makeText(context, "Namem , Age , Address not null", Toast.LENGTH_SHORT)
+                    Toast.makeText(context, "Name , Age , Address not null", Toast.LENGTH_SHORT)
                         .show()
                 } else {
                     updateDataToFirebase(
