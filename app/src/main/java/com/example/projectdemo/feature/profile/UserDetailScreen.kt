@@ -312,6 +312,25 @@ fun UserDetailScreen(
                                 color = Color(0xFF4CAF50)
                             )
                         }
+                        
+                        Spacer(modifier = Modifier.weight(1f))
+                        
+                        // Video call button
+                        IconButton(
+                            onClick = {
+                                if (currentUserId != null) {
+                                    val channelName = "video_call_${currentUserId}_$userId"
+                                    navController.navigate("video_call/$channelName/$currentUserId/$userId")
+                                }
+                            }
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_videocam_24),
+                                contentDescription = "Video Call",
+                                tint = Color(0xFF0084FF),
+                                modifier = Modifier.size(28.dp)
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.smallTopAppBarColors(
