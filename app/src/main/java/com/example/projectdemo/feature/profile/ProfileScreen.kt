@@ -11,12 +11,16 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,25 +31,39 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,12 +74,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -85,7 +106,7 @@ import java.util.UUID
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 @Composable
 fun Profile(
     modifier: Modifier = Modifier,
@@ -105,7 +126,8 @@ fun Profile(
     var showLikedUsers by remember { mutableStateOf(false) }
     var likedUsers by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-
+    val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+    val unreadCount = notifications.count { !(it["read"] as? Boolean ?: false) }
     // Listen for notifications
     LaunchedEffect(currentUserId) {
         if (currentUserId != null) {
@@ -138,11 +160,10 @@ fun Profile(
                     val likedUsersList = snapshot.documents.mapNotNull { doc ->
                         doc.data?.toMutableMap()?.apply {
                             put("id", doc.id)
-                            put("lastMessageTime", 0L) // Initialize with default value
+                            put("lastMessageTime", 0L)
                         }
                     }.toMutableList()
 
-                    // Get the most recent message for each liked user
                     val tasks = likedUsersList.map { like ->
                         val toUserId = like["toUserId"] as? String
                         if (toUserId != null) {
@@ -162,9 +183,8 @@ fun Profile(
                         }
                     }
 
-                    // Update the list after all tasks complete
                     launch {
-                        // Wait for all tasks to complete
+
                         tasks.forEach { task ->
                             try {
                                 Log.e("Profile", "Error waiting for task")
@@ -245,102 +265,172 @@ fun Profile(
         }
     }
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            TopAppBar(
-                title = { Text("Profile") },
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        "Profile",
+                        style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                },
                 actions = {
-                    IconButton(onClick = { navController.navigate("matches") }) {
+                    IconButton(
+                        onClick = { navController.navigate("matches") },
+                        modifier = Modifier.size(48.dp)
+                    ) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_chat_24),
                             contentDescription = "Matches",
-                            tint = Color.Black
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
-                    IconButton(onClick = { showNotifications = !showNotifications }) {
-                        Box {
+                    IconButton(
+                        onClick = { showNotifications = !showNotifications },
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        BadgedBox(
+                            badge = {
+                                if (unreadCount > 0) {
+                                    Badge(
+                                        containerColor = MaterialTheme.colorScheme.error,
+                                        contentColor = MaterialTheme.colorScheme.onError
+                                    ) {
+                                        Text(
+                                            if (unreadCount > 9) "9+" else unreadCount.toString(),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            fontSize = 10.sp
+                                        )
+                                    }
+                                }
+                            }
+                        ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.baseline_notifications_24),
                                 contentDescription = "Notifications",
-                                tint = Color.Black
+                                tint = if (showNotifications) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                            val unreadCount =
-                                notifications.count { !(it["read"] as? Boolean ?: false) }
-                            if (unreadCount > 0) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(18.dp)
-                                        .background(Color.Red, CircleShape)
-                                        .align(Alignment.TopEnd)
-                                        .padding(2.dp)
-                                ) {
-                                    Text(
-                                        text = if (unreadCount > 9) "9+" else unreadCount.toString(),
-                                        color = Color.White,
-                                        fontSize = 10.sp,
-                                        modifier = Modifier.align(Alignment.Center)
-                                    )
-                                }
-                            }
                         }
                     }
-                }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp),
+                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                ),
+                scrollBehavior = scrollBehavior
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    navController.navigate("course/${currentLocation.latitude}/${currentLocation.longitude}")
+                },
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                elevation = FloatingActionButtonDefaults.elevation(
+                    defaultElevation = 6.dp,
+                    pressedElevation = 12.dp
+                ),
+                modifier = Modifier.size(64.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.baseline_people_outline_24),
+                    contentDescription = "Add",
+                    modifier = Modifier.size(28.dp)
+                )
+            }
         },
         bottomBar = {
             BottomAppBar(
-                modifier.clip(RoundedCornerShape(topEnd = 30.dp, topStart = 30.dp)),
-                containerColor = Color(0xFFdab5f5)
+                modifier = Modifier
+                    .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
+                    .shadow(8.dp, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)),
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface,
+                tonalElevation = 8.dp,
             ) {
                 Row(
-                    modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceAround
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.Default.Home,
-                            contentDescription = null,
-                            tint = Color.Black
-                        )
-                    }
-                    FloatingActionButton(
-                        onClick = { navController.navigate("course/${currentLocation.latitude}/${currentLocation.longitude}") },
-                        containerColor = Color(0xFFeffcc2)
+                    IconButton(
+                        onClick = { navController.popBackStack() },
+                        modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.baseline_people_outline_24),
-                            contentDescription = "add",
+                            imageVector = Icons.Default.Home,
+                            contentDescription = "Home",
+                            tint = MaterialTheme.colorScheme.primary
                         )
                     }
-                    IconButton(onClick = { authViewModel.signout(navController, context) }) {
+
+                    Spacer(Modifier.weight(1f))
+
+                    IconButton(
+                        onClick = { authViewModel.signout(navController, context) },
+                        modifier = Modifier.size(48.dp)
+                    ) {
                         Icon(
                             painter = painterResource(id = R.drawable.baseline_logout_24),
-                            contentDescription = null, tint = Color.Black
+                            contentDescription = "Logout",
+                            tint = MaterialTheme.colorScheme.error
                         )
                     }
                 }
             }
-        },
-        content = { paddingValues ->
-            AppScreen(
-                backgroundColor = MyAppTheme.appColor.background,
-                isPaddingNavigation = true,
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                when {
-                    showNotifications -> {
+        }
+    ) { paddingValues ->
+        AppScreen(
+            backgroundColor = MaterialTheme.colorScheme.background,
+            isPaddingNavigation = true,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .verticalScroll(rememberScrollState())
+        ) {
+            when {
+                showNotifications -> {
+                    if (notifications.isEmpty()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.outline_notifications_off_24),
+                                contentDescription = "No notifications",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(64.dp)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                "No notifications yet",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else {
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .weight(1f)
+                                .weight(1f),
+                            contentPadding = PaddingValues(vertical = 8.dp)
                         ) {
-                            items(notifications) { notification ->
+                            items(notifications, key = { it["id"] as? String ?: it.hashCode().toString() }) { notification ->
                                 val type = notification["type"] as? String
                                 val fromUserId = notification["fromUserId"] as? String
-                                val timestamp = notification["timestamp"] as? Long
                                 val read = notification["read"] as? Boolean ?: false
+                                val notifId = notification["id"] as? String
 
                                 if (type == "like" && fromUserId != null) {
                                     var likedUserName by remember { mutableStateOf("") }
@@ -351,119 +441,84 @@ fun Profile(
                                             .document(fromUserId)
                                             .get()
                                             .addOnSuccessListener { doc ->
-                                                likedUserName =
-                                                    doc.getString("userName") ?: "Unknown User"
+                                                likedUserName = doc.getString("userName") ?: "Unknown User"
                                             }
                                     }
 
-                                    Card(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(8.dp)
-                                            .clickable {
-                                                // Mark notification as read
-                                                if (!read && currentUserId != null) {
-                                                    FirebaseFirestore.getInstance()
-                                                        .collection("users")
-                                                        .document(currentUserId)
-                                                        .collection("notifications")
-                                                        .document(notification["id"] as String)
-                                                        .update("read", true)
+                                    Box(Modifier.animateItemPlacement()) {
+                                        LikeNotificationItem(
+                                            likedUserName = if (likedUserName.isBlank()) "Someone" else likedUserName,
+                                            read = read,
+                                            onAgree = {
+                                                val uid = currentUserId
+                                                if (uid != null) {
+                                                    handleLike(uid, fromUserId)
+                                                    if (notifId != null) {
+                                                        FirebaseFirestore.getInstance()
+                                                            .collection("users").document(uid)
+                                                            .collection("notifications").document(notifId)
+                                                            .update("read", true)
+                                                    }
                                                 }
                                             },
-                                        colors = CardDefaults.cardColors(
-                                            containerColor = if (!read) Color(0xFFE3F2FD) else Color.White
-                                        )
-                                    ) {
-                                        Column(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .padding(16.dp)
-                                        ) {
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Icon(
-                                                    imageVector = Icons.Default.Favorite,
-                                                    contentDescription = null,
-                                                    tint = Color.Red,
-                                                    modifier = Modifier.size(24.dp)
-                                                )
-                                                Spacer(modifier = Modifier.width(8.dp))
-                                                Text(
-                                                    text = "$likedUserName liked your profile",
-                                                    style = MaterialTheme.typography.bodyLarge
-                                                )
-                                            }
-
-                                            if (!read) {
-                                                Spacer(modifier = Modifier.height(8.dp))
-                                                Row(
-                                                    modifier = Modifier.fillMaxWidth(),
-                                                    horizontalArrangement = Arrangement.SpaceEvenly
-                                                ) {
-                                                    Button(
-                                                        onClick = {
-                                                            // Handle agree
-                                                            if (currentUserId != null) {
-                                                                handleLike(
-                                                                    currentUserId,
-                                                                    fromUserId
-                                                                )
-                                                                // Mark notification as read
-                                                                FirebaseFirestore.getInstance()
-                                                                    .collection("users")
-                                                                    .document(currentUserId)
-                                                                    .collection("notifications")
-                                                                    .document(notification["id"] as String)
-                                                                    .update("read", true)
-                                                            }
-                                                        },
-                                                        colors = ButtonDefaults.buttonColors(
-                                                            containerColor = Color(0xFF4CAF50)
-                                                        )
-                                                    ) {
-                                                        Text("Agree")
-                                                    }
-
-                                                    Button(
-                                                        onClick = {
-                                                            // Handle ignore
-                                                            if (currentUserId != null) {
-                                                                handleIgnore(
-                                                                    currentUserId,
-                                                                    fromUserId
-                                                                )
-                                                                // Mark notification as read
-                                                                FirebaseFirestore.getInstance()
-                                                                    .collection("users")
-                                                                    .document(currentUserId)
-                                                                    .collection("notifications")
-                                                                    .document(notification["id"] as String)
-                                                                    .update("read", true)
-                                                            }
-                                                        },
-                                                        colors = ButtonDefaults.buttonColors(
-                                                            containerColor = Color(0xFFF44336)
-                                                        )
-                                                    ) {
-                                                        Text("Ignore")
+                                            onIgnore = {
+                                                val uid = currentUserId
+                                                if (uid != null) {
+                                                    handleIgnore(uid, fromUserId)
+                                                    if (notifId != null) {
+                                                        FirebaseFirestore.getInstance()
+                                                            .collection("users").document(uid)
+                                                            .collection("notifications").document(notifId)
+                                                            .update("read", true)
                                                     }
                                                 }
+                                            },
+                                            onClickMarkRead = {
+                                                val uid = currentUserId
+                                                if (!read && uid != null && notifId != null) {
+                                                    FirebaseFirestore.getInstance()
+                                                        .collection("users").document(uid)
+                                                        .collection("notifications").document(notifId)
+                                                        .update("read", true)
+                                                }
                                             }
-                                        }
+                                        )
                                     }
                                 }
                             }
                         }
                     }
+                }
 
-                    showLikedUsers -> {
+                showLikedUsers -> {
+                    if (likedUsers.isEmpty()) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(32.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.baseline_favorite_24),
+                                contentDescription = "No likes",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(64.dp)
+                            )
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(
+                                "No likes yet",
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    } else {
                         LazyColumn(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .weight(1f)
+                                .weight(1f),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            contentPadding = PaddingValues(16.dp)
                         ) {
                             items(likedUsers) { like ->
                                 var likedUserName by remember { mutableStateOf("") }
@@ -502,14 +557,10 @@ fun Profile(
                                 Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(8.dp)
                                         .clickable {
                                             val toUserId = like["toUserId"] as? String
                                             if (toUserId != null) {
                                                 try {
-                                                    val bundle = Bundle().apply {
-                                                        putString("userId", toUserId)
-                                                    }
                                                     navController.navigate("user_detail/$toUserId")
                                                 } catch (e: Exception) {
                                                     Log.e(
@@ -531,8 +582,10 @@ fun Profile(
                                             }
                                         },
                                     colors = CardDefaults.cardColors(
-                                        containerColor = Color.White
-                                    )
+                                        containerColor = MaterialTheme.colorScheme.surface
+                                    ),
+                                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                                    shape = MaterialTheme.shapes.medium
                                 ) {
                                     Row(
                                         modifier = Modifier
@@ -542,12 +595,16 @@ fun Profile(
                                     ) {
                                         Box(
                                             modifier = Modifier
-                                                .size(50.dp)
+                                                .size(56.dp)
                                                 .clip(CircleShape)
+                                                .background(MaterialTheme.colorScheme.surfaceVariant)
                                         ) {
                                             if (likedUserImage != null) {
                                                 Image(
-                                                    painter = rememberAsyncImagePainter(model = likedUserImage),
+                                                    painter = rememberAsyncImagePainter(
+                                                        model = likedUserImage,
+                                                        error = painterResource(id = R.drawable.defaultimg)
+                                                    ),
                                                     contentDescription = "User Image",
                                                     contentScale = ContentScale.Crop,
                                                     modifier = Modifier.fillMaxSize()
@@ -564,24 +621,46 @@ fun Profile(
                                         Spacer(modifier = Modifier.width(16.dp))
                                         Text(
                                             text = likedUserName,
-                                            style = MaterialTheme.typography.bodyLarge
+                                            style = MaterialTheme.typography.bodyLarge,
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                        Spacer(modifier = Modifier.weight(1f))
+                                        Icon(
+                                            imageVector = Icons.Default.CheckCircle,
+                                            contentDescription = "View profile",
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.size(20.dp)
                                         )
                                     }
                                 }
                             }
                         }
                     }
+                }
 
-                    else -> {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.Center
+                else -> {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        // Profile Image Section
+                        Box(
+                            modifier = Modifier
+                                .size(120.dp)
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(100.dp)
+                                    .size(110.dp)
                                     .clip(CircleShape)
                                     .clickable { pickImage() }
+                                    .border(
+                                        width = 2.dp,
+                                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+                                        shape = CircleShape
+                                    )
+                                    .padding(4.dp)
                             ) {
                                 when {
                                     imageUri != null -> {
@@ -612,79 +691,105 @@ fun Profile(
                                     }
                                 }
                             }
+
+                            // Edit Icon
+                            Box(
+                                modifier = Modifier
+                                    .align(Alignment.BottomEnd)
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.primary)
+                                    .clickable { pickImage() },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_edit_24),
+                                    contentDescription = "Edit profile",
+                                    tint = MaterialTheme.colorScheme.onPrimary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
                         }
 
-                        Spacer(modifier = Modifier.height(5.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-                        Row(
-                            modifier = Modifier
-                                .fillMaxSize()
+                        when (authState) {
+                            is AuthState.Authenticated -> {
+                                // User Name
+                                Text(
+                                    text = userName.value,
+                                    style = MaterialTheme.typography.headlineMedium,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onBackground,
+                                    textAlign = TextAlign.Center
+                                )
 
-                        ) {
-                            when (authState) {
-                                is AuthState.Authenticated -> {
-                                    Box(modifier = Modifier.fillMaxSize()) {
-                                        Row(
-                                            modifier = Modifier.fillMaxSize().background(Color.Red),
-                                            horizontalArrangement = Arrangement.Center
-                                        ) {
-                                            Text(
-                                                text = userName.value,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 20.sp,
-                                                color = Color.Black
-                                            )
+                                Spacer(modifier = Modifier.height(24.dp))
+
+                                // Share Button
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clip(MaterialTheme.shapes.medium)
+                                        .clickable {
+                                            val shareText = "Xin chào, tôi là ${userName.value}!"
+                                            val sendIntent = Intent().apply {
+                                                action = Intent.ACTION_SEND
+                                                putExtra(Intent.EXTRA_TEXT, shareText)
+                                                type = "text/plain"
+                                            }
+                                            val shareIntent = Intent.createChooser(sendIntent, "Chia sẻ qua")
+                                            context.startActivity(shareIntent)
                                         }
-                                        Column(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clickable {
-                                                    val shareText = "Xin chào, tôi là ${userName.value}!"
-
-                                                    val sendIntent = Intent().apply {
-                                                        action = Intent.ACTION_SEND
-                                                        putExtra(Intent.EXTRA_TEXT, shareText)
-                                                        type = "text/plain"
-                                                    }
-
-                                                    val shareIntent = Intent.createChooser(sendIntent, "Chia sẻ qua")
-                                                    context.startActivity(shareIntent)
-                                                },
-                                            verticalArrangement = Arrangement.Center
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(id = R.drawable.baseline_share_24),
-                                                contentDescription = "share",
-                                                modifier = Modifier.size(24.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(8.dp))
-                                            Text(text = "Share information")
-                                        }
-                                    }
-
-
-                                }
-
-                                is AuthState.Error -> {
+                                        .background(MaterialTheme.colorScheme.primaryContainer)
+                                        .padding(16.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.Center
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.baseline_share_24),
+                                        contentDescription = "share",
+                                        tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
                                     Text(
-                                        text = (authState as AuthState.Error).message,
-                                        color = Color.Red
+                                        text = "Chia sẻ thông tin",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        fontWeight = FontWeight.Medium
                                     )
                                 }
+                            }
 
-                                else -> {
-                                    Text(
-                                        text = "Đang tải dữ liệu người dùng...",
-                                        color = Color.Black
-                                    )
-                                }
+                            is AuthState.Error -> {
+                                Text(
+                                    text = (authState as AuthState.Error).message,
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+
+                            else -> {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(36.dp),
+                                    color = MaterialTheme.colorScheme.primary,
+                                    strokeWidth = 3.dp
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "Đang tải dữ liệu người dùng...",
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
                             }
                         }
                     }
                 }
             }
         }
-    )
+    }
 }
 
 fun calculateAge(dateOfBirth: LocalDate): Int {
@@ -764,6 +869,60 @@ fun loadImageUrlFromFirestore(onSuccess: (String?) -> Unit, onFailure: (Exceptio
             .addOnFailureListener { exception ->
                 onFailure(exception)
             }
+    }
+}
+
+@Composable
+fun LikeNotificationItem(
+    likedUserName: String,
+    read: Boolean,
+    onAgree: () -> Unit,
+    onIgnore: () -> Unit,
+    onClickMarkRead: () -> Unit
+) {
+    ElevatedCard(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 6.dp)
+            .animateContentSize()
+            .clickable { if (!read) onClickMarkRead() },
+        colors = CardDefaults.elevatedCardColors(
+            containerColor = if (!read)
+                MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.35f)
+            else
+                MaterialTheme.colorScheme.surface
+        ),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = if (!read) 4.dp else 1.dp),
+        shape = RoundedCornerShape(16.dp)
+    ) {
+        ListItem(
+            leadingContent = {
+                Icon(
+                    imageVector = Icons.Default.Favorite,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.error
+                )
+            },
+            headlineContent = {
+                Text(
+                    "$likedUserName liked your profile",
+                    style = MaterialTheme.typography.titleMedium
+                )
+            },
+            supportingContent = {
+                if (!read) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        FilledTonalButton(onClick = onAgree) { Text("Agree") }
+                        OutlinedButton(onClick = onIgnore) { Text("Ignore") }
+                    }
+                } else {
+                    Text("Already handled", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        )
     }
 }
 

@@ -117,9 +117,11 @@ fun ChangePasswordScreen(navController: NavHostController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = Color(0xFF405DA3),
-                        unfocusedBorderColor = Color.Gray,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color(0xFF405DA3),
+                        unfocusedIndicatorColor = Color.Gray,
                         focusedLabelColor = Color(0xFF405DA3),
                         unfocusedLabelColor = Color.Gray
                     ),
@@ -141,9 +143,11 @@ fun ChangePasswordScreen(navController: NavHostController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = Color(0xFF405DA3),
-                        unfocusedBorderColor = Color.Gray,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color(0xFF405DA3),
+                        unfocusedIndicatorColor = Color.Gray,
                         focusedLabelColor = Color(0xFF405DA3),
                         unfocusedLabelColor = Color.Gray
                     ),
@@ -157,7 +161,6 @@ fun ChangePasswordScreen(navController: NavHostController) {
                         }
                     }
                 )
-
                 OutlinedTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
@@ -165,9 +168,11 @@ fun ChangePasswordScreen(navController: NavHostController) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 24.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = Color(0xFF405DA3),
-                        unfocusedBorderColor = Color.Gray,
+                    colors = TextFieldDefaults.colors(
+                        focusedContainerColor = Color.Transparent,
+                        unfocusedContainerColor = Color.Transparent,
+                        focusedIndicatorColor = Color(0xFF405DA3),
+                        unfocusedIndicatorColor = Color.Gray,
                         focusedLabelColor = Color(0xFF405DA3),
                         unfocusedLabelColor = Color.Gray
                     ),

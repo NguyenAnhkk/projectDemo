@@ -10,6 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Divider
@@ -171,108 +173,107 @@ fun LoginPage(
         isPaddingNavigation = true,
         modifier = Modifier.fillMaxSize()
     ) {
-        AppColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 24.dp)
+                .verticalScroll(scrollState)
+                .padding(horizontal = 24.dp),
+            verticalArrangement = Arrangement.Center
         ) {
-            AppBox(
+            AppColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
+                    .padding(vertical = 32.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp)
             ) {
-                AppColumn(
+                // Email Field
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { AppText(text = "Tài khoản", color = Color(0xFF1f1f1f)) },
                     modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        unfocusedBorderColor = Color.Gray,
+                        focusedBorderColor = Color(0xFFd14597),
+                        cursorColor = Color(0xFFd14597)
+                    ),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                )
 
-                    OutlinedTextField(
-                        value = email,
-                        onValueChange = { email = it },
-                        label = { AppText(text = "Tài khoản", color = Color(0xFF1f1f1f)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            unfocusedBorderColor = Color.Gray,
-                            focusedBorderColor = Color(0xFFd14597),
-                            cursorColor = Color(0xFFd14597)
-                        ),
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-
-                        )
-
-                    // Password Field
-                    OutlinedTextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        label = { AppText(text = "Mật khẩu", color = Color(0xFF1f1f1f)) },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = TextFieldDefaults.outlinedTextFieldColors(
-                            unfocusedBorderColor = Color.Gray,
-                            focusedBorderColor = Color(0xFFd14597),
-                            cursorColor = Color(0xFFd14597)
-                        ),
-                        visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
-                        trailingIcon = {
-                            IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
-                                Icon(
-                                    painter = icon,
-                                    contentDescription = if (passwordVisibility) "Hide password" else "Show password"
-                                )
-                            }
+                // Password Field
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { AppText(text = "Mật khẩu", color = Color(0xFF1f1f1f)) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
+                        unfocusedBorderColor = Color.Gray,
+                        focusedBorderColor = Color(0xFFd14597),
+                        cursorColor = Color(0xFFd14597)
+                    ),
+                    visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+                    trailingIcon = {
+                        IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
+                            Icon(
+                                painter = icon,
+                                contentDescription = if (passwordVisibility) "Hide password" else "Show password"
+                            )
                         }
+                    }
+                )
+
+                TextButton(
+                    onClick = { navController.navigate("forgot") },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    AppText(
+                        text = "Quên mật khẩu?",
+                        color = Color.Black
                     )
-                    TextButton(
-                        onClick = { navController.navigate("forgot") },
-                        modifier = Modifier.align(Alignment.End)
-                    ) {
-                        AppText(
-                            text = "Quên mật khẩu?",
-                            color = Color.Black
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Button(
-                        onClick = {
-                            authViewModel.login(email, password)
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFd14597)
-                        )
-                    ) {
-                        AppTextBold(
-                            text = "Đăng nhập",
-                            color = Color.White
-                        )
-                    }
-
-                    DividerWithText()
-                    Button(
-                        onClick = { navController.navigate("signup") },
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(50.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color.Transparent,
-                            contentColor = Color(0xFF405DA3)
-                        ),
-                        border = BorderStroke(2.dp, Color(0xFFd14597))
-                    ) {
-                        AppTextBold(
-                            text = "Đăng ký",
-                        )
-                    }
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Button(
+                    onClick = {
+                        authViewModel.login(email, password)
+                    },
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFFd14597)
+                    )
+                ) {
+                    AppTextBold(
+                        text = "Đăng nhập",
+                        color = Color.White
+                    )
+                }
+
+                DividerWithText()
+
+                Button(
+                    onClick = { navController.navigate("signup") },
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = Color(0xFF405DA3)
+                    ),
+                    border = BorderStroke(2.dp, Color(0xFFd14597))
+                ) {
+                    AppTextBold(
+                        text = "Đăng ký",
+                    )
+                }
+
             }
         }
     }
-
 }
 
 @Composable
@@ -306,6 +307,7 @@ fun DividerWithText() {
     }
 }
 
+
 @Composable
 fun rememberFirebaseAuthLauncher(
     onAuthComplete: (AuthResult) -> Unit,
@@ -328,4 +330,3 @@ fun rememberFirebaseAuthLauncher(
         }
     }
 }
-
