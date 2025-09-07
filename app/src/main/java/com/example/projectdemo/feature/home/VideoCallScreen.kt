@@ -209,7 +209,6 @@ fun VideoCallScreen(
             }
         })
 
-        // Tham gia phòng
         val user = ZegoUser(userId)
         val roomConfig = ZegoRoomConfig()
         engine.loginRoom(channelName, user, roomConfig)

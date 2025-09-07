@@ -52,7 +52,7 @@ fun MatchesScreen(navController: NavController) {
                             put("lastMessage", "")
                         }
                     }.toMutableList()
-                    // Get the most recent message for each match
+
                     matchesList.forEach { match ->
                         val otherUserId = if (match["user1"] == currentUserId) {
                             match["user2"] as String

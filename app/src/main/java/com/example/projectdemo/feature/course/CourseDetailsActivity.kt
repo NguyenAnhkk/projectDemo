@@ -11,22 +11,28 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Button
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Surface
@@ -52,6 +58,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.projectdemo.R
@@ -111,13 +120,13 @@ fun CourseDetailsActivity(
             .get()
             .addOnSuccessListener { likesSnapshot ->
                 val likedUserIds = likesSnapshot.documents.mapNotNull { it.getString("toUserId") }.toSet()
-                
+
                 firestore.collection("ignored")
                     .whereEqualTo("fromUserId", currentUserId)
                     .get()
                     .addOnSuccessListener { ignoresSnapshot ->
                         val ignoredUserIds = ignoresSnapshot.documents.mapNotNull { it.getString("toUserId") }.toSet()
-                        
+
                         // Then get location data and filter out liked/ignored users
                         firestore.collection("location")
                             .addSnapshotListener { snapshot, error ->
@@ -128,10 +137,10 @@ fun CourseDetailsActivity(
                                     val lat = doc.getDouble("latitude") ?: continue
                                     val lng = doc.getDouble("longitude") ?: continue
                                     val userId = doc.id
-                                    
+
                                     // Skip if it's current user or user has been liked/ignored
-                                    if (userId == currentUserId || 
-                                        likedUserIds.contains(userId) || 
+                                    if (userId == currentUserId ||
+                                        likedUserIds.contains(userId) ||
                                         ignoredUserIds.contains(userId)) continue
 
                                     val userLocation = LatLng(lat, lng)
@@ -163,28 +172,6 @@ fun CourseDetailsActivity(
 
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     ModalNavigationDrawer(drawerContent = {
-//        ModalDrawerSheet {
-//            Text(text = "Chọn khoảng cách: ${"%.0f".format(radiusInMeters)} m")
-//
-//            Button(onClick = { expanded = !expanded }) {
-//                Text(text = "Chọn khoảng cách")
-//            }
-//            DropdownMenu(
-//                expanded = expanded,
-//                onDismissRequest = { expanded = false }
-//            ) {
-//                radiusOptions.forEach { radius ->
-//                    DropdownMenuItem(onClick = {
-//                        radiusInMeters = radius
-//                        saveRadius(radiusInMeters)
-//                        expanded = false
-//                    }) {
-//                        Text(text = "${"%.0f".format(radius)} m")
-//                    }
-//                }
-//            }
-//
-//        }
     }, drawerState = drawerState) {
         Surface(modifier = Modifier.fillMaxSize()) {
             Box(
@@ -245,62 +232,51 @@ fun CourseDetailsActivity(
     }
 }
 
+@SuppressLint("UnusedBoxWithConstraintsScope")
 @Composable
 fun DatingLoader(modifier: Modifier = Modifier, nearbyUsers: List<User>) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
     val cardHeight = screenHeight - 200.dp
-    val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
-    Surface(modifier = Modifier) {
-        val purple = Color(0xFF6200EE)
-        Box(
-            modifier = Modifier.verticalGradientBackground(
-                listOf(
-                    Color.White,
-                    purple.copy(alpha = 0.2f)
-                )
-            )
-        ) {
-            val listEmpty = remember { mutableStateOf(false) }
+
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            val maxWidth = maxWidth
+            val maxHeight = maxHeight
+
             nearbyUsers.forEachIndexed { index, user ->
+                val offset = (nearbyUsers.size - index - 1) * 8
                 DraggableCard(
-                    item = user, 
+                    item = user,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(cardHeight)
-                        .padding(
-                            top = 16.dp + (index + 2).dp,
-                            bottom = 16.dp,
-                            start = 16.dp,
-                            end = 16.dp
-                        ), 
-                    onSwiped = { _, swipedUser ->
+                        .width(maxWidth * 0.85f)
+                        .height(maxHeight * 0.7f)
+                        .offset(x = 0.dp, y = offset.dp)
+                        .align(Alignment.Center)
+                        .zIndex((nearbyUsers.size - index).toFloat()),
+                    onSwiped = { direction, swipedUser ->
                         if (nearbyUsers.isNotEmpty()) {
                             nearbyUsers.toMutableList().remove(swipedUser)
-                            if (nearbyUsers.isEmpty()) {
-                                listEmpty.value = true
-                            }
                         }
                     }
                 ) {
                     CardContent(
                         user = user,
                         onFavoriteClick = { userId ->
+                            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
                             if (currentUserId != null) {
                                 handleLike(currentUserId, userId)
                                 nearbyUsers.toMutableList().remove(user)
-                                if (nearbyUsers.isEmpty()) {
-                                    listEmpty.value = true
-                                }
                             }
                         },
                         onIgnoreClick = { userId ->
+                            val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
                             if (currentUserId != null) {
                                 handleIgnore(currentUserId, userId)
                                 nearbyUsers.toMutableList().remove(user)
-                                if (nearbyUsers.isEmpty()) {
-                                    listEmpty.value = true
-                                }
                             }
                         }
                     )
@@ -374,7 +350,7 @@ fun CardContent(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 IconButton(
-                    onClick = { 
+                    onClick = {
                         if (currentUserId != null) {
                             isFavorite = !isFavorite
                             if (isFavorite) {
@@ -396,7 +372,6 @@ fun CardContent(
                                         isFavorite = false // Revert on failure
                                     }
                             } else {
-                                // Remove from favorites
                                 firestore.collection("favorites")
                                     .document("$currentUserId-${user.userId}")
                                     .delete()
@@ -422,7 +397,7 @@ fun CardContent(
                         modifier = Modifier.size(24.dp)
                     )
                 }
-                
+
                 IconButton(
                     onClick = { onIgnoreClick(user.userId) },
                     modifier = Modifier
@@ -443,23 +418,71 @@ fun CardContent(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(20.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                    shape = MaterialTheme.shapes.medium
+                )
                 .padding(16.dp)
         ) {
-            AppRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                AppColumn {
-                    AppText(
-                        text = user.userName,
+            // User name
+            Text(
+                text = user.userName,
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+
+            // Information in a compact layout
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Age row
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.outline_cake_24),
+                        contentDescription = "Age",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
                     )
-                    AppText(
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
                         text = user.dateOfBirth,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
-                AppColumn {
-                    AppText(
+
+                // Location row
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.outline_location_on_24),
+                        contentDescription = "Location",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
                         text = user.address,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+
+                // Distance row
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.outline_location_on_24),
+                        contentDescription = "Distance",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "${"%.1f".format(user.distance / 1000)} km away",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }

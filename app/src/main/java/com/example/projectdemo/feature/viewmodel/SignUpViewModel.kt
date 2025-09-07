@@ -21,7 +21,7 @@ sealed class AuthState {
         val dateOfBirth: String
     ) : AuthState()
     data class Error(val message: String) : AuthState()
-    data class AccountCreated(val message: String) : AuthState()   // <-- để truyền message khi signup thành công
+    data class AccountCreated(val message: String) : AuthState()
 }
 
 
