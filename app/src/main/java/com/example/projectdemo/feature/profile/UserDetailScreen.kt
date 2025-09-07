@@ -176,7 +176,7 @@ fun UserDetailScreen(
     LaunchedEffect(currentUserId, userId) {
         if (currentUserId != null) {
             val channelName = "$userId-$currentUserId" // callerId-receiverId
-            val callRef = FirebaseDatabase.getInstance().getReference("calls").child(channelName)
+            val callRef = FirebaseDatabase.getInstance("https://projectdemo-def7a-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("calls").child(channelName)
             callRef.addValueEventListener(object : com.google.firebase.database.ValueEventListener {
                 override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
                     val call = snapshot.getValue(CallModel::class.java)
@@ -312,30 +312,8 @@ fun UserDetailScreen(
                                 color = Color(0xFF4CAF50)
                             )
                         }
-                        
-                        Spacer(modifier = Modifier.weight(1f))
-                        
-                        // Video call button
-                        IconButton(
-                            onClick = {
-                                if (currentUserId != null) {
-                                    val channelName = "video_call_${currentUserId}_$userId"
-                                    navController.navigate("video_call/$channelName/$currentUserId/$userId")
-                                }
-                            }
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.baseline_videocam_24),
-                                contentDescription = "Video Call",
-                                tint = Color(0xFF0084FF),
-                                modifier = Modifier.size(28.dp)
-                            )
-                        }
                     }
                 },
-                colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = Color(0xFFFFFFFF)
-                )
             )
         }
     ) { innerPadding ->
@@ -680,9 +658,7 @@ fun UserDetailScreen(
                             IconButton(
                                 onClick = {
                                     Log.d("VideoCall", "Call button clicked")
-                                    // Tạo channel name từ ID của 2 người dùng
                                     val channelName = "$currentUserId-$userId"
-                                    // Lưu thông tin cuộc gọi vào Firebase
                                     val callData = hashMapOf(
                                         "type" to "video_call",
                                         "status" to "ringing",
@@ -691,12 +667,11 @@ fun UserDetailScreen(
                                         "receiverId" to userId,
                                         "channelName" to channelName
                                     )
-                                    FirebaseDatabase.getInstance().getReference("calls")
+                                    FirebaseDatabase.getInstance("https://projectdemo-def7a-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("calls")
                                         .child(channelName)
                                         .setValue(callData)
                                         .addOnSuccessListener {
                                             Log.d("VideoCall", "Call room created successfully: $channelName")
-                                            // Chuyển đến màn hình video call
                                             navController.navigate("video_call/$channelName/$currentUserId/$userId")
                                         }
                                         .addOnFailureListener { e ->

@@ -76,8 +76,8 @@ fun VideoCallScreen(
     var permissionsGranted by remember { mutableStateOf(false) }
 
     // TODO: Thay thế bằng AppID và AppSign thực tế của bạn từ ZEGOCLOUD Console
-    val appID: Long = 1847715171
-    val appSign = "faf0680b96dad072ccf66018ca764e519dbc986706bcd03a278d77d0990863df"
+    val appID: Long = 629861639
+    val appSign = "2fb33d92cc70ed77181519a394dff5081ae6804fe8fcb59ac2cb8aeb0e77ee3b"
     var showIncomingCallDialog by remember { mutableStateOf(isIncomingCall) }
     var isMuted by remember { mutableStateOf(false) }
     var isVideoOff by remember { mutableStateOf(false) }
@@ -87,7 +87,32 @@ fun VideoCallScreen(
     var incomingCallerId by remember { mutableStateOf("") }
     var callStartTime by remember{ mutableStateOf(System.currentTimeMillis())}
     var callTimeout = 30000L
-
+    LaunchedEffect(channelName, userId) {
+        try {
+            if (isIncomingCall) {
+                Log.d("VideoCall", "Setting up listener for incoming call")
+                listenForIncomingCall(channelName, userId) { call ->
+                    Log.d("VideoCall", "Incoming call received: $call")
+                    incomingCallerId = call.callerId ?: ""
+                    showIncomingCallDialog = true
+                }
+            } else {
+                Log.d("VideoCall", "Making outgoing call")
+                FirebaseDatabase.getInstance("https://projectdemo-def7a-default-rtdb.asia-southeast1.firebasedatabase.app")
+                    .getReference("calls")
+                    .child(channelName)
+                    .setValue(CallModel(userId, receiverId, "ringing"))
+                    .addOnSuccessListener {
+                        Log.d("VideoCall", "Call data written successfully")
+                    }
+                    .addOnFailureListener { e ->
+                        Log.e("VideoCall", "Error writing call data", e)
+                    }
+            }
+        } catch (e: Exception) {
+            Log.e("VideoCall", "Error in call setup", e)
+        }
+    }
     RequestVideoCallPermissions(
         onPermissionsGranted = { permissionsGranted = true },
         onPermissionsDenied = {
@@ -99,10 +124,16 @@ fun VideoCallScreen(
         }
     )
 
-    val engine = remember {
+    val engine = remember(permissionsGranted, isIncomingCall, showIncomingCallDialog) {
         if (permissionsGranted && (!isIncomingCall || !showIncomingCallDialog)) {
-            ZegoExpressEngine.createEngine(appID, appSign, false, ZegoScenario.GENERAL,
-                context.applicationContext as android.app.Application, null)
+            ZegoExpressEngine.createEngine(
+                appID,
+                appSign,
+                false,
+                ZegoScenario.GENERAL,
+                context.applicationContext as android.app.Application,
+                null
+            )
         } else null
     }
 
@@ -120,7 +151,7 @@ fun VideoCallScreen(
             it.stopPublishingStream()
             it.logoutRoom(channelName)
         }
-        FirebaseDatabase.getInstance().getReference("calls")
+        FirebaseDatabase.getInstance("https://projectdemo-def7a-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("calls")
             .child(channelName).setValue(
                 CallModel(userId, receiverId, "ended")
             )
@@ -154,20 +185,18 @@ fun VideoCallScreen(
                 .setValue(CallModel(userId, receiverId, "ringing"))
         }
     }
-    // Remote video view
     var remoteView by remember { mutableStateOf<FrameLayout?>(null) }
 
     DisposableEffect(permissionsGranted) {
         if (!permissionsGranted || engine == null) {
             onDispose { }
         } else {
-        // Đăng ký event handler
-        engine.setEventHandler(object : IZegoEventHandler() {
-            override fun onRoomStateUpdate(
-                roomID: String?,
-                state: ZegoRoomState?,
-                errorCode: Int,
-                extendedData: JSONObject?
+            engine.setEventHandler(object : IZegoEventHandler() {
+                override fun onRoomStateUpdate(
+                    roomID: String?,
+                    state: ZegoRoomState?,
+                    errorCode: Int,
+                    extendedData: JSONObject?
             ) {
                 when (state) {
                     ZegoRoomState.CONNECTED -> {
@@ -177,6 +206,7 @@ fun VideoCallScreen(
                     ZegoRoomState.DISCONNECTED -> {
                         Log.d("Zego", "Room disconnected")
                         isCallConnected = false
+                        remoteView = null
                     }
                     else -> {
                         Log.d("Zego", "Room state: $state")
@@ -192,9 +222,24 @@ fun VideoCallScreen(
                 updateType: ZegoUpdateType?,
                 userList: ArrayList<ZegoUser>?
             ) {
-                if (updateType == ZegoUpdateType.ADD && !userList.isNullOrEmpty()) {
-                    remoteUserID = userList.first().userID
-                } else if (updateType == ZegoUpdateType.DELETE) {
+                if (updateType == ZegoUpdateType.DELETE) {
+                    remoteUserID = null
+                }
+            }
+
+            override fun onRoomStreamUpdate(
+                roomID: String?,
+                updateType: ZegoUpdateType?,
+                streamList: ArrayList<ZegoStream>?,
+                extendedData: JSONObject?
+            ) {
+                if (updateType == ZegoUpdateType.ADD && !streamList.isNullOrEmpty()) {
+                    val firstRemoteStreamId = streamList.first().streamID
+                    Log.d("Zego", "Remote stream added: $firstRemoteStreamId")
+                    remoteUserID = firstRemoteStreamId
+                }
+                if (updateType == ZegoUpdateType.DELETE) {
+                    Log.d("Zego", "Remote stream removed")
                     remoteUserID = null
                 }
             }
@@ -241,14 +286,25 @@ fun VideoCallScreen(
             onAccept = {
                 showIncomingCallDialog = false
                 // Start local preview and join room
+                var activeEngine = engine
+                if (activeEngine == null && permissionsGranted) {
+                    activeEngine = ZegoExpressEngine.createEngine(
+                        appID,
+                        appSign,
+                        false,
+                        ZegoScenario.GENERAL,
+                        context.applicationContext as android.app.Application,
+                        null
+                    )
+                }
                 val frame = FrameLayout(context)
-                engine?.startPreview(ZegoCanvas(frame))
+                activeEngine?.startPreview(ZegoCanvas(frame))
                 localView = frame
 
                 val user = ZegoUser(userId)
                 val roomConfig = ZegoRoomConfig()
-                engine?.loginRoom(channelName, user, roomConfig)
-                engine?.startPublishingStream(userId)
+                activeEngine?.loginRoom(channelName, user, roomConfig)
+                activeEngine?.startPublishingStream(userId)
 
                 // Update call status to "ongoing"
                 FirebaseDatabase.getInstance("https://projectdemo-def7a-default-rtdb.asia-southeast1.firebasedatabase.app")
@@ -300,7 +356,6 @@ fun VideoCallScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-
         ) {
 
             remoteView?.let { view ->
@@ -321,7 +376,6 @@ fun VideoCallScreen(
                 )
             }
 
-            // Control buttons
             AppRow(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
@@ -329,7 +383,7 @@ fun VideoCallScreen(
                 horizontalArrangement = Arrangement.spacedBy(20.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                                    // Mute button
+
                     FloatingActionButton(
                         onClick = {
                             isMuted = !isMuted
@@ -342,19 +396,15 @@ fun VideoCallScreen(
                             Icon(
                                 painter = painterResource(id = R.drawable.baseline_mic_off_24),
                                 contentDescription = "Mic Off",
-                                tint = Color.White
                             )
                         } else {
                             Icon(
                                 painter = painterResource(id = R.drawable.baseline_mic_24),
                                 contentDescription = "Mic",
-                                tint = Color.White
                             )
                         }
 
                     }
-
-                                    // Camera switch button
                     FloatingActionButton(
                         onClick = {
                             isFrontCamera = !isFrontCamera
@@ -370,7 +420,6 @@ fun VideoCallScreen(
                     )
                 }
 
-                // Video on/off button
                 FloatingActionButton(
                     onClick = {
                         isVideoOff = !isVideoOff
@@ -388,14 +437,11 @@ fun VideoCallScreen(
                     Icon(
                         painter = painterResource(id = if (isVideoOff) R.drawable.baseline_videocam_off_24 else R.drawable.baseline_videocam_24),
                         contentDescription = "Video",
-                        tint = if (isVideoOff) Color.White else Color.White
                     )
                 }
 
-                // End call button
                 FloatingActionButton(
                     onClick = {
-                        // Cập nhật trạng thái cuộc gọi trong Firebase
                         FirebaseDatabase.getInstance("https://projectdemo-def7a-default-rtdb.asia-southeast1.firebasedatabase.app")
                             .getReference("calls")
                             .child(channelName)
@@ -421,7 +467,6 @@ fun VideoCallScreen(
                 }
             }
 
-            // Status text
             if (remoteUserID == null) {
                 AppBox(
                     modifier = Modifier
