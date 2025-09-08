@@ -42,10 +42,15 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import kotlinx.coroutines.delay
 
-fun listenForIncomingCall(channelName: String, myUserId: String, onIncomingCall: (CallModel) -> Unit) {
-    val callRef = FirebaseDatabase.getInstance("https://projectdemo-def7a-default-rtdb.asia-southeast1.firebasedatabase.app")
-        .getReference("calls")
-        .child(channelName)
+fun listenForIncomingCall(
+    channelName: String,
+    myUserId: String,
+    onIncomingCall: (CallModel) -> Unit
+) {
+    val callRef =
+        FirebaseDatabase.getInstance("https://projectdemo-def7a-default-rtdb.asia-southeast1.firebasedatabase.app")
+            .getReference("calls")
+            .child(channelName)
 
     callRef.addValueEventListener(object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
@@ -56,6 +61,7 @@ fun listenForIncomingCall(channelName: String, myUserId: String, onIncomingCall:
                 onIncomingCall(call)
             }
         }
+
         override fun onCancelled(error: DatabaseError) {
             Log.e("VideoCall", "Firebase error: $error")
         }
@@ -85,7 +91,7 @@ fun VideoCallScreen(
     var remoteUserID by remember { mutableStateOf<String?>(null) }
     var isCallConnected by remember { mutableStateOf(false) }
     var incomingCallerId by remember { mutableStateOf("") }
-    var callStartTime by remember{ mutableStateOf(System.currentTimeMillis())}
+    var callStartTime by remember { mutableStateOf(System.currentTimeMillis()) }
     var callTimeout = 30000L
     LaunchedEffect(channelName, userId) {
         try {
@@ -151,7 +157,8 @@ fun VideoCallScreen(
             it.stopPublishingStream()
             it.logoutRoom(channelName)
         }
-        FirebaseDatabase.getInstance("https://projectdemo-def7a-default-rtdb.asia-southeast1.firebasedatabase.app").getReference("calls")
+        FirebaseDatabase.getInstance("https://projectdemo-def7a-default-rtdb.asia-southeast1.firebasedatabase.app")
+            .getReference("calls")
             .child(channelName).setValue(
                 CallModel(userId, receiverId, "ended")
             )
@@ -197,76 +204,87 @@ fun VideoCallScreen(
                     state: ZegoRoomState?,
                     errorCode: Int,
                     extendedData: JSONObject?
-            ) {
-                when (state) {
-                    ZegoRoomState.CONNECTED -> {
-                        Log.d("Zego", "Room connected successfully")
-                        isCallConnected = true
+                ) {
+                    when (state) {
+                        ZegoRoomState.CONNECTED -> {
+                            Log.d("Zego", "Room connected successfully")
+                            isCallConnected = true
+                        }
+
+                        ZegoRoomState.DISCONNECTED -> {
+                            Log.d("Zego", "Room disconnected")
+                            isCallConnected = false
+                            remoteView = null
+                        }
+
+                        else -> {
+                            Log.d("Zego", "Room state: $state")
+                        }
                     }
-                    ZegoRoomState.DISCONNECTED -> {
-                        Log.d("Zego", "Room disconnected")
-                        isCallConnected = false
-                        remoteView = null
-                    }
-                    else -> {
-                        Log.d("Zego", "Room state: $state")
+                    if (errorCode != 0) {
+                        Log.e("Zego", "Room join failed: $errorCode")
                     }
                 }
-                if (errorCode != 0) {
-                    Log.e("Zego", "Room join failed: $errorCode")
+
+                override fun onRoomUserUpdate(
+                    roomID: String?,
+                    updateType: ZegoUpdateType?,
+                    userList: ArrayList<ZegoUser>?
+                ) {
+                    if (updateType == ZegoUpdateType.DELETE) {
+                        remoteUserID = null
+                    }
                 }
-            }
 
-            override fun onRoomUserUpdate(
-                roomID: String?,
-                updateType: ZegoUpdateType?,
-                userList: ArrayList<ZegoUser>?
-            ) {
-                if (updateType == ZegoUpdateType.DELETE) {
-                    remoteUserID = null
+                override fun onRoomStreamUpdate(
+                    roomID: String?,
+                    updateType: ZegoUpdateType?,
+                    streamList: ArrayList<ZegoStream>?,
+                    extendedData: JSONObject?
+                ) {
+                    if (updateType == ZegoUpdateType.ADD && !streamList.isNullOrEmpty()) {
+                        val firstRemoteStreamId = streamList.first().streamID
+                        Log.d("Zego", "Remote stream added: $firstRemoteStreamId")
+                        remoteUserID = firstRemoteStreamId
+                    }
+                    if (updateType == ZegoUpdateType.DELETE) {
+                        Log.d("Zego", "Remote stream removed")
+                        remoteUserID = null
+                    }
                 }
-            }
 
-            override fun onRoomStreamUpdate(
-                roomID: String?,
-                updateType: ZegoUpdateType?,
-                streamList: ArrayList<ZegoStream>?,
-                extendedData: JSONObject?
-            ) {
-                if (updateType == ZegoUpdateType.ADD && !streamList.isNullOrEmpty()) {
-                    val firstRemoteStreamId = streamList.first().streamID
-                    Log.d("Zego", "Remote stream added: $firstRemoteStreamId")
-                    remoteUserID = firstRemoteStreamId
+
+                override fun onPublisherStateUpdate(
+                    streamID: String,
+                    state: ZegoPublisherState,
+                    errorCode: Int,
+                    extendedData: JSONObject?
+                ) {
+                    Log.d("Zego", "Publisher state: $state, error: $errorCode")
                 }
-                if (updateType == ZegoUpdateType.DELETE) {
-                    Log.d("Zego", "Remote stream removed")
-                    remoteUserID = null
+
+                override fun onPlayerStateUpdate(
+                    streamID: String,
+                    state: ZegoPlayerState,
+                    errorCode: Int,
+                    extendedData: JSONObject?
+                ) {
+                    Log.d("Zego", "Player state: $state, error: $errorCode")
                 }
+            })
+
+            val user = ZegoUser(userId)
+            val roomConfig = ZegoRoomConfig()
+            engine.loginRoom(channelName, user, roomConfig)
+            val streamID = "stream_${userId}"
+            engine.startPublishingStream(streamID)
+
+            onDispose {
+                engine.stopPublishingStream()
+                engine.stopPreview()
+                engine.logoutRoom(channelName)
+                ZegoExpressEngine.destroyEngine(null)
             }
-
-
-            override fun onPublisherStateUpdate(streamID: String, state: ZegoPublisherState, errorCode: Int, extendedData: JSONObject?) {
-                Log.d("Zego", "Publisher state: $state, error: $errorCode")
-            }
-
-            override fun onPlayerStateUpdate(streamID: String, state: ZegoPlayerState, errorCode: Int, extendedData: JSONObject?) {
-                Log.d("Zego", "Player state: $state, error: $errorCode")
-            }
-        })
-
-        val user = ZegoUser(userId)
-        val roomConfig = ZegoRoomConfig()
-        engine.loginRoom(channelName, user, roomConfig)
-
-
-        engine.startPublishingStream(userId)
-
-        onDispose {
-            engine.stopPublishingStream()
-            engine.stopPreview()
-            engine.logoutRoom(channelName)
-            ZegoExpressEngine.destroyEngine(null)
-        }
         }
     }
 
@@ -384,32 +402,32 @@ fun VideoCallScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
-                    FloatingActionButton(
-                        onClick = {
-                            isMuted = !isMuted
-                            engine?.muteMicrophone(isMuted)
-                        },
+                FloatingActionButton(
+                    onClick = {
+                        isMuted = !isMuted
+                        engine?.muteMicrophone(isMuted)
+                    },
                     containerColor = if (isMuted) Color.Red else Color.White.copy(alpha = 0.3f),
                     modifier = Modifier.size(56.dp)
                 ) {
-                        if (isMuted) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.baseline_mic_off_24),
-                                contentDescription = "Mic Off",
-                            )
-                        } else {
-                            Icon(
-                                painter = painterResource(id = R.drawable.baseline_mic_24),
-                                contentDescription = "Mic",
-                            )
-                        }
-
+                    if (isMuted) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_mic_off_24),
+                            contentDescription = "Mic Off",
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(id = R.drawable.baseline_mic_24),
+                            contentDescription = "Mic",
+                        )
                     }
-                    FloatingActionButton(
-                        onClick = {
-                            isFrontCamera = !isFrontCamera
-                            engine?.useFrontCamera(isFrontCamera)
-                        },
+
+                }
+                FloatingActionButton(
+                    onClick = {
+                        isFrontCamera = !isFrontCamera
+                        engine?.useFrontCamera(isFrontCamera)
+                    },
                     containerColor = Color.White.copy(alpha = 0.3f),
                     modifier = Modifier.size(56.dp)
                 ) {
