@@ -200,7 +200,6 @@ fun UserDetailScreen(
             text = { AppText("Người dùng $callerId đang gọi cho bạn") },
             confirmButton = {
                Button(onClick = {
-                    // Đồng ý: chuyển sang màn hình VideoCall với isIncomingCall=false
                     navController.navigate("video_call/$incomingCallChannel/$currentUserId/$userId?isIncomingCall=true")
                     showIncomingCallDialog = false
                 }) {

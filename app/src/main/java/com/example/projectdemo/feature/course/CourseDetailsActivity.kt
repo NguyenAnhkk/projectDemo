@@ -182,6 +182,8 @@ fun CourseDetailsActivity(
                     )
                 )
             ) {
+                IconButton(onClick = {navController.popBackStack()}) {
+                Icon(painter =  painterResource(R.drawable.baseline_arrow_back_ios_new_24), contentDescription = null)}
                 DatingLoader(nearbyUsers = nearbyUsers)
             }
 
