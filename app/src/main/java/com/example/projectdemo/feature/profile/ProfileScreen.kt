@@ -202,7 +202,15 @@ fun Profile(
                 }
         }
     }
-
+    val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        Manifest.permission.READ_MEDIA_IMAGES
+    } else {
+        Manifest.permission.READ_EXTERNAL_STORAGE
+    }
+    val permissionsToRequest = arrayOf(
+        permission,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE
+    )
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
@@ -216,22 +224,39 @@ fun Profile(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == android.app.Activity.RESULT_OK) {
-            result.data?.data?.let { uri ->
-                imageUri = uri
-                uploadImageToStorage(uri, { url ->
-                    imageUrl = url
-                    saveImageUrlToFirestore(url)
-                }, {
-                    Toast.makeText(context, "Tải ảnh lên thất bại", Toast.LENGTH_SHORT).show()
-                })
+            val uri = result.data?.data
+            if (uri != null) {
+                try {
+                    context.contentResolver.takePersistableUriPermission(
+                        uri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    )
+                    imageUri = uri
+                    uploadImageToStorage(uri, { url ->
+                        imageUrl = url
+                        saveImageUrlToFirestore(url)
+                        Toast.makeText(context, "Tải ảnh lên thành công", Toast.LENGTH_SHORT).show()
+                    }, {
+                        Toast.makeText(context, "Tải ảnh lên thất bại: ${it.message}", Toast.LENGTH_SHORT).show()
+                    })
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Lỗi truy cập ảnh: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
 
     fun pickImage() {
         if (hasPermission) {
-            val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-            imagePickerLauncher.launch(intent)
+            try {
+                val intent = Intent(Intent.ACTION_PICK).apply {
+                    type = "image/*"
+                    putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/jpeg", "image/png", "image/jpg"))
+                }
+                imagePickerLauncher.launch(intent)
+            } catch (e: Exception) {
+                Toast.makeText(context, "Không thể mở thư viện ảnh", Toast.LENGTH_SHORT).show()
+            }
         } else {
             val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 Manifest.permission.READ_MEDIA_IMAGES
@@ -811,20 +836,32 @@ fun uploadImageToStorage(
     onSuccess: (String) -> Unit,
     onFailure: (Exception) -> Unit
 ) {
-    val storageReference = FirebaseStorage.getInstance().reference
-    val fileName = UUID.randomUUID().toString()
-    val fileReference = storageReference.child("images/$fileName")
+    try {
+        val storageReference = FirebaseStorage.getInstance().reference
+        val fileName = UUID.randomUUID().toString()
+        val fileReference = storageReference.child("images/$fileName")
 
-    fileReference.putFile(imageUri)
-        .addOnSuccessListener {
-            fileReference.downloadUrl.addOnSuccessListener { uri ->
-                onSuccess(uri.toString())
+        fileReference.putFile(imageUri)
+            .addOnSuccessListener { taskSnapshot ->
+                taskSnapshot.storage.downloadUrl.addOnSuccessListener { uri ->
+                    onSuccess(uri.toString())
+                }.addOnFailureListener { exception ->
+                    Log.e("FirebaseUpload", "Lỗi lấy URL: ${exception.message}", exception)
+                    onFailure(exception)
+                }
             }
-        }
-        .addOnFailureListener { exception ->
-            Log.e("FirebaseUpload", "Tải ảnh lên thất bại: ${exception.message}", exception)
-            onFailure(exception)
-        }
+            .addOnFailureListener { exception ->
+                Log.e("FirebaseUpload", "Tải ảnh lên thất bại: ${exception.message}", exception)
+                onFailure(exception)
+            }
+            .addOnProgressListener { snapshot ->
+                val progress = (100.0 * snapshot.bytesTransferred / snapshot.totalByteCount)
+                Log.d("Upload", "Upload is $progress% done")
+            }
+    } catch (e: Exception) {
+        Log.e("Upload", "Lỗi upload: ${e.message}", e)
+        onFailure(e)
+    }
 }
 
 fun saveImageUrlToFirestore(imageUrl: String) {
