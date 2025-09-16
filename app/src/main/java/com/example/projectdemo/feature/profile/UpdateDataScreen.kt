@@ -50,6 +50,7 @@ fun UpdateDataScreen(name: String, age: String, address: String) {
                 .fillMaxWidth()
                 .padding(8.dp)
         )
+
         TextField(
             value = updatedAge,
             onValueChange = { updatedAge = it },
