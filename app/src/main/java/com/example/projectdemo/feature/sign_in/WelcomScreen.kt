@@ -28,5 +28,10 @@ fun WelcomeScreen(modifier: Modifier = Modifier) {
     ) {
         LottieAnimation(composition = composition, modifier = Modifier.size(300.dp))
         Text(text ="Let start app")
+        ActionButton(
+            text = "Get Started",
+            onClicked = { /*TODO*/ },
+            modifier = Modifier.fillMaxSize(),
+        )
     }
 }
