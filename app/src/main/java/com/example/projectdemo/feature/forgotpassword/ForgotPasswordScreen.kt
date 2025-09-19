@@ -1,11 +1,16 @@
 package com.example.projectdemo.feature.forgotpassword
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -21,13 +26,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.projectdemo.R
 import com.example.projectdemo.lib.AppColumn
 import com.example.projectdemo.lib.AppScreen
 import com.example.projectdemo.lib.AppText
@@ -40,101 +49,140 @@ fun ForgotPasswordScreen(viewModel: PasswordResetViewModel, navController: NavHo
     var email by remember { mutableStateOf("") }
     val context = LocalContext.current
 
-    AppScreen(
-        backgroundColor = MyAppTheme.appColor.background,
-        isPaddingNavigation = true,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        AppColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
-            AppColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                AppTextBold(
-                    text = "Quên mật khẩu?",
-                    fontSize = 24.sp,
-                    color = Color(0xFFd14597),
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                AppText(
-                    text = "Nhập email của bạn để đặt lại mật khẩu",
-                    fontSize = 16.sp,
-                    color = Color.Gray,
-                    textAlign = TextAlign.Center
-                )
-            }
-            AppColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(2f),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = { AppText(text = "Email", color = Color.Gray) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 24.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = Color(0xFFd14597),
-                        unfocusedBorderColor = Color.Gray,
-                        focusedLabelColor = Color.Gray,
-                        unfocusedLabelColor = Color.Black,
-                        cursorColor = Color(0xFFd14597)
-                    ),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-                )
+    // Background gradient colors - matching the login and signup screens
+    val gradientColors = listOf(
+        Color(0xFFFC466B),  // Vibrant pink
+        Color(0xFF3F5EFB),  // Bright blue
+    )
 
-                Button(
-                    onClick = { viewModel.resetPassword(email, context) },
-                    shape = RoundedCornerShape(8.dp),
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.linearGradient(
+                    colors = gradientColors,
+                    start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                    end = androidx.compose.ui.geometry.Offset(1000f, 1000f)
+                )
+            )
+    ) {
+        AppScreen(
+            backgroundColor = Color.Transparent,
+            isPaddingNavigation = true,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // App Logo/Title
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFd14597)
-                    )
+                        .padding(bottom = 32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     AppTextBold(
-                        text = "Đặt lại mật khẩu",
-                        color = Color.White
+                        text = "Reset Password",
+                        color = Color.White,
+                        fontSize = 28.sp
+                    )
+                    AppText(
+                        text = "Enter your email to reset your password",
+                        color = Color.White.copy(alpha = 0.8f),
+                        textAlign = TextAlign.Center
                     )
                 }
-                Spacer(modifier = Modifier.height(16.dp))
-                TextButton(
-                    onClick = { navController.navigate("login") },
-                    modifier = Modifier.fillMaxWidth()
+
+                // Form Container
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = Color.White.copy(alpha = 0.95f),
+                            shape = RoundedCornerShape(20.dp)
+                        )
+                        .padding(24.dp)
+                ) {
+                    AppColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        OutlinedTextField(
+                            value = email,
+                            onValueChange = { email = it },
+                            label = { AppText(text = "Email", color = Color.Gray) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                focusedBorderColor = Color(0xFFFC466B),
+                                unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f),
+                                focusedLabelColor = Color.Black,
+                                unfocusedLabelColor = Color.Gray,
+                                cursorColor = Color(0xFFFC466B),
+                                containerColor = Color.White
+                            ),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+
+                        Button(
+                            onClick = { viewModel.resetPassword(email, context) },
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFFC466B)
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(
+                                defaultElevation = 8.dp,
+                                pressedElevation = 4.dp
+                            )
+                        ) {
+                            AppTextBold(
+                                text = "Reset Password",
+                                color = Color.White
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        TextButton(
+                            onClick = { navController.navigate("login") },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            AppText(
+                                text = "Back to Sign In",
+                                color = Color(0xFFFC466B)
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                // Note section
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = Color.White.copy(alpha = 0.2f),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .padding(16.dp)
                 ) {
                     AppText(
-                        text = "Quay lại đăng nhập",
-                        color = Color(0xFFd14597)
+                        text = "Note: The password reset email may be in your spam folder!",
+                        fontSize = 14.sp,
+                        color = Color.White,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
-            }
-            AppColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                AppText(
-                    text = "Lưu ý: Email đặt lại mật khẩu có thể nằm trong hòm thư tin nhắn rác!",
-                    fontSize = 14.sp,
-                    color = Color.Gray,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
             }
         }
     }

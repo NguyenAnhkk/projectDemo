@@ -3,15 +3,18 @@ package com.example.projectdemo.feature.sign_up
 import android.widget.Toast
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -33,7 +36,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -77,6 +82,7 @@ fun SignupPage(
     val context = LocalContext.current
     val imeState = rememberImeState()
     val scrollState = rememberScrollState()
+
     fun isValidPassword(password: String): Boolean {
         val passwordPattern = Regex("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#\$%^&+=!]).{8,}\$")
         return passwordPattern.matches(password)
@@ -116,212 +122,254 @@ fun SignupPage(
         }
     }
 
+    // Background gradient colors - matching the login screen
+    val gradientColors = listOf(
+        Color(0xFFFC466B),  // Vibrant pink
+        Color(0xFF3F5EFB),  // Bright blue
+    )
 
-    AppScreen(
-        backgroundColor = MyAppTheme.appColor.background,
-        isPaddingNavigation = true,
-        modifier = Modifier.fillMaxSize(),
-
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.linearGradient(
+                    colors = gradientColors,
+                    start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                    end = androidx.compose.ui.geometry.Offset(1000f, 1000f)
+                )
+            )
     ) {
-        AppColumn(
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(horizontal = 24.dp)
-                .imePadding()
-                .verticalScroll(scrollState),
 
-            verticalArrangement = Arrangement.SpaceBetween
+        AppScreen(
+            backgroundColor = Color.Transparent,
+            isPaddingNavigation = true,
+            modifier = Modifier.fillMaxSize(),
         ) {
-
-            AppColumn(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .padding(horizontal = 24.dp)
+                    .imePadding(),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                AppTextBold(
-                    text = "Tạo tài khoản mới",
-                    fontSize = 24.sp,
-                    color = Color(0xFFd14597),
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                AppText(
-                    text = "Điền thông tin để đăng ký tài khoản",
-                    fontSize = 16.sp,
-                    color = Color.Gray,
-                    textAlign = TextAlign.Center
-                )
-            }
-
-            AppColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(2f),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                OutlinedTextField(
-                    value = account,
-                    onValueChange = { account = it },
-                    label = { AppText(text = "Email", color = Color.Gray) },
+                // App Logo/Title
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = Color(0xFFd14597),
-                        unfocusedBorderColor = Color.Black,
-                        focusedLabelColor = Color.Black,
-                        unfocusedLabelColor = Color.Gray,
-                        cursorColor = Color(0xFFd14597)
-                    ),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
-                )
+                        .padding(bottom = 32.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
 
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = { AppText(text = "Mật khẩu", color = Color.Gray) },
+                    AppTextBold(
+                        text = "Create Account",
+                        color = Color.White,
+                        fontSize = 28.sp
+                    )
+                    AppText(
+                        text = "Join our community today",
+                        color = Color.White.copy(alpha = 0.8f),
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                // Registration Form Container
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = Color(0xFFd14597),
-                        unfocusedBorderColor = Color.Black,
-                        focusedLabelColor = Color.Black,
-                        unfocusedLabelColor = Color.Gray,
-                        cursorColor = Color(0xFFd14597)
-                    ),
-                    trailingIcon = {
-                        IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
-                            Icon(
-                                painter = passwordIcon,
-                                contentDescription = if (passwordVisibility) "Hide password" else "Show password"
+                        .background(
+                            color = Color.White.copy(alpha = 0.95f),
+                            shape = RoundedCornerShape(20.dp)
+                        )
+                        .padding(24.dp)
+                ) {
+                    AppColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = account,
+                            onValueChange = { account = it },
+                            label = { AppText(text = "Email", color = Color.Gray) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                focusedBorderColor = Color(0xFFFC466B),
+                                unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f),
+                                focusedLabelColor = Color.Black,
+                                unfocusedLabelColor = Color.Gray,
+                                cursorColor = Color(0xFFFC466B),
+                                containerColor = Color.White
+                            ),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+
+                        OutlinedTextField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = { AppText(text = "Password", color = Color.Gray) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                focusedBorderColor = Color(0xFFFC466B),
+                                unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f),
+                                focusedLabelColor = Color.Black,
+                                unfocusedLabelColor = Color.Gray,
+                                cursorColor = Color(0xFFFC466B),
+                                containerColor = Color.White
+                            ),
+                            trailingIcon = {
+                                IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
+                                    Icon(
+                                        painter = passwordIcon,
+                                        contentDescription = if (passwordVisibility) "Hide password" else "Show password",
+                                        tint = Color(0xFFFC466B)
+                                    )
+                                }
+                            },
+                            shape = RoundedCornerShape(12.dp)
+                        )
+
+                        OutlinedTextField(
+                            value = userName,
+                            onValueChange = { userName = it },
+                            label = { AppText(text = "Username", color = Color.Gray) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                focusedBorderColor = Color(0xFFFC466B),
+                                unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f),
+                                focusedLabelColor = Color.Black,
+                                unfocusedLabelColor = Color.Gray,
+                                cursorColor = Color(0xFFFC466B),
+                                containerColor = Color.White
+                            ),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+
+                        OutlinedTextField(
+                            value = dateOfBirth,
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                focusedBorderColor = Color(0xFFFC466B),
+                                unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f),
+                                focusedLabelColor = Color.Black,
+                                unfocusedLabelColor = Color.Gray,
+                                cursorColor = Color(0xFFFC466B),
+                                containerColor = Color.White
+                            ),
+                            onValueChange = { },
+                            label = { AppText(text = "Date of Birth", color = Color.Gray) },
+                            readOnly = true,
+                            trailingIcon = {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_calendar_month_24),
+                                    contentDescription = "Select date",
+                                    modifier = Modifier
+                                        .clickable { calendarState.show() }
+                                        .size(24.dp),
+                                    tint = Color(0xFFFC466B)
+                                )
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+
+                        Button(
+                            onClick = {
+                                if (dateOfBirth.isEmpty() || userName.isEmpty() || password.isEmpty() || account.isEmpty()) {
+                                    Toast.makeText(context, "Please fill in all fields.", Toast.LENGTH_SHORT)
+                                        .show()
+                                } else if (!isGmailAccount(account)) {
+                                    Toast.makeText(
+                                        context,
+                                        "Email must be a valid Gmail account.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                } else if (!isOver13YearsOld(dateOfBirth)) {
+                                    Toast.makeText(
+                                        context,
+                                        "You must be at least 13 years old to register.",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                } else if (!isValidPassword(password)) {
+                                    Toast.makeText(
+                                        context,
+                                        "Password must be at least 8 characters, including uppercase, lowercase, numbers and special characters.",
+                                        Toast.LENGTH_LONG
+                                    ).show()
+                                } else {
+                                    authViewModel.signup(account, password, userName, dateOfBirth)
+                                    authViewModel.authState.observe(context as LifecycleOwner) { state ->
+                                        when (state) {
+                                            is AuthState.AccountCreated -> {
+                                                Toast.makeText(
+                                                    context,
+                                                    "Account created successfully!",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                                navController.navigate("login")
+                                            }
+
+                                            is AuthState.Error -> {
+                                                if (state.message == "Account already exists") {
+                                                    Toast.makeText(
+                                                        context,
+                                                        "Account already exists.",
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                } else {
+                                                    Toast.makeText(
+                                                        context,
+                                                        state.message,
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
+                                            }
+
+                                            else -> Unit
+                                        }
+                                    }
+                                }
+                            },
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFFC466B)
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(
+                                defaultElevation = 8.dp,
+                                pressedElevation = 4.dp
+                            )
+                        ) {
+                            AppTextBold(
+                                text = "Sign Up",
+                                color = Color.White
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        TextButton(
+                            onClick = { navController.navigate("login") },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            AppText(
+                                text = "Already have an account? Sign in now!",
+                                color = Color(0xFFFC466B)
                             )
                         }
                     }
-                )
-
-                OutlinedTextField(
-                    value = userName,
-                    onValueChange = { userName = it },
-                    label = { AppText(text = "Tên người dùng", color = Color.Gray) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = Color(0xFFd14597),
-                        unfocusedBorderColor = Color.Black,
-                        focusedLabelColor = Color.Black,
-                        unfocusedLabelColor = Color.Gray,
-                        cursorColor = Color(0xFFd14597)
-                    )
-                )
-
-                OutlinedTextField(
-                    value = dateOfBirth,
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        focusedBorderColor = Color(0xFFd14597),
-                        unfocusedBorderColor = Color.Black,
-                        focusedLabelColor = Color.Black,
-                        unfocusedLabelColor = Color.Gray,
-
-                    ),
-                    onValueChange = { },
-                    label = { AppText(text = "Ngày sinh", color = Color.Gray) },
-                    readOnly = true,
-                    trailingIcon = {
-                        Image(
-                            painter = painterResource(id = R.drawable.baseline_calendar_month_24),
-                            contentDescription = "Chọn ngày",
-                            modifier = Modifier.clickable { calendarState.show() }
-                        )
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 24.dp)
-                )
-
-                Button(
-                    onClick = {
-                        if (dateOfBirth.isEmpty() || userName.isEmpty() || password.isEmpty() || account.isEmpty()) {
-                            Toast.makeText(context, "Thông tin chưa đầy đủ.", Toast.LENGTH_SHORT)
-                                .show()
-                        } else if (!isGmailAccount(account)) {
-                            Toast.makeText(
-                                context,
-                                "Email phải có định dạng @gmail.com.",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        } else if (!isOver13YearsOld(dateOfBirth)) {
-                            Toast.makeText(
-                                context,
-                                "Bạn phải trên 16 tuổi để đăng ký tài khoản.",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        } else if (!isValidPassword(password)) {
-                            Toast.makeText(
-                                context,
-                                "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt.",
-                                Toast.LENGTH_LONG
-                            ).show()
-                        } else {
-                            authViewModel.signup(account, password, userName, dateOfBirth)
-                            authViewModel.authState.observe(context as LifecycleOwner) { state ->
-                                when (state) {
-                                    is AuthState.AccountCreated -> {
-                                        Toast.makeText(
-                                            context,
-                                            "Tạo tài khoản thành công!",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                        navController.navigate("login")
-                                    }
-
-                                    is AuthState.Error -> {
-                                        if (state.message == "Account already exists") {
-                                            Toast.makeText(
-                                                context,
-                                                "Tài khoản đã tồn tại.",
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        } else {
-                                            Toast.makeText(
-                                                context,
-                                                state.message,
-                                                Toast.LENGTH_SHORT
-                                            ).show()
-                                        }
-                                    }
-
-                                    else -> Unit
-                                }
-                            }
-                        }
-                    },
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFd14597)
-                    )
-                ) {
-                    AppTextBold(
-                        text = "Đăng ký",
-                        color = Color.White
-                    )
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(40.dp))
 
-                TextButton(
-                    onClick = { navController.navigate("login") },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    AppText(
-                        text = "Đã có tài khoản? Đăng nhập ngay!"
-                    )
-                }
+                // Additional decorative element
+                AppText(
+                    text = "Start your journey with us",
+                    color = Color.White.copy(alpha = 0.7f)
+                )
             }
         }
     }
