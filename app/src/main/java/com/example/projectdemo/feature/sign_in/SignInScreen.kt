@@ -154,6 +154,11 @@ fun LoginPage(
             .requestEmail()
             .build()
     val googleSignInClient = GoogleSignIn.getClient(context, gso)
+    LaunchedEffect(Unit) {
+        if (authViewModel.authState.value is AuthState.Error) {
+            authViewModel.checkAuthStatus()
+        }
+    }
     LaunchedEffect(callbackManager) {
         LoginManager.getInstance().registerCallback(callbackManager, facebookCallback)
     }
@@ -166,11 +171,12 @@ fun LoginPage(
     LaunchedEffect(authState.value) {
         when (authState.value) {
             is AuthState.Authenticated -> navController.navigate("home")
-            is AuthState.Error -> Toast.makeText(
-                context,
-                (authState.value as AuthState.Error).message, Toast.LENGTH_SHORT
-            ).show()
-
+            is AuthState.Error -> {
+                val errorMessage = (authState.value as AuthState.Error).message
+                if (errorMessage != "Email hoặc mật khẩu không được để trống") {
+                    Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
+                }
+            }
             else -> Unit
         }
     }
@@ -239,7 +245,6 @@ fun LoginPage(
                         modifier = Modifier.fillMaxWidth(),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        // Email Field
                         OutlinedTextField(
                             value = email,
                             onValueChange = { email = it },
@@ -255,7 +260,6 @@ fun LoginPage(
                             shape = RoundedCornerShape(12.dp)
                         )
 
-                        // Password Field
                         OutlinedTextField(
                             value = password,
                             onValueChange = { password = it },
@@ -292,7 +296,7 @@ fun LoginPage(
 
                         Button(
                             onClick = {
-                                authViewModel.login(email, password)
+                                authViewModel.login(email, password, isUserInitiated = true)
                             },
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier
@@ -335,7 +339,6 @@ fun LoginPage(
 
                 Spacer(modifier = Modifier.height(40.dp))
 
-                // Additional decorative element
                 AppText(
                     text = "Connect with amazing people",
                     color = Color.White.copy(alpha = 0.7f)

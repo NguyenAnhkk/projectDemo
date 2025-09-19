@@ -62,7 +62,14 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    fun login(email: String, password: String) {
+    fun login(email: String, password: String,  isUserInitiated: Boolean = false) {
+        if (isUserInitiated && (email.isEmpty() || password.isEmpty())) {
+            _authState.value = AuthState.Error("Email hoặc mật khẩu không được để trống")
+            return
+        }
+        if (!isUserInitiated && (email.isEmpty() || password.isEmpty())) {
+            return
+        }
         if (email.isEmpty() || password.isEmpty()) {
             _authState.value = AuthState.Error("Email hoặc mật khẩu không được để trống")
             return

@@ -1,5 +1,6 @@
 package com.example.projectdemo.feature.forgotpassword
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -48,13 +49,10 @@ import com.example.projectdemo.lib.MyAppTheme
 fun ForgotPasswordScreen(viewModel: PasswordResetViewModel, navController: NavHostController) {
     var email by remember { mutableStateOf("") }
     val context = LocalContext.current
-
-    // Background gradient colors - matching the login and signup screens
     val gradientColors = listOf(
-        Color(0xFFFC466B),  // Vibrant pink
-        Color(0xFF3F5EFB),  // Bright blue
+        Color(0xFFFC466B),
+        Color(0xFF3F5EFB),
     )
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -78,7 +76,6 @@ fun ForgotPasswordScreen(viewModel: PasswordResetViewModel, navController: NavHo
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // App Logo/Title
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -97,7 +94,6 @@ fun ForgotPasswordScreen(viewModel: PasswordResetViewModel, navController: NavHo
                     )
                 }
 
-                // Form Container
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -130,7 +126,13 @@ fun ForgotPasswordScreen(viewModel: PasswordResetViewModel, navController: NavHo
                         )
 
                         Button(
-                            onClick = { viewModel.resetPassword(email, context) },
+                            onClick = {  if (email.isBlank()) {
+                                Toast.makeText(context, "Vui lòng nhập email", Toast.LENGTH_SHORT).show()
+                            } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                                Toast.makeText(context, "Email không hợp lệ", Toast.LENGTH_SHORT).show()
+                            } else {
+                                viewModel.resetPassword(email, context)
+                            } },
                             shape = RoundedCornerShape(12.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -165,7 +167,6 @@ fun ForgotPasswordScreen(viewModel: PasswordResetViewModel, navController: NavHo
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Note section
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

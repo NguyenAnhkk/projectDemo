@@ -87,7 +87,7 @@ fun SignupPage(
         val passwordPattern = Regex("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#\$%^&+=!]).{8,}\$")
         return passwordPattern.matches(password)
     }
-
+    val currentAuthState by authViewModel.authState.observeAsState()
     val passwordIcon = if (passwordVisibility) {
         painterResource(id = R.drawable.baseline_remove_red_eye_24)
     } else {
@@ -122,10 +122,9 @@ fun SignupPage(
         }
     }
 
-    // Background gradient colors - matching the login screen
     val gradientColors = listOf(
-        Color(0xFFFC466B),  // Vibrant pink
-        Color(0xFF3F5EFB),  // Bright blue
+        Color(0xFFFC466B),
+        Color(0xFF3F5EFB),
     )
 
     Box(
@@ -154,7 +153,7 @@ fun SignupPage(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // App Logo/Title
+
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -173,8 +172,6 @@ fun SignupPage(
                         textAlign = TextAlign.Center
                     )
                 }
-
-                // Registration Form Container
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -365,7 +362,6 @@ fun SignupPage(
 
                 Spacer(modifier = Modifier.height(40.dp))
 
-                // Additional decorative element
                 AppText(
                     text = "Start your journey with us",
                     color = Color.White.copy(alpha = 0.7f)
