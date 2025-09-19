@@ -3,33 +3,37 @@ package com.example.projectdemo.ui.theme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
-import com.example.projectdemo.feature.map.HomePage
-import com.example.projectdemo.feature.sign_in.LoginPage
-import com.example.projectdemo.feature.sign_up.SignupPage
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.projectdemo.feature.ChangePasswordScreen
+import com.example.projectdemo.feature.course.CourseDetailsActivity
 import com.example.projectdemo.feature.forgotpassword.ForgotPasswordScreen
 import com.example.projectdemo.feature.forgotpassword.PasswordResetViewModel
-import com.example.projectdemo.feature.ChangePasswordScreen
-import com.example.projectdemo.feature.profile.Profile
-import com.example.projectdemo.feature.profile.UserDetailScreen
-import com.example.projectdemo.feature.matches.MatchesScreen
 import com.example.projectdemo.feature.home.VideoCallScreen
-import com.example.projectdemo.feature.viewmodel.AuthViewModel
-import com.example.projectdemo.feature.course.CourseDetailsActivity
+import com.example.projectdemo.feature.map.HomePage
+import com.example.projectdemo.feature.matches.MatchesScreen
+import com.example.projectdemo.feature.profile.Profile
 import com.example.projectdemo.feature.profile.UpdateDataScreen
-import com.example.projectdemo.feature.sign_in.SplashScreen
+import com.example.projectdemo.feature.profile.UserDetailScreen
+import com.example.projectdemo.feature.sign_in.LoginPage
+import com.example.projectdemo.feature.sign_in.WelcomeScreen
+import com.example.projectdemo.feature.sign_up.SignupPage
+import com.example.projectdemo.feature.viewmodel.AuthViewModel
 import com.google.android.gms.maps.model.LatLng
 
 @Composable
 fun MyAppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "login", builder = {
-//        composable("splash") {
-//            SplashScreen(navController)
-//        }
+
+    NavHost(
+        navController = navController,
+        startDestination = "welcome"
+    ) {
+        composable("welcome") {
+            WelcomeScreen(navController = navController)
+        }
         composable("login") {
             LoginPage(navController, authViewModel)
         }
@@ -83,5 +87,5 @@ fun MyAppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel)
             val userId = backStackEntry.arguments?.getString("userId") ?: ""
             UserDetailScreen(navController = navController, userId = userId)
         }
-    })
+    }
 }

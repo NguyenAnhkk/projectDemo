@@ -9,7 +9,10 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -38,19 +42,17 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import com.example.projectdemo.feature.viewmodel.AuthState
-import com.example.projectdemo.feature.viewmodel.AuthViewModel
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.example.projectdemo.R
 import com.example.projectdemo.lib.AppBox
 import com.example.projectdemo.lib.AppColumn
@@ -76,6 +78,11 @@ import com.facebook.login.LoginManager
 import com.facebook.login.LoginResult
 import com.google.firebase.auth.FacebookAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.unit.sp
+import com.example.projectdemo.feature.viewmodel.AuthState
+import com.example.projectdemo.feature.viewmodel.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -168,109 +175,171 @@ fun LoginPage(
         }
     }
 
-    AppScreen(
-        backgroundColor = MyAppTheme.appColor.background,
-        isPaddingNavigation = true,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(scrollState)
-                .padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.Center
-        ) {
-            AppColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 32.dp),
-                verticalArrangement = Arrangement.spacedBy(24.dp)
-            ) {
-                // Email Field
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = { AppText(text = "Tài khoản", color = Color(0xFF1f1f1f)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        unfocusedBorderColor = Color.Gray,
-                        focusedBorderColor = Color(0xFFd14597),
-                        cursorColor = Color(0xFFd14597)
-                    ),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                )
+    val gradientColors = listOf(
+        Color(0xFFFC466B),
+        Color(0xFF3F5EFB),
+    )
 
-                // Password Field
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = { AppText(text = "Mật khẩu", color = Color(0xFF1f1f1f)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = TextFieldDefaults.outlinedTextFieldColors(
-                        unfocusedBorderColor = Color.Gray,
-                        focusedBorderColor = Color(0xFFd14597),
-                        cursorColor = Color(0xFFd14597)
-                    ),
-                    visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
-                    trailingIcon = {
-                        IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
-                            Icon(
-                                painter = icon,
-                                contentDescription = if (passwordVisibility) "Hide password" else "Show password"
+    val accentGradient = Brush.horizontalGradient(
+        colors = listOf(Color(0xFFfd746c), Color(0xFFff9068))
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                brush = Brush.linearGradient(
+                    colors = gradientColors,
+                    start = androidx.compose.ui.geometry.Offset(0f, 0f),
+                    end = androidx.compose.ui.geometry.Offset(1000f, 1000f)
+                )
+            )
+    ) {
+        AppScreen(
+            backgroundColor = Color.Transparent,
+            isPaddingNavigation = true,
+            modifier = Modifier.fillMaxSize()
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState)
+                    .padding(horizontal = 24.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // App Logo/Title
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 40.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    AppTextBold(
+                        text = "Welcome Back",
+                        color = Color.White,
+                        fontSize = 28.sp
+                    )
+                    AppText(
+                        text = "Sign in to continue your journey",
+                        color = Color.White.copy(alpha = 0.8f)
+                    )
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            color = Color.White.copy(alpha = 0.95f),
+                            shape = RoundedCornerShape(20.dp)
+                        )
+                        .padding(24.dp)
+                ) {
+                    AppColumn(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        // Email Field
+                        OutlinedTextField(
+                            value = email,
+                            onValueChange = { email = it },
+                            label = { AppText(text = "Email", color = Color(0xFF1f1f1f)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f),
+                                focusedBorderColor = Color(0xFFFC466B),
+                                cursorColor = Color(0xFFFC466B),
+                                containerColor = Color.White
+                            ),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                            shape = RoundedCornerShape(12.dp)
+                        )
+
+                        // Password Field
+                        OutlinedTextField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = { AppText(text = "Password", color = Color(0xFF1f1f1f)) },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = TextFieldDefaults.outlinedTextFieldColors(
+                                unfocusedBorderColor = Color.Gray.copy(alpha = 0.5f),
+                                focusedBorderColor = Color(0xFFFC466B),
+                                cursorColor = Color(0xFFFC466B),
+                                containerColor = Color.White
+                            ),
+                            visualTransformation = if (passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+                            trailingIcon = {
+                                IconButton(onClick = { passwordVisibility = !passwordVisibility }) {
+                                    Icon(
+                                        painter = icon,
+                                        contentDescription = if (passwordVisibility) "Hide password" else "Show password",
+                                        tint = Color(0xFFFC466B)
+                                    )
+                                }
+                            },
+                            shape = RoundedCornerShape(12.dp)
+                        )
+
+                        TextButton(
+                            onClick = { navController.navigate("forgot") },
+                            modifier = Modifier.align(Alignment.End)
+                        ) {
+                            AppText(
+                                text = "Forgot Password?",
+                                color = Color(0xFFFC466B)
+                            )
+                        }
+
+                        Button(
+                            onClick = {
+                                authViewModel.login(email, password)
+                            },
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFFFC466B)
+                            ),
+                            elevation = ButtonDefaults.buttonElevation(
+                                defaultElevation = 8.dp,
+                                pressedElevation = 4.dp
+                            )
+                        ) {
+                            AppTextBold(
+                                text = "Sign In",
+                                color = Color.White
+                            )
+                        }
+
+                        DividerWithText()
+
+                        Button(
+                            onClick = { navController.navigate("signup") },
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Transparent
+                            ),
+                            border = BorderStroke(2.dp, Color(0xFFFC466B))
+                        ) {
+                            AppTextBold(
+                                text = "Create Account",
+                                color = Color(0xFFFC466B)
                             )
                         }
                     }
+                }
+
+                Spacer(modifier = Modifier.height(40.dp))
+
+                // Additional decorative element
+                AppText(
+                    text = "Connect with amazing people",
+                    color = Color.White.copy(alpha = 0.7f)
                 )
-
-                TextButton(
-                    onClick = { navController.navigate("forgot") },
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    AppText(
-                        text = "Quên mật khẩu?",
-                        color = Color.Black
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = {
-                        authViewModel.login(email, password)
-                    },
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFFd14597)
-                    )
-                ) {
-                    AppTextBold(
-                        text = "Đăng nhập",
-                        color = Color.White
-                    )
-                }
-
-                DividerWithText()
-
-                Button(
-                    onClick = { navController.navigate("signup") },
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(50.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color.Transparent,
-                        contentColor = Color(0xFF405DA3)
-                    ),
-                    border = BorderStroke(2.dp, Color(0xFFd14597))
-                ) {
-                    AppTextBold(
-                        text = "Đăng ký",
-                    )
-                }
-
             }
         }
     }
@@ -286,27 +355,24 @@ fun DividerWithText() {
         horizontalArrangement = Arrangement.Center
     ) {
         Divider(
-            color = Color.Gray.copy(alpha = 0.5f),
+            color = Color.Gray.copy(alpha = 0.3f),
             thickness = 1.dp,
             modifier = Modifier
                 .weight(1f)
-                .padding(end = 16.dp)
         )
         AppText(
-            text = "Hoặc",
+            text = "or",
             modifier = Modifier.padding(horizontal = 16.dp),
             color = Color.Gray
         )
         Divider(
-            color = Color.Gray.copy(alpha = 0.5f),
+            color = Color.Gray.copy(alpha = 0.3f),
             thickness = 1.dp,
             modifier = Modifier
                 .weight(1f)
-                .padding(start = 16.dp)
         )
     }
 }
-
 
 @Composable
 fun rememberFirebaseAuthLauncher(
