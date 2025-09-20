@@ -46,6 +46,8 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.ktx.Firebase
 import com.google.maps.android.compose.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import java.util.Locale
 
 class MapUtils(private val context: Context) {
@@ -160,6 +162,8 @@ class MapUtils(private val context: Context) {
         navController: NavController,
         currentLocation: LatLng?,
     ) {
+        var searchQuery by remember { mutableStateOf("") }
+        var searchError by remember { mutableStateOf<String?>(null) }
         var nearbyUsersLocations by remember { mutableStateOf(emptyList<LatLng>()) }
         var radiusInMeters by remember { mutableStateOf(5000f) }
         var currentLocation by rememberSaveable { mutableStateOf<LatLng?>(null) }
@@ -202,6 +206,35 @@ class MapUtils(private val context: Context) {
                 }
             }
         }
+        fun searchLocation(
+            context: Context,
+            query: String,
+            camerapositionState: CameraPositionState,
+            coroutineScope: CoroutineScope,
+            onSuccess: (LatLng) -> Unit,
+            onError: (String) -> Unit
+        ) {
+            val geocoder = Geocoder(context, Locale.getDefault())
+            try {
+                val addressList = geocoder.getFromLocationName(query, 1)
+                if (!addressList.isNullOrEmpty()) {
+                    val address = addressList[0]
+                    val latLng = LatLng(address.latitude, address.longitude)
+                    coroutineScope.launch {
+                        camerapositionState.animate(
+                            CameraUpdateFactory.newLatLngZoom(latLng, 15f)
+                        )
+                    }
+                    onSuccess(latLng)
+                } else {
+                    onError("Không tìm thấy địa điểm")
+                }
+            } catch (e: Exception) {
+                onError("Lỗi khi tìm kiếm vị trí")
+                e.printStackTrace()
+            }
+        }
+
 
         LaunchedEffect(currentLocation) {
             currentLocation?.let {
@@ -273,6 +306,51 @@ class MapUtils(private val context: Context) {
                     verticalArrangement = Arrangement.Top,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        placeholder = { Text("Nhập địa điểm cần tìm...") },
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                        trailingIcon = {
+                            val coroutineScope = rememberCoroutineScope()
+                            IconButton(onClick = {
+                                if (searchQuery.isNotBlank()) {
+                                    searchLocation(
+                                        context = context,
+                                        query = searchQuery,
+                                        camerapositionState = camerapositionState,
+                                        coroutineScope = coroutineScope,
+                                        onSuccess = { latLng ->
+                                            currentLocation = latLng
+                                            isLocationUpdated = true
+                                            searchError = null
+                                        },
+                                        onError = { errorMsg ->
+                                            searchError = errorMsg
+                                        }
+                                    )
+                                }
+                            }) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_search_24),
+                                    contentDescription = "Search"
+                                )
+                            }
+                        }
+                    )
+
+                    if (searchError != null) {
+                        Text(
+                            text = searchError!!,
+                            color = Color.Red,
+                            fontSize = 13.sp
+                        )
+                    }
+
                     Box(modifier = Modifier.clip(RoundedCornerShape(16.dp))) {
                         CustomTopBar(
                             currentAddress = currentAddress,
@@ -294,7 +372,6 @@ class MapUtils(private val context: Context) {
                                     it
                                 ) == PackageManager.PERMISSION_GRANTED
                             }) {
-                            // Kiểm tra xem GPS có bật không
                             val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
                             val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
 
