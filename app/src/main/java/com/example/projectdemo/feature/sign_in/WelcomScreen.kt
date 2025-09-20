@@ -77,7 +77,9 @@ fun WelcomeScreen(
 
         ActionButton(
             text = "Get Started",
-            onClicked = { navController.navigate("login") },
+            onClicked = { navController.navigate("login") {
+                popUpTo("welcome") { inclusive = true }
+            } },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 24.dp),

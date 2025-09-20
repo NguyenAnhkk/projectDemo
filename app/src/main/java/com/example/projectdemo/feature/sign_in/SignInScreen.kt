@@ -214,7 +214,6 @@ fun LoginPage(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // App Logo/Title
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
