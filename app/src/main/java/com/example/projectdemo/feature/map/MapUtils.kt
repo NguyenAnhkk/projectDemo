@@ -65,7 +65,6 @@ class MapUtils(private val context: Context) {
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(p0: LocationResult) {
                 super.onLocationResult(p0)
-                // Handle location update
             }
         }
     }
@@ -163,7 +162,7 @@ class MapUtils(private val context: Context) {
     ) {
         var nearbyUsersLocations by remember { mutableStateOf(emptyList<LatLng>()) }
         var radiusInMeters by remember { mutableStateOf(5000f) }
-        var currentLocation by rememberSaveable { mutableStateOf(LatLng(21.0176342, 105.837429)) }
+        var currentLocation by rememberSaveable { mutableStateOf<LatLng?>(null) }
         var isLocationUpdated by remember { mutableStateOf(false) }
         val bitmap = BitmapFactory.decodeResource(context.resources, R.raw.markermap)
         val scaledBitmap = Bitmap.createScaledBitmap(bitmap, 100, 100, true)
@@ -185,7 +184,7 @@ class MapUtils(private val context: Context) {
                     .show()
             }
         }
-        var currentAddress by remember { mutableStateOf("Đang lấy vị trí...") }
+        var currentAddress by remember { mutableStateOf("Update location") }
         fun getAddressFromLatLng(context: Context, latLng: LatLng): String {
             val geocoder = Geocoder(context, Locale.getDefault())
             val addresses: List<Address>? =
@@ -205,36 +204,53 @@ class MapUtils(private val context: Context) {
         }
 
         LaunchedEffect(currentLocation) {
-            currentAddress = getAddressFromLatLng(context, currentLocation)
+            currentLocation?.let {
+                currentAddress = getAddressFromLatLng(context, it)
+                updateMyLocationInFirestore(it)
+            }
         }
+
         LaunchedEffect(currentLocation, radiusInMeters) {
-            fetchNearbyUsersLocations { locations ->
-                nearbyUsersLocations = locations.filter { location ->
-                    isWithinRadius(currentLocation, location, radiusInMeters)
+            currentLocation?.let { safeCurrentLocation ->
+                fetchNearbyUsersLocations { locations ->
+                    nearbyUsersLocations = locations.filter { location ->
+                        isWithinRadius(safeCurrentLocation, location, radiusInMeters)
+                    }
                 }
             }
         }
+
         Scaffold() {
             Box(modifier = Modifier.fillMaxSize()) {
                 GoogleMap(
                     modifier = Modifier.fillMaxSize(),
                     cameraPositionState = camerapositionState
                 ) {
-                    if (isLocationUpdated) {
+                    if (isLocationUpdated && currentLocation != null) {
                         Marker(
-                            state = MarkerState(position = currentLocation),
+                            state = MarkerState(position = currentLocation!!),
                             title = "Vị trí của bạn",
                             snippet = "Địa chỉ hiện tại",
                             icon = smallIcon,
                         )
                     }
-                }
 
-                LaunchedEffect(isLocationUpdated) {
-                    if (isLocationUpdated) {
-                        camerapositionState.animate(CameraUpdateFactory.newLatLng(currentLocation))
+                    nearbyUsersLocations.forEach { location ->
+                        Marker(
+                            state = MarkerState(position = location),
+                            title = "Người dùng xung quanh",
+                            icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
+                        )
                     }
                 }
+
+
+                LaunchedEffect(isLocationUpdated) {
+                    if (isLocationUpdated && currentLocation != null) {
+                        camerapositionState.animate(CameraUpdateFactory.newLatLng(currentLocation!!))
+                    }
+                }
+
 
                 nearbyUsersLocations.forEach { location ->
                     Marker(
@@ -245,8 +261,11 @@ class MapUtils(private val context: Context) {
                 }
 
                 LaunchedEffect(currentLocation) {
-                    updateMyLocationInFirestore(currentLocation)
+                    currentLocation?.let {
+                        updateMyLocationInFirestore(it)
+                    }
                 }
+
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
