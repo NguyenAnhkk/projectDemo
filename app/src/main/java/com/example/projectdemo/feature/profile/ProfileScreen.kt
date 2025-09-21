@@ -121,7 +121,6 @@ fun Profile(
     val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val unreadCount = notifications.count { !(it["read"] as? Boolean ?: false) }
-    // Listen for notifications
     LaunchedEffect(currentUserId) {
         if (currentUserId != null) {
             val firestore = FirebaseFirestore.getInstance()
@@ -130,18 +129,21 @@ fun Profile(
                 .collection("notifications")
                 .orderBy("timestamp", Query.Direction.DESCENDING)
                 .addSnapshotListener { snapshot, error ->
-                    if (error != null || snapshot == null) return@addSnapshotListener
+                    if (error != null) {
+                        Log.e("Profile", "Error listening to notifications", error)
+                        return@addSnapshotListener
+                    }
 
-                    notifications = snapshot.documents.mapNotNull { doc ->
-                        doc.data?.toMutableMap()?.apply {
-                            put("id", doc.id)
+                    if (snapshot != null) {
+                        notifications = snapshot.documents.mapNotNull { doc ->
+                            doc.data?.toMutableMap()?.apply {
+                                put("id", doc.id)
+                            }
                         }
                     }
                 }
         }
     }
-
-    // Listen for liked users
     LaunchedEffect(currentUserId) {
         if (currentUserId != null) {
             val firestore = FirebaseFirestore.getInstance()
@@ -177,33 +179,38 @@ fun Profile(
                     }
 
                     launch {
-
-                        tasks.forEach { task ->
-                            try {
-                                Log.e("Profile", "Error waiting for task")
-                            } catch (e: Exception) {
-                                Log.e("Profile", "Error waiting for task", e)
+                        try {
+                            tasks.forEach { task ->
+                                try {
+                                    Log.e("Profile", "Error waiting for task")
+                                } catch (e: Exception) {
+                                    Log.e("Profile", "Error waiting for task", e)
+                                }
                             }
+                            kotlinx.coroutines.delay(500)
+                            val sortedList = likedUsersList.sortedByDescending {
+                                (it["lastMessageTime"] as? Long) ?: 0L
+                            }
+                            likedUsers = sortedList
+                        } catch (e: Exception) {
+                            Log.e("Profile", "Error processing liked users", e)
                         }
 
-                        // Sort the list by last message time
-                        val sortedList = likedUsersList.sortedByDescending {
-                            (it["lastMessageTime"] as? Long) ?: 0L
-                        }
-                        likedUsers = sortedList
                     }
                 }
         }
     }
-    val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        Manifest.permission.READ_MEDIA_IMAGES
+    val permissionsToRequest = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        arrayOf(
+            Manifest.permission.READ_MEDIA_IMAGES,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
     } else {
-        Manifest.permission.READ_EXTERNAL_STORAGE
+        arrayOf(
+            Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE
+        )
     }
-    val permissionsToRequest = arrayOf(
-        permission,
-        Manifest.permission.WRITE_EXTERNAL_STORAGE
-    )
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
@@ -230,10 +237,15 @@ fun Profile(
                         saveImageUrlToFirestore(url)
                         Toast.makeText(context, "Tải ảnh lên thành công", Toast.LENGTH_SHORT).show()
                     }, {
-                        Toast.makeText(context, "Tải ảnh lên thất bại: ${it.message}", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "Tải ảnh lên thất bại: ${it.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     })
                 } catch (e: Exception) {
-                    Toast.makeText(context, "Lỗi truy cập ảnh: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Lỗi truy cập ảnh: ${e.message}", Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         }
@@ -244,7 +256,10 @@ fun Profile(
             try {
                 val intent = Intent(Intent.ACTION_PICK).apply {
                     type = "image/*"
-                    putExtra(Intent.EXTRA_MIME_TYPES, arrayOf("image/jpeg", "image/png", "image/jpg"))
+                    putExtra(
+                        Intent.EXTRA_MIME_TYPES,
+                        arrayOf("image/jpeg", "image/png", "image/jpg")
+                    )
                 }
                 imagePickerLauncher.launch(intent)
             } catch (e: Exception) {
@@ -295,7 +310,13 @@ fun Profile(
                 },
                 actions = {
                     IconButton(
-                        onClick = { navController.navigate("matches") },
+                        onClick = {
+                            try {
+                                navController.navigate("matches")
+                            } catch (e: Exception) {
+                                Log.e("Navigation", "Error navigating to matches: ${e.message}")
+                            }
+                        },
                         modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
@@ -305,7 +326,10 @@ fun Profile(
                         )
                     }
                     IconButton(
-                        onClick = { showNotifications = !showNotifications },
+                        onClick = {
+                            showNotifications = !showNotifications
+                            showLikedUsers = false
+                        },
                         modifier = Modifier.size(48.dp)
                     ) {
                         BadgedBox(
@@ -346,7 +370,11 @@ fun Profile(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    navController.navigate("course/${currentLocation.latitude}/${currentLocation.longitude}")
+                    try {
+                        navController.navigate("course/${currentLocation.latitude}/${currentLocation.longitude}")
+                    } catch (e: Exception) {
+                        Log.e("Navigation", "Error navigating to course: ${e.message}")
+                    }
                 },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -380,7 +408,13 @@ fun Profile(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     IconButton(
-                        onClick = { navController.popBackStack() },
+                        onClick = {
+                            try {
+                                navController.popBackStack()
+                            } catch (e: Exception) {
+                                Log.e("Navigation", "Error navigating back: ${e.message}")
+                            }
+                        },
                         modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
@@ -444,7 +478,11 @@ fun Profile(
                                 .weight(1f),
                             contentPadding = PaddingValues(vertical = 8.dp)
                         ) {
-                            items(notifications, key = { it["id"] as? String ?: it.hashCode().toString() }) { notification ->
+                            items(
+                                notifications,
+                                key = {
+                                    it["id"] as? String ?: it.hashCode().toString()
+                                }) { notification ->
                                 val type = notification["type"] as? String
                                 val fromUserId = notification["fromUserId"] as? String
                                 val read = notification["read"] as? Boolean ?: false
@@ -459,7 +497,8 @@ fun Profile(
                                             .document(fromUserId)
                                             .get()
                                             .addOnSuccessListener { doc ->
-                                                likedUserName = doc.getString("userName") ?: "Unknown User"
+                                                likedUserName =
+                                                    doc.getString("userName") ?: "Unknown User"
                                             }
                                     }
 
@@ -474,7 +513,8 @@ fun Profile(
                                                     if (notifId != null) {
                                                         FirebaseFirestore.getInstance()
                                                             .collection("users").document(uid)
-                                                            .collection("notifications").document(notifId)
+                                                            .collection("notifications")
+                                                            .document(notifId)
                                                             .update("read", true)
                                                     }
                                                 }
@@ -486,7 +526,8 @@ fun Profile(
                                                     if (notifId != null) {
                                                         FirebaseFirestore.getInstance()
                                                             .collection("users").document(uid)
-                                                            .collection("notifications").document(notifId)
+                                                            .collection("notifications")
+                                                            .document(notifId)
                                                             .update("read", true)
                                                     }
                                                 }
@@ -496,7 +537,8 @@ fun Profile(
                                                 if (!read && uid != null && notifId != null) {
                                                     FirebaseFirestore.getInstance()
                                                         .collection("users").document(uid)
-                                                        .collection("notifications").document(notifId)
+                                                        .collection("notifications")
+                                                        .document(notifId)
                                                         .update("read", true)
                                                 }
                                             }
@@ -663,7 +705,6 @@ fun Profile(
                             .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        // Profile Image Section
                         Box(
                             modifier = Modifier
                                 .size(120.dp)
@@ -710,7 +751,6 @@ fun Profile(
                                 }
                             }
 
-                            // Edit Icon
                             Box(
                                 modifier = Modifier
                                     .align(Alignment.BottomEnd)
@@ -765,7 +805,8 @@ fun Profile(
                                                 putExtra(Intent.EXTRA_TEXT, shareText)
                                                 type = "text/plain"
                                             }
-                                            val shareIntent = Intent.createChooser(sendIntent, "Chia sẻ qua")
+                                            val shareIntent =
+                                                Intent.createChooser(sendIntent, "Chia sẻ qua")
                                             context.startActivity(shareIntent)
                                         }
                                         .background(MaterialTheme.colorScheme.primaryContainer)
