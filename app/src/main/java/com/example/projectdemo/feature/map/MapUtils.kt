@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -109,11 +110,24 @@ class MapUtils(private val context: Context) {
             .set(mapOf("latitude" to latLng.latitude, "longitude" to latLng.longitude))
     }
 
-    fun updateUserOnlineStatus() {
-        val firestore = FirebaseFirestore.getInstance()
-        val userId = Firebase.auth.currentUser?.uid ?: return
-        firestore.collection("profile").document(userId)
-            .update("lastSeen", System.currentTimeMillis())
+    fun getAddressFromLatLng(latLng: LatLng): String {
+        val geocoder = Geocoder(context, Locale.getDefault())
+        return try {
+            val addresses: List<Address>? = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
+            if (addresses.isNullOrEmpty()) {
+                "Không xác định"
+            } else {
+                val addressLine = addresses[0].getAddressLine(0)
+                val addressParts = addressLine.split(",")
+                if (addressParts.size >= 2) {
+                    addressParts[0] + "," + addressParts[1]
+                } else {
+                    addressLine
+                }
+            }
+        } catch (e: Exception) {
+            "Không thể xác định địa chỉ"
+        }
     }
 
     private fun startLocationUpdates(
@@ -127,11 +141,14 @@ class MapUtils(private val context: Context) {
             setMinUpdateIntervalMillis(5000L)
         }.build()
 
-        val locationCallback = object : LocationCallback() {
+        locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 for (location in locationResult.locations) {
                     val latLng = LatLng(location.latitude, location.longitude)
                     onLocationFetched(latLng)
+
+                    ManagerLocation.updateLocation(latLng, context)
+                    ManagerLocation.currentAddress = getAddressFromLatLng(latLng)
                 }
             }
         }
@@ -144,7 +161,9 @@ class MapUtils(private val context: Context) {
                 context,
                 Manifest.permission.ACCESS_COARSE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
-        ) return
+        ) {
+            return
+        }
 
         fusedLocationClient.requestLocationUpdates(
             locationRequest,
@@ -158,10 +177,9 @@ class MapUtils(private val context: Context) {
     @Composable
     fun LocationScreen(
         camerapositionState: CameraPositionState,
-        context: Context,
         navController: NavController,
-        currentLocation: LatLng?,
     ) {
+        val context = LocalContext.current
         var searchQuery by remember { mutableStateOf("") }
         var searchError by remember { mutableStateOf<String?>(null) }
         var nearbyUsersLocations by remember { mutableStateOf(emptyList<LatLng>()) }
@@ -173,41 +191,23 @@ class MapUtils(private val context: Context) {
         val smallIcon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
         val userPhotoUrl = Firebase.auth.currentUser?.photoUrl?.toString()
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+
         val launchMultiplePermissions = rememberLauncherForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) { permissionsMap ->
             if (permissionsMap.all { it.value }) {
-
                 startLocationUpdates(fusedLocationClient, context) { location ->
                     currentLocation = location
                     isLocationUpdated = true
                 }
             } else {
-
-                Toast.makeText(context, "Cần cấp quyền vị trí để tiếp tục", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(context, "Cần cấp quyền vị trí để tiếp tục", Toast.LENGTH_SHORT).show()
             }
         }
+
         var currentAddress by remember { mutableStateOf("Update location") }
-        fun getAddressFromLatLng(context: Context, latLng: LatLng): String {
-            val geocoder = Geocoder(context, Locale.getDefault())
-            val addresses: List<Address>? =
-                geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
-            return if (addresses.isNullOrEmpty()) {
-                "Không xác định"
-            } else {
 
-                val addressLine = addresses[0].getAddressLine(0)
-                val addressParts = addressLine.split(",")
-                if (addressParts.isNotEmpty()) {
-                    addressParts[0] + "," + addressParts[1]
-                } else {
-                    "Không xác định"
-                }
-            }
-        }
         fun searchLocation(
-            context: Context,
             query: String,
             camerapositionState: CameraPositionState,
             coroutineScope: CoroutineScope,
@@ -235,10 +235,9 @@ class MapUtils(private val context: Context) {
             }
         }
 
-
         LaunchedEffect(currentLocation) {
             currentLocation?.let {
-                currentAddress = getAddressFromLatLng(context, it)
+                currentAddress = getAddressFromLatLng(it)
                 updateMyLocationInFirestore(it)
             }
         }
@@ -277,25 +276,9 @@ class MapUtils(private val context: Context) {
                     }
                 }
 
-
                 LaunchedEffect(isLocationUpdated) {
                     if (isLocationUpdated && currentLocation != null) {
                         camerapositionState.animate(CameraUpdateFactory.newLatLng(currentLocation!!))
-                    }
-                }
-
-
-                nearbyUsersLocations.forEach { location ->
-                    Marker(
-                        state = MarkerState(position = location),
-                        title = "Người dùng xung quanh",
-                        icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
-                    )
-                }
-
-                LaunchedEffect(currentLocation) {
-                    currentLocation?.let {
-                        updateMyLocationInFirestore(it)
                     }
                 }
 
@@ -320,7 +303,6 @@ class MapUtils(private val context: Context) {
                             IconButton(onClick = {
                                 if (searchQuery.isNotBlank()) {
                                     searchLocation(
-                                        context = context,
                                         query = searchQuery,
                                         camerapositionState = camerapositionState,
                                         coroutineScope = coroutineScope,
@@ -358,38 +340,37 @@ class MapUtils(private val context: Context) {
                             navController = navController,
                         )
                     }
-
                 }
+
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Bottom,
                     horizontalAlignment = Alignment.CenterHorizontally,
                 ) {
-                    Button(onClick = {
-                        if (permissions.all {
-                                ContextCompat.checkSelfPermission(
-                                    context,
-                                    it
-                                ) == PackageManager.PERMISSION_GRANTED
-                            }) {
-                            val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-                            val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                    Button(
+                        onClick = {
+                            if (permissions.all {
+                                    ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+                                }) {
+                                val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                                val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
 
-                            if (isGpsEnabled) {
-                                startLocationUpdates(fusedLocationClient, context) { location ->
-                                    currentLocation = location
-                                    isLocationUpdated = true
+                                if (isGpsEnabled) {
+                                    startLocationUpdates(fusedLocationClient, context) { location ->
+                                        currentLocation = location
+                                        isLocationUpdated = true
+                                    }
+                                } else {
+                                    val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                                    context.startActivity(intent)
                                 }
                             } else {
-                                // Yêu cầu bật GPS
-                                val intent = Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)
-                                context.startActivity(intent)
+                                launchMultiplePermissions.launch(permissions)
                             }
-                        } else {
-                            launchMultiplePermissions.launch(permissions)
-                        }
-                    }
-                    , shape = RoundedCornerShape(16.dp) , colors =  ButtonDefaults.buttonColors(Color(0xFFb631eb)) , modifier =  Modifier.fillMaxWidth(0.5f)
+                        },
+                        shape = RoundedCornerShape(16.dp),
+                        colors = ButtonDefaults.buttonColors(Color(0xFFb631eb)),
+                        modifier = Modifier.fillMaxWidth(0.5f)
                     ) {
                         Text(text = "Cập nhật vị trí.")
                     }
@@ -412,7 +393,7 @@ class MapUtils(private val context: Context) {
             ) {
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
+                        .size(48.dp)
                         .clip(CircleShape)
                         .background(Color.Gray)
                 ) {
@@ -425,15 +406,13 @@ class MapUtils(private val context: Context) {
                                 modifier = Modifier.fillMaxSize()
                             )
                         }
-
                         else -> {
                             Image(
                                 painter = painterResource(id = R.drawable.defaultimg),
                                 contentDescription = "Default Image",
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier.fillMaxSize(),
-
-                                )
+                            )
                         }
                     }
                 }
@@ -465,7 +444,5 @@ class MapUtils(private val context: Context) {
             )
             IconButtonWithImage(navController = navController, userPhotoUrl = userPhotoUrl)
         }
-
     }
-
 }

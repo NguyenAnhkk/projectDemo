@@ -22,26 +22,19 @@ fun HomePage(
     val context = LocalContext.current
     val user = Firebase.auth.currentUser
     val userPhotoUrl = user?.photoUrl?.toString()
-    var currentLocation by remember {
-        mutableStateOf<LatLng?>(null)
-    }
+
     val cameraPositionState = rememberCameraPositionState {
-        position = if (currentLocation != null) {
-            CameraPosition.fromLatLngZoom(currentLocation!!, 15f)
-        } else {
-            CameraPosition.fromLatLngZoom(LatLng(15.0, 108.0), 5f)
-        }
+        position = CameraPosition.fromLatLngZoom(LatLng(15.0, 108.0), 5f)
     }
 
-    val mapUtils = MapUtils(context)
+    val mapUtils = remember { MapUtils(context) }
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         mapUtils.LocationScreen(
-            context = context,
-            currentLocation = currentLocation,
             camerapositionState = cameraPositionState,
             navController = navController
         )

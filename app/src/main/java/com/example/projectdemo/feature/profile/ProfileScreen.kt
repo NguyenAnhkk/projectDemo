@@ -5,8 +5,6 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
-import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -43,8 +41,6 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -61,7 +57,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
@@ -75,8 +70,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -89,11 +82,11 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.projectdemo.R
 import com.example.projectdemo.lib.AppScreen
-import com.example.projectdemo.lib.MyAppTheme
 import com.example.projectdemo.feature.viewmodel.AuthState
 import com.example.projectdemo.feature.viewmodel.AuthViewModel
 import com.example.projectdemo.feature.course.createMatch
 import com.example.projectdemo.feature.course.handleIgnore
+import com.example.projectdemo.feature.map.ManagerLocation
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -740,7 +733,6 @@ fun Profile(
 
                         when (authState) {
                             is AuthState.Authenticated -> {
-                                // User Name
                                 Text(
                                     text = userName.value,
                                     style = MaterialTheme.typography.headlineMedium,
@@ -749,9 +741,19 @@ fun Profile(
                                     textAlign = TextAlign.Center
                                 )
 
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                Text(
+                                    text = if (ManagerLocation.isLocationUpdated) ManagerLocation.currentAddress else "Vị trí chưa cập nhật",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = if (ManagerLocation.isLocationUpdated) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(horizontal = 16.dp)
+                                )
+
                                 Spacer(modifier = Modifier.height(24.dp))
 
-                                // Share Button
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
