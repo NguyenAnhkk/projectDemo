@@ -122,14 +122,15 @@ fun ForgotPasswordScreen(viewModel: PasswordResetViewModel, navController: NavHo
                                 containerColor = Color.White
                             ),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            singleLine = true
                         )
 
                         Button(
                             onClick = {  if (email.isBlank()) {
-                                Toast.makeText(context, "Vui lòng nhập email", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Please enter your email", Toast.LENGTH_SHORT).show()
                             } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                                Toast.makeText(context, "Email không hợp lệ", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "Invalid email", Toast.LENGTH_SHORT).show()
                             } else {
                                 viewModel.resetPassword(email, context)
                             } },

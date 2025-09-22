@@ -165,7 +165,10 @@ fun LoginPage(
 
     LaunchedEffect(key1 = imeState.value) {
         if (imeState.value) {
-            scrollState.animateScrollTo(scrollState.maxValue, tween(300))
+            val targetScroll = scrollState.maxValue / 3
+            scrollState.animateScrollTo(targetScroll, tween(300))
+        } else {
+            scrollState.animateScrollTo(0, tween(300))
         }
     }
     LaunchedEffect(authState.value) {
@@ -184,10 +187,6 @@ fun LoginPage(
     val gradientColors = listOf(
         Color(0xFFFC466B),
         Color(0xFF3F5EFB),
-    )
-
-    val accentGradient = Brush.horizontalGradient(
-        colors = listOf(Color(0xFFfd746c), Color(0xFFff9068))
     )
 
     Box(
@@ -256,7 +255,8 @@ fun LoginPage(
                                 containerColor = Color.White
                             ),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            singleLine = true
                         )
 
                         OutlinedTextField(
@@ -280,7 +280,8 @@ fun LoginPage(
                                     )
                                 }
                             },
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            singleLine = true
                         )
 
                         TextButton(

@@ -2,7 +2,6 @@ package com.example.projectdemo.feature.sign_up
 
 import android.widget.Toast
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -33,12 +32,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -52,7 +51,6 @@ import com.example.projectdemo.lib.AppColumn
 import com.example.projectdemo.lib.AppScreen
 import com.example.projectdemo.lib.AppText
 import com.example.projectdemo.lib.AppTextBold
-import com.example.projectdemo.lib.MyAppTheme
 import com.example.projectdemo.feature.viewmodel.AuthState
 import com.example.projectdemo.feature.viewmodel.AuthViewModel
 import com.example.projectdemo.ui.theme.rememberImeState
@@ -60,6 +58,8 @@ import com.maxkeppeker.sheets.core.models.base.rememberSheetState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
 import com.maxkeppeler.sheets.calendar.models.CalendarConfig
 import com.maxkeppeler.sheets.calendar.models.CalendarSelection
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -102,7 +102,6 @@ fun SignupPage(
             showError = false
         }
     )
-
     fun isOver13YearsOld(dateOfBirth: String): Boolean {
         if (dateOfBirth.isEmpty()) return false
         val formatter = DateTimeFormatter.ofPattern("d/M/yyyy")
@@ -118,10 +117,12 @@ fun SignupPage(
 
     LaunchedEffect(key1 = imeState.value) {
         if (imeState.value) {
-            scrollState.animateScrollTo(scrollState.maxValue, tween(300))
+            val targetScroll = scrollState.maxValue / 3
+            scrollState.animateScrollTo(targetScroll, tween(300))
+        } else {
+            scrollState.animateScrollTo(0, tween(300))
         }
     }
-
     val gradientColors = listOf(
         Color(0xFFFC466B),
         Color(0xFF3F5EFB),
@@ -199,7 +200,8 @@ fun SignupPage(
                                 containerColor = Color.White
                             ),
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            singleLine = true,
                         )
 
                         OutlinedTextField(
@@ -224,7 +226,8 @@ fun SignupPage(
                                     )
                                 }
                             },
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            singleLine = true
                         )
 
                         OutlinedTextField(
@@ -240,7 +243,8 @@ fun SignupPage(
                                 cursorColor = Color(0xFFFC466B),
                                 containerColor = Color.White
                             ),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            singleLine = true
                         )
 
                         OutlinedTextField(
@@ -268,7 +272,8 @@ fun SignupPage(
                             },
                             modifier = Modifier
                                 .fillMaxWidth(),
-                            shape = RoundedCornerShape(12.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            singleLine = true
                         )
 
                         Button(

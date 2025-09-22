@@ -200,17 +200,6 @@ fun Profile(
                 }
         }
     }
-    val permissionsToRequest = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-        arrayOf(
-            Manifest.permission.READ_MEDIA_IMAGES,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
-    } else {
-        arrayOf(
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
-    }
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
@@ -310,13 +299,7 @@ fun Profile(
                 },
                 actions = {
                     IconButton(
-                        onClick = {
-                            try {
-                                navController.navigate("matches")
-                            } catch (e: Exception) {
-                                Log.e("Navigation", "Error navigating to matches: ${e.message}")
-                            }
-                        },
+                        onClick = { navController.navigate("matches") },
                         modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
@@ -326,10 +309,7 @@ fun Profile(
                         )
                     }
                     IconButton(
-                        onClick = {
-                            showNotifications = !showNotifications
-                            showLikedUsers = false
-                        },
+                        onClick = { showNotifications = !showNotifications },
                         modifier = Modifier.size(48.dp)
                     ) {
                         BadgedBox(
@@ -370,11 +350,7 @@ fun Profile(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    try {
-                        navController.navigate("course/${currentLocation.latitude}/${currentLocation.longitude}")
-                    } catch (e: Exception) {
-                        Log.e("Navigation", "Error navigating to course: ${e.message}")
-                    }
+                    navController.navigate("course/${currentLocation.latitude}/${currentLocation.longitude}")
                 },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -408,13 +384,7 @@ fun Profile(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     IconButton(
-                        onClick = {
-                            try {
-                                navController.popBackStack()
-                            } catch (e: Exception) {
-                                Log.e("Navigation", "Error navigating back: ${e.message}")
-                            }
-                        },
+                        onClick = { navController.popBackStack() },
                         modifier = Modifier.size(48.dp)
                     ) {
                         Icon(
@@ -705,6 +675,7 @@ fun Profile(
                             .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+                        // Profile Image Section
                         Box(
                             modifier = Modifier
                                 .size(120.dp)
@@ -751,6 +722,7 @@ fun Profile(
                                 }
                             }
 
+                            // Edit Icon
                             Box(
                                 modifier = Modifier
                                     .align(Alignment.BottomEnd)
