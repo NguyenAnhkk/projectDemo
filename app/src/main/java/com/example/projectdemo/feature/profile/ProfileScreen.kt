@@ -782,15 +782,18 @@ fun Profile(
                                 )
 
                                 Spacer(modifier = Modifier.height(16.dp))
+                                Row {
+                                    Icon(painter = painterResource(R.drawable.outline_location_on_24), contentDescription = "location")
+                                    Text(
+                                        text = if (ManagerLocation.isLocationUpdated) ManagerLocation.currentAddress else "Vị trí chưa cập nhật",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = if (ManagerLocation.isLocationUpdated) MaterialTheme.colorScheme.primary
+                                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.padding(horizontal = 16.dp)
+                                    )
+                                }
 
-                                Text(
-                                    text = if (ManagerLocation.isLocationUpdated) ManagerLocation.currentAddress else "Vị trí chưa cập nhật",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = if (ManagerLocation.isLocationUpdated) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.onSurfaceVariant,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.padding(horizontal = 16.dp)
-                                )
 
                                 Spacer(modifier = Modifier.height(24.dp))
 
