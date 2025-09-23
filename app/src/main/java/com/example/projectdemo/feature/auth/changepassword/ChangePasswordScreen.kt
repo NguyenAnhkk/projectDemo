@@ -1,4 +1,4 @@
-package com.example.projectdemo.feature
+package com.example.projectdemo.feature.auth.changepassword
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize

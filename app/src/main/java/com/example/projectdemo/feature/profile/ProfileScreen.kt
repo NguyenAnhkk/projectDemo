@@ -82,8 +82,8 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.projectdemo.R
 import com.example.projectdemo.lib.AppScreen
-import com.example.projectdemo.feature.viewmodel.AuthState
-import com.example.projectdemo.feature.viewmodel.AuthViewModel
+import com.example.projectdemo.feature.auth.common.AuthState
+import com.example.projectdemo.feature.auth.common.AuthViewModel
 import com.example.projectdemo.feature.course.createMatch
 import com.example.projectdemo.feature.course.handleIgnore
 import com.example.projectdemo.feature.map.ManagerLocation

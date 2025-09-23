@@ -1,4 +1,4 @@
-package com.example.projectdemo.feature.viewmodel
+package com.example.projectdemo.feature.auth.common
 
 import android.content.Context
 import androidx.lifecycle.LiveData

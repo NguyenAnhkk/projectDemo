@@ -1,7 +1,7 @@
-package com.example.projectdemo.feature.forgotpassword
+package com.example.projectdemo.feature.auth.forgotpassword
 
+import android.util.Patterns
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -27,22 +26,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.projectdemo.R
+import com.example.projectdemo.feature.auth.forgotpassword.PasswordResetViewModel
 import com.example.projectdemo.lib.AppColumn
 import com.example.projectdemo.lib.AppScreen
 import com.example.projectdemo.lib.AppText
 import com.example.projectdemo.lib.AppTextBold
-import com.example.projectdemo.lib.MyAppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,8 +56,8 @@ fun ForgotPasswordScreen(viewModel: PasswordResetViewModel, navController: NavHo
             .background(
                 brush = Brush.linearGradient(
                     colors = gradientColors,
-                    start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                    end = androidx.compose.ui.geometry.Offset(1000f, 1000f)
+                    start = Offset(0f, 0f),
+                    end = Offset(1000f, 1000f)
                 )
             )
     ) {
@@ -129,7 +126,7 @@ fun ForgotPasswordScreen(viewModel: PasswordResetViewModel, navController: NavHo
                         Button(
                             onClick = {  if (email.isBlank()) {
                                 Toast.makeText(context, "Please enter your email", Toast.LENGTH_SHORT).show()
-                            } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                            } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
                                 Toast.makeText(context, "Invalid email", Toast.LENGTH_SHORT).show()
                             } else {
                                 viewModel.resetPassword(email, context)

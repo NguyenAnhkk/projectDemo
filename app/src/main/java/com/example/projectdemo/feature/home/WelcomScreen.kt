@@ -1,4 +1,4 @@
-package com.example.projectdemo.feature.sign_in
+package com.example.projectdemo.feature.home
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,10 +13,10 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -25,6 +25,7 @@ import androidx.navigation.NavController
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
+import com.example.projectdemo.feature.auth.signin.components.ActionButton
 import com.example.projectdemo.ui.theme.Pink40
 
 @Composable
@@ -44,8 +45,8 @@ fun WelcomeScreen(
             .background(
                 brush = Brush.linearGradient(
                     colors = gradientColors,
-                    start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                    end = androidx.compose.ui.geometry.Offset(1000f, 1000f)
+                    start = Offset(0f, 0f),
+                    end = Offset(1000f, 1000f)
                 )
             )
             .padding(horizontal = 24.dp),
@@ -77,9 +78,11 @@ fun WelcomeScreen(
 
         ActionButton(
             text = "Get Started",
-            onClicked = { navController.navigate("login") {
-                popUpTo("welcome") { inclusive = true }
-            } },
+            onClicked = {
+                navController.navigate("login") {
+                    popUpTo("welcome") { inclusive = true }
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 24.dp),

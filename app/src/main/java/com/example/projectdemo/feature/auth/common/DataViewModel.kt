@@ -1,4 +1,4 @@
-package com.example.projectdemo.feature.viewmodel
+package com.example.projectdemo.feature.auth.common
 
 import android.util.Log
 import androidx.compose.runtime.mutableStateOf

@@ -1,4 +1,4 @@
-package com.example.projectdemo.feature.forgotpassword
+package com.example.projectdemo.feature.auth.forgotpassword
 
 import android.content.Context
 import android.widget.Toast

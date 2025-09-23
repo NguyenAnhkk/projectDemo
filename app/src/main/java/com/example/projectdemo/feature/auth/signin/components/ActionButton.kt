@@ -1,4 +1,4 @@
-package com.example.projectdemo.feature.sign_in
+package com.example.projectdemo.feature.auth.signin.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -29,7 +30,7 @@ fun ActionButton(
     text: String,
     isNavigationArrowVisible: Boolean,
     onClicked: () -> Unit,
-    colors: androidx.compose.material3.ButtonColors = ButtonDefaults.buttonColors(),
+    colors: ButtonColors = ButtonDefaults.buttonColors(),
     shadowColor: Color = Color.Black
 ) {
     Button(

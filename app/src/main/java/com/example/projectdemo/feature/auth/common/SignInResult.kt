@@ -1,4 +1,4 @@
-package com.example.projectdemo.feature.sign_in
+package com.example.projectdemo.feature.auth.common
 
 data class SignInResult(
     val data: UserData?,

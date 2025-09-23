@@ -15,13 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.example.projectdemo.lib.MyAppTheme
-import com.example.projectdemo.feature.viewmodel.AuthViewModel
+import com.example.projectdemo.feature.auth.common.AuthViewModel
 import com.example.projectdemo.ui.theme.MyAppNavigation
 import com.example.projectdemo.ui.theme.ProjectDemoTheme
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.MapsInitializer
-import com.google.android.gms.tasks.OnCompleteListener
 import com.google.firebase.messaging.FirebaseMessaging
 import kotlinx.coroutines.launch
 

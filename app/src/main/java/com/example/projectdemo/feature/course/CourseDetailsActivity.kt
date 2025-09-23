@@ -27,7 +27,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -64,12 +63,9 @@ import androidx.compose.ui.zIndex
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.projectdemo.R
-import com.example.projectdemo.lib.AppColumn
-import com.example.projectdemo.lib.AppRow
-import com.example.projectdemo.lib.AppText
 import com.example.projectdemo.ulti.DraggableCard
 import com.example.projectdemo.ulti.verticalGradientBackground
-import com.example.projectdemo.feature.viewmodel.DataViewModel
+import com.example.projectdemo.feature.auth.common.DataViewModel
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore

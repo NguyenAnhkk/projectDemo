@@ -1,4 +1,4 @@
-package com.example.projectdemo.feature.sign_up
+package com.example.projectdemo.feature.auth.signup
 
 import android.widget.Toast
 import androidx.compose.animation.core.tween
@@ -32,10 +32,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -51,15 +51,13 @@ import com.example.projectdemo.lib.AppColumn
 import com.example.projectdemo.lib.AppScreen
 import com.example.projectdemo.lib.AppText
 import com.example.projectdemo.lib.AppTextBold
-import com.example.projectdemo.feature.viewmodel.AuthState
-import com.example.projectdemo.feature.viewmodel.AuthViewModel
+import com.example.projectdemo.feature.auth.common.AuthState
+import com.example.projectdemo.feature.auth.common.AuthViewModel
 import com.example.projectdemo.ui.theme.rememberImeState
 import com.maxkeppeker.sheets.core.models.base.rememberSheetState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
 import com.maxkeppeler.sheets.calendar.models.CalendarConfig
 import com.maxkeppeler.sheets.calendar.models.CalendarSelection
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
@@ -134,8 +132,8 @@ fun SignupPage(
             .background(
                 brush = Brush.linearGradient(
                     colors = gradientColors,
-                    start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                    end = androidx.compose.ui.geometry.Offset(1000f, 1000f)
+                    start = Offset(0f, 0f),
+                    end = Offset(1000f, 1000f)
                 )
             )
     ) {

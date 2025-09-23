@@ -1,5 +1,6 @@
-package com.example.projectdemo.feature.home
+package com.example.projectdemo.feature.matches
 
+import android.app.Application
 import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -137,7 +138,7 @@ fun VideoCallScreen(
                 appSign,
                 false,
                 ZegoScenario.GENERAL,
-                context.applicationContext as android.app.Application,
+                context.applicationContext as Application,
                 null
             )
         } else null
@@ -311,7 +312,7 @@ fun VideoCallScreen(
                         appSign,
                         false,
                         ZegoScenario.GENERAL,
-                        context.applicationContext as android.app.Application,
+                        context.applicationContext as Application,
                         null
                     )
                 }

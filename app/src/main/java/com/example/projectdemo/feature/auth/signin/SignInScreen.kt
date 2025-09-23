@@ -1,4 +1,4 @@
-package com.example.projectdemo.feature.sign_in
+package com.example.projectdemo.feature.auth.signin
 
 import android.content.Intent
 import android.util.Log
@@ -9,7 +9,6 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -44,7 +42,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -54,12 +51,10 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.projectdemo.R
-import com.example.projectdemo.lib.AppBox
 import com.example.projectdemo.lib.AppColumn
 import com.example.projectdemo.lib.AppScreen
 import com.example.projectdemo.lib.AppText
 import com.example.projectdemo.lib.AppTextBold
-import com.example.projectdemo.lib.MyAppTheme
 import com.example.projectdemo.ui.theme.rememberImeState
 import com.facebook.AccessToken
 import com.facebook.CallbackManager
@@ -80,9 +75,10 @@ import com.google.firebase.auth.FacebookAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.sp
-import com.example.projectdemo.feature.viewmodel.AuthState
-import com.example.projectdemo.feature.viewmodel.AuthViewModel
+import com.example.projectdemo.feature.auth.common.AuthState
+import com.example.projectdemo.feature.auth.common.AuthViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -195,8 +191,8 @@ fun LoginPage(
             .background(
                 brush = Brush.linearGradient(
                     colors = gradientColors,
-                    start = androidx.compose.ui.geometry.Offset(0f, 0f),
-                    end = androidx.compose.ui.geometry.Offset(1000f, 1000f)
+                    start = Offset(0f, 0f),
+                    end = Offset(1000f, 1000f)
                 )
             )
     ) {

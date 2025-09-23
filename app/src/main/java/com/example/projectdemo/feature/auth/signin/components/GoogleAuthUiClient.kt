@@ -1,9 +1,11 @@
-package com.example.projectdemo.feature.sign_in
+package com.example.projectdemo.feature.auth.signin.components
 
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import com.example.projectdemo.R
+import com.example.projectdemo.feature.auth.common.SignInResult
+import com.example.projectdemo.feature.auth.common.UserData
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.firebase.auth.GoogleAuthProvider

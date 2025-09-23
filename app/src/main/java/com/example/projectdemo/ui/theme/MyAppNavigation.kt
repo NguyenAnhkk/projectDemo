@@ -7,20 +7,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
-import com.example.projectdemo.feature.*
+import com.example.projectdemo.feature.auth.changepassword.ChangePasswordScreen
 import com.example.projectdemo.feature.course.CourseDetailsActivity
-import com.example.projectdemo.feature.forgotpassword.ForgotPasswordScreen
-import com.example.projectdemo.feature.forgotpassword.PasswordResetViewModel
-import com.example.projectdemo.feature.home.VideoCallScreen
+import com.example.projectdemo.feature.auth.forgotpassword.ForgotPasswordScreen
+import com.example.projectdemo.feature.auth.forgotpassword.PasswordResetViewModel
+import com.example.projectdemo.feature.matches.VideoCallScreen
 import com.example.projectdemo.feature.map.HomePage
 import com.example.projectdemo.feature.matches.MatchesScreen
 import com.example.projectdemo.feature.profile.Profile
 import com.example.projectdemo.feature.profile.UpdateDataScreen
 import com.example.projectdemo.feature.profile.UserDetailScreen
-import com.example.projectdemo.feature.sign_in.LoginPage
-import com.example.projectdemo.feature.sign_in.WelcomeScreen
-import com.example.projectdemo.feature.sign_up.SignupPage
-import com.example.projectdemo.feature.viewmodel.AuthViewModel
+import com.example.projectdemo.feature.auth.signin.LoginPage
+import com.example.projectdemo.feature.home.WelcomeScreen
+import com.example.projectdemo.feature.auth.signup.SignupPage
+import com.example.projectdemo.feature.auth.common.AuthViewModel
 import com.google.android.gms.maps.model.LatLng
 
 @Composable
