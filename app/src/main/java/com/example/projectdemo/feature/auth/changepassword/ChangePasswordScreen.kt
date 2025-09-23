@@ -1,25 +1,9 @@
 package com.example.projectdemo.feature.auth.changepassword
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,11 +16,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.projectdemo.R
-import com.example.projectdemo.lib.AppColumn
-import com.example.projectdemo.lib.AppScreen
-import com.example.projectdemo.lib.AppText
-import com.example.projectdemo.lib.AppTextBold
-import com.example.projectdemo.lib.MyAppTheme
+import com.example.projectdemo.lib.*
+import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
 import android.widget.Toast
 
@@ -49,7 +30,9 @@ fun ChangePasswordScreen(navController: NavHostController) {
     var currentPasswordVisibility by remember { mutableStateOf(false) }
     var newPasswordVisibility by remember { mutableStateOf(false) }
     var confirmPasswordVisibility by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val auth = FirebaseAuth.getInstance()
 
     val currentPasswordIcon = if (currentPasswordVisibility) {
         painterResource(id = R.drawable.baseline_remove_red_eye_24)
@@ -67,6 +50,90 @@ fun ChangePasswordScreen(navController: NavHostController) {
         painterResource(id = R.drawable.baseline_remove_red_eye_24)
     } else {
         painterResource(id = R.drawable.baseline_visibility_off_24)
+    }
+
+    // Password change handler function
+    fun changePassword() {
+        if (isLoading) return
+
+        // Validation
+        if (currentPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
+            Toast.makeText(context, "Please fill in all fields!", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (newPassword != confirmPassword) {
+            Toast.makeText(context, "New passwords do not match!", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (newPassword.length < 6) {
+            Toast.makeText(context, "Password must be at least 6 characters long!", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (newPassword == currentPassword) {
+            Toast.makeText(context, "New password must be different from current password!", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val user = auth.currentUser
+        if (user == null) {
+            Toast.makeText(context, "User not logged in!", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (user.email == null) {
+            Toast.makeText(context, "User email not found!", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        isLoading = true
+
+        // Create credential for reauthentication
+        val credential = EmailAuthProvider.getCredential(user.email!!, currentPassword)
+
+        // Reauthenticate before changing password
+        user.reauthenticate(credential)
+            .addOnCompleteListener { reauthTask ->
+                if (reauthTask.isSuccessful) {
+                    // Reauthentication successful, proceed to change password
+                    user.updatePassword(newPassword)
+                        .addOnCompleteListener { updateTask ->
+                            isLoading = false
+
+                            if (updateTask.isSuccessful) {
+                                Toast.makeText(context, "Password changed successfully!", Toast.LENGTH_SHORT).show()
+                                navController.navigate("profile") {
+                                    popUpTo("changepassword") { inclusive = true }
+                                }
+                            } else {
+                                val error = updateTask.exception
+                                val errorMessage = when (error?.message) {
+                                    "The password must be 6 characters long or more." ->
+                                        "Password must be at least 6 characters long!"
+                                    "The password is too weak." ->
+                                        "Password is too weak. Please choose a stronger password!"
+                                    else ->
+                                        "Password change failed: ${error?.message}"
+                                }
+                                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                            }
+                        }
+                } else {
+                    isLoading = false
+                    val error = reauthTask.exception
+                    val errorMessage = when {
+                        error?.message?.contains("wrong-password") == true ->
+                            "Current password is incorrect!"
+                        error?.message?.contains("invalid-email") == true ->
+                            "Invalid email address!"
+                        else ->
+                            "Authentication failed: ${error?.message}"
+                    }
+                    Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                }
+            }
     }
 
     AppScreen(
@@ -89,13 +156,13 @@ fun ChangePasswordScreen(navController: NavHostController) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 AppTextBold(
-                    text = "Đổi mật khẩu",
+                    text = "Change Password",
                     fontSize = 24.sp,
                     color = Color(0xFF405DA3),
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 AppText(
-                    text = "Vui lòng nhập mật khẩu hiện tại và mật khẩu mới",
+                    text = "Please enter your current password and new password",
                     fontSize = 16.sp,
                     color = Color.Gray,
                     textAlign = TextAlign.Center
@@ -113,7 +180,7 @@ fun ChangePasswordScreen(navController: NavHostController) {
                 OutlinedTextField(
                     value = currentPassword,
                     onValueChange = { currentPassword = it },
-                    label = { AppText(text = "Mật khẩu hiện tại", color = Color.Gray) },
+                    label = { AppText(text = "Current Password", color = Color.Gray) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
@@ -139,7 +206,7 @@ fun ChangePasswordScreen(navController: NavHostController) {
                 OutlinedTextField(
                     value = newPassword,
                     onValueChange = { newPassword = it },
-                    label = { AppText(text = "Mật khẩu mới", color = Color.Gray) },
+                    label = { AppText(text = "New Password", color = Color.Gray) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp),
@@ -161,10 +228,11 @@ fun ChangePasswordScreen(navController: NavHostController) {
                         }
                     }
                 )
+
                 OutlinedTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
-                    label = { AppText(text = "Xác nhận mật khẩu mới", color = Color.Gray) },
+                    label = { AppText(text = "Confirm New Password", color = Color.Gray) },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 24.dp),
@@ -188,55 +256,47 @@ fun ChangePasswordScreen(navController: NavHostController) {
                 )
 
                 Button(
-                    onClick = {
-                        if (newPassword != confirmPassword) {
-                            Toast.makeText(context, "Mật khẩu mới không khớp!", Toast.LENGTH_SHORT).show()
-                            return@Button
-                        }
-
-                        val user = FirebaseAuth.getInstance().currentUser
-                        if (user != null) {
-                            user.updatePassword(newPassword)
-                                .addOnCompleteListener { task ->
-                                    if (task.isSuccessful) {
-                                        Toast.makeText(context, "Đổi mật khẩu thành công!", Toast.LENGTH_SHORT).show()
-                                        navController.navigate("profile") {
-                                            popUpTo("profile") { inclusive = true }
-                                        }
-                                    } else {
-                                        Toast.makeText(context, "Đổi mật khẩu thất bại: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
-                                    }
-                                }
-                        }
-                    },
+                    onClick = { changePassword() },
                     shape = RoundedCornerShape(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(50.dp),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF405DA3)
-                    )
+                    ),
+                    enabled = !isLoading
                 ) {
-                    AppTextBold(
-                        text = "Đổi mật khẩu",
-                        color = Color.White
-                    )
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            color = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    } else {
+                        AppTextBold(
+                            text = "Change Password",
+                            color = Color.White
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 TextButton(
-                    onClick = { navController.navigate("profile") },
-                    modifier = Modifier.fillMaxWidth()
+                    onClick = {
+                        if (!isLoading) {
+                            navController.navigate("profile")
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = !isLoading
                 ) {
                     AppText(
-                        text = "Quay lại",
+                        text = "Back",
                         color = Color(0xFF405DA3)
                     )
                 }
             }
 
-            // Bottom section with info
             AppColumn(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -245,7 +305,7 @@ fun ChangePasswordScreen(navController: NavHostController) {
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 AppText(
-                    text = "Mật khẩu mới phải có ít nhất 6 ký tự",
+                    text = "New password must be at least 6 characters long",
                     fontSize = 14.sp,
                     color = Color.Gray,
                     textAlign = TextAlign.Center,
@@ -254,4 +314,4 @@ fun ChangePasswordScreen(navController: NavHostController) {
             }
         }
     }
-} 
+}
