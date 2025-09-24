@@ -64,16 +64,16 @@ fun MyAppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel)
                 SignupPage(modifier, navController, authViewModel)
             }
 
-            composable("change_password") {
-                ChangePasswordScreen(navController)
-            }
-
             composable("home") {
                 HomePage(modifier, navController, authViewModel)
             }
 
             composable("profile") {
                 Profile(modifier, navController, authViewModel)
+            }
+
+            composable("change_password") {
+                ChangePasswordScreen(navController)
             }
 
             composable("matches") {

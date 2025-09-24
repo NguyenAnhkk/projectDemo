@@ -31,6 +31,7 @@ fun ChangePasswordScreen(navController: NavHostController) {
     var newPasswordVisibility by remember { mutableStateOf(false) }
     var confirmPasswordVisibility by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
     val auth = FirebaseAuth.getInstance()
 
@@ -56,84 +57,101 @@ fun ChangePasswordScreen(navController: NavHostController) {
     fun changePassword() {
         if (isLoading) return
 
-        // Validation
-        if (currentPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
-            Toast.makeText(context, "Please fill in all fields!", Toast.LENGTH_SHORT).show()
-            return
-        }
+        try {
+            // Reset error message
+            errorMessage = null
 
-        if (newPassword != confirmPassword) {
-            Toast.makeText(context, "New passwords do not match!", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        if (newPassword.length < 6) {
-            Toast.makeText(context, "Password must be at least 6 characters long!", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        if (newPassword == currentPassword) {
-            Toast.makeText(context, "New password must be different from current password!", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val user = auth.currentUser
-        if (user == null) {
-            Toast.makeText(context, "User not logged in!", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        if (user.email == null) {
-            Toast.makeText(context, "User email not found!", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        isLoading = true
-
-        // Create credential for reauthentication
-        val credential = EmailAuthProvider.getCredential(user.email!!, currentPassword)
-
-        // Reauthenticate before changing password
-        user.reauthenticate(credential)
-            .addOnCompleteListener { reauthTask ->
-                if (reauthTask.isSuccessful) {
-                    // Reauthentication successful, proceed to change password
-                    user.updatePassword(newPassword)
-                        .addOnCompleteListener { updateTask ->
-                            isLoading = false
-
-                            if (updateTask.isSuccessful) {
-                                Toast.makeText(context, "Password changed successfully!", Toast.LENGTH_SHORT).show()
-                                navController.navigate("profile") {
-                                    popUpTo("changepassword") { inclusive = true }
-                                }
-                            } else {
-                                val error = updateTask.exception
-                                val errorMessage = when (error?.message) {
-                                    "The password must be 6 characters long or more." ->
-                                        "Password must be at least 6 characters long!"
-                                    "The password is too weak." ->
-                                        "Password is too weak. Please choose a stronger password!"
-                                    else ->
-                                        "Password change failed: ${error?.message}"
-                                }
-                                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
-                            }
-                        }
-                } else {
-                    isLoading = false
-                    val error = reauthTask.exception
-                    val errorMessage = when {
-                        error?.message?.contains("wrong-password") == true ->
-                            "Current password is incorrect!"
-                        error?.message?.contains("invalid-email") == true ->
-                            "Invalid email address!"
-                        else ->
-                            "Authentication failed: ${error?.message}"
-                    }
-                    Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
-                }
+            // Validation
+            if (currentPassword.isEmpty() || newPassword.isEmpty() || confirmPassword.isEmpty()) {
+                Toast.makeText(context, "Please fill in all fields!", Toast.LENGTH_SHORT).show()
+                return
             }
+
+            if (newPassword != confirmPassword) {
+                Toast.makeText(context, "New passwords do not match!", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            if (newPassword.length < 6) {
+                Toast.makeText(context, "Password must be at least 6 characters long!", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            if (newPassword == currentPassword) {
+                Toast.makeText(context, "New password must be different from current password!", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            val user = auth.currentUser
+            if (user == null) {
+                Toast.makeText(context, "User not logged in!", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            if (user.email == null) {
+                Toast.makeText(context, "User email not found!", Toast.LENGTH_SHORT).show()
+                return
+            }
+
+            isLoading = true
+
+            val credential = EmailAuthProvider.getCredential(user.email!!, currentPassword)
+
+            user.reauthenticate(credential)
+                .addOnCompleteListener { reauthTask ->
+                    if (reauthTask.isSuccessful) {
+                        user.updatePassword(newPassword)
+                            .addOnCompleteListener { updateTask ->
+                                isLoading = false
+
+                                if (updateTask.isSuccessful) {
+                                    Toast.makeText(context, "Password changed successfully!", Toast.LENGTH_SHORT).show()
+                                    navController.popBackStack()
+                                } else {
+                                    val error = updateTask.exception
+                                    val errorMsg = when {
+                                        error?.message?.contains("requires recent authentication") == true ->
+                                            "Please log out and log in again to change password."
+                                        error?.message?.contains("password is too weak") == true ->
+                                            "Password is too weak. Please choose a stronger password."
+                                        else ->
+                                            "Password change failed: ${error?.message ?: "Unknown error"}"
+                                    }
+                                    Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
+                                }
+                            }
+                    } else {
+                        isLoading = false
+                        val error = reauthTask.exception
+                        val errorMsg = when {
+                            error?.message?.contains("wrong-password") == true ->
+                                "Current password is incorrect!"
+                            error?.message?.contains("invalid-email") == true ->
+                                "Invalid email address!"
+                            error?.message?.contains("network error") == true ->
+                                "Network error. Please check your connection."
+                            else ->
+                                "Authentication failed: ${error?.message ?: "Unknown error"}"
+                        }
+                        Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
+                    }
+                }
+                .addOnFailureListener { exception ->
+                    isLoading = false
+                    Toast.makeText(context, "Error: ${exception.message}", Toast.LENGTH_LONG).show()
+                }
+        } catch (e: Exception) {
+            isLoading = false
+            Toast.makeText(context, "Unexpected error: ${e.message}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    // Hiển thị error message nếu có
+    if (errorMessage != null) {
+        LaunchedEffect(errorMessage) {
+            Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+            errorMessage = null
+        }
     }
 
     AppScreen(
@@ -169,7 +187,6 @@ fun ChangePasswordScreen(navController: NavHostController) {
                 )
             }
 
-            // Middle section with form
             AppColumn(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -284,7 +301,7 @@ fun ChangePasswordScreen(navController: NavHostController) {
                 TextButton(
                     onClick = {
                         if (!isLoading) {
-                            navController.navigate("profile")
+                            navController.popBackStack()
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),

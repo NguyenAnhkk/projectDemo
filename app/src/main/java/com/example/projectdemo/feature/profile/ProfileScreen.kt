@@ -384,6 +384,18 @@ fun Profile(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     IconButton(
+                        onClick = {
+                            navController.navigate("change_password")
+                        },
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.outline_passkey_24),
+                            contentDescription = "Change Password",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    IconButton(
                         onClick = { navController.popBackStack() },
                         modifier = Modifier.size(48.dp)
                     ) {
