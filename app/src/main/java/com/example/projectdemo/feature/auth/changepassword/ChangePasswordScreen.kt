@@ -85,18 +85,18 @@ fun ChangePasswordScreen(navController: NavHostController) {
             val user = auth.currentUser
             if (user == null) {
                 Toast.makeText(context, "User not logged in!", Toast.LENGTH_SHORT).show()
+                isLoading = false
                 return
             }
 
-            if (user.email == null) {
-                Toast.makeText(context, "User email not found!", Toast.LENGTH_SHORT).show()
+            val email = user.email
+            if (email.isNullOrEmpty()) {
+                Toast.makeText(context, "This account does not support password change (no email linked)!", Toast.LENGTH_LONG).show()
+                isLoading = false
                 return
             }
 
-            isLoading = true
-
-            val credential = EmailAuthProvider.getCredential(user.email!!, currentPassword)
-
+            val credential = EmailAuthProvider.getCredential(email, currentPassword)
             user.reauthenticate(credential)
                 .addOnCompleteListener { reauthTask ->
                     if (reauthTask.isSuccessful) {
