@@ -98,7 +98,6 @@ fun LoginPage(
                     navController.navigate("home")
                 } else {
                     Log.w("FacebookLogin", "signInWithCredential:failure", task.exception)
-                    // Xử lý khi đăng nhập thất bại
                     Toast.makeText(
                         context,
                         "Login failed: ${task.exception?.message}",
@@ -172,7 +171,7 @@ fun LoginPage(
             is AuthState.Authenticated -> navController.navigate("home")
             is AuthState.Error -> {
                 val errorMessage = (authState.value as AuthState.Error).message
-                if (errorMessage != "Email hoặc mật khẩu không được để trống") {
+                if (errorMessage != "Email or password cannot be empty") {
                     Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
                 }
             }

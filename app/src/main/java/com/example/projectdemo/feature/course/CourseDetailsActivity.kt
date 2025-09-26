@@ -123,7 +123,6 @@ fun CourseDetailsActivity(
                     .addOnSuccessListener { ignoresSnapshot ->
                         val ignoredUserIds = ignoresSnapshot.documents.mapNotNull { it.getString("toUserId") }.toSet()
 
-                        // Then get location data and filter out liked/ignored users
                         firestore.collection("location")
                             .addSnapshotListener { snapshot, error ->
                                 if (error != null || snapshot == null) return@addSnapshotListener
@@ -134,7 +133,6 @@ fun CourseDetailsActivity(
                                     val lng = doc.getDouble("longitude") ?: continue
                                     val userId = doc.id
 
-                                    // Skip if it's current user or user has been liked/ignored
                                     if (userId == currentUserId ||
                                         likedUserIds.contains(userId) ||
                                         ignoredUserIds.contains(userId)) continue

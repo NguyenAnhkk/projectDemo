@@ -7,14 +7,14 @@ import com.google.firebase.auth.FirebaseAuth
 
 class PasswordResetViewModel : ViewModel() {
 
-    fun resetPassword(email: String , context: Context) {
+    fun resetPassword(email: String, context: Context) {
 
         FirebaseAuth.getInstance().sendPasswordResetEmail(email)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
-                    Toast.makeText(context, "Đặt lại mật khẩu trong hòm thư email", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Password reset instructions sent to your email", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(context, "Lỗi khi đặt lại mật khẩu", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Error resetting password", Toast.LENGTH_SHORT).show()
                 }
             }
     }
