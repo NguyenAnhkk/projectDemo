@@ -205,7 +205,7 @@ fun Profile(
     ) { isGranted: Boolean ->
         hasPermission = isGranted
         if (!isGranted) {
-            Toast.makeText(context, "Truy cập bộ nhớ thất bại.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Storage access failed.", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -224,16 +224,16 @@ fun Profile(
                     uploadImageToStorage(uri, { url ->
                         imageUrl = url
                         saveImageUrlToFirestore(url)
-                        Toast.makeText(context, "Tải ảnh lên thành công", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Image uploaded successfully", Toast.LENGTH_SHORT).show()
                     }, {
                         Toast.makeText(
                             context,
-                            "Tải ảnh lên thất bại: ${it.message}",
+                            "Image upload failed: ${it.message}",
                             Toast.LENGTH_SHORT
                         ).show()
                     })
                 } catch (e: Exception) {
-                    Toast.makeText(context, "Lỗi truy cập ảnh: ${e.message}", Toast.LENGTH_SHORT)
+                    Toast.makeText(context, "Error accessing image: ${e.message}", Toast.LENGTH_SHORT)
                         .show()
                 }
             }
@@ -252,7 +252,7 @@ fun Profile(
                 }
                 imagePickerLauncher.launch(intent)
             } catch (e: Exception) {
-                Toast.makeText(context, "Không thể mở thư viện ảnh", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Unable to open photo gallery", Toast.LENGTH_SHORT).show()
             }
         } else {
             val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -270,18 +270,18 @@ fun Profile(
             userName.value = authenticatedState.userName
             val dateOfBirthString = authenticatedState.dateOfBirth
             val dateOfBirth = convertDateOfBirth(dateOfBirthString)
-            val calculatedAge = dateOfBirth?.let { calculateAge(it) } ?: "Không xác định"
+            val calculatedAge = dateOfBirth?.let { calculateAge(it) } ?: "Unknown"
             age.value = calculatedAge.toString()
 
             loadImageUrlFromFirestore({ url ->
                 imageUrl = url
             }, {
-                Toast.makeText(context, "Không thể tải ảnh từ Firestore", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Unable to load image from Firestore", Toast.LENGTH_SHORT).show()
             })
         } else if (authState is AuthState.Error) {
             Toast.makeText(
                 context,
-                "Lỗi: ${(authState as AuthState.Error).message}",
+                "Error: ${(authState as AuthState.Error).message}",
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -769,7 +769,7 @@ fun Profile(
                                 Row {
                                     Icon(painter = painterResource(R.drawable.outline_location_on_24), contentDescription = "location")
                                     Text(
-                                        text = if (ManagerLocation.isLocationUpdated) ManagerLocation.currentAddress else "Vị trí chưa cập nhật",
+                                        text = if (ManagerLocation.isLocationUpdated) ManagerLocation.currentAddress else "Location not updated",
                                         style = MaterialTheme.typography.bodyMedium,
                                         color = if (ManagerLocation.isLocationUpdated) MaterialTheme.colorScheme.primary
                                         else MaterialTheme.colorScheme.onSurfaceVariant,
@@ -786,14 +786,14 @@ fun Profile(
                                         .fillMaxWidth()
                                         .clip(MaterialTheme.shapes.medium)
                                         .clickable {
-                                            val shareText = "Xin chào, tôi là ${userName.value}!"
+                                            val shareText = "Hello, I'm ${userName.value}!"
                                             val sendIntent = Intent().apply {
                                                 action = Intent.ACTION_SEND
                                                 putExtra(Intent.EXTRA_TEXT, shareText)
                                                 type = "text/plain"
                                             }
                                             val shareIntent =
-                                                Intent.createChooser(sendIntent, "Chia sẻ qua")
+                                                Intent.createChooser(sendIntent, "Share information")
                                             context.startActivity(shareIntent)
                                         }
                                         .background(MaterialTheme.colorScheme.primaryContainer)
