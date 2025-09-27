@@ -115,7 +115,7 @@ class MapUtils(private val context: Context) {
         return try {
             val addresses: List<Address>? = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
             if (addresses.isNullOrEmpty()) {
-                "Không xác định"
+                "Unknown"
             } else {
                 val addressLine = addresses[0].getAddressLine(0)
                 val addressParts = addressLine.split(",")
@@ -126,7 +126,7 @@ class MapUtils(private val context: Context) {
                 }
             }
         } catch (e: Exception) {
-            "Không thể xác định địa chỉ"
+            "Unable to determine address"
         }
     }
 
@@ -201,7 +201,7 @@ class MapUtils(private val context: Context) {
                     isLocationUpdated = true
                 }
             } else {
-                Toast.makeText(context, "Cần cấp quyền vị trí để tiếp tục", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Location permission required to continue", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -227,10 +227,10 @@ class MapUtils(private val context: Context) {
                     }
                     onSuccess(latLng)
                 } else {
-                    onError("Không tìm thấy địa điểm")
+                    onError("Location not found")
                 }
             } catch (e: Exception) {
-                onError("Lỗi khi tìm kiếm vị trí")
+                onError("Error searching for location")
                 e.printStackTrace()
             }
         }
@@ -261,8 +261,8 @@ class MapUtils(private val context: Context) {
                     if (isLocationUpdated && currentLocation != null) {
                         Marker(
                             state = MarkerState(position = currentLocation!!),
-                            title = "Vị trí của bạn",
-                            snippet = "Địa chỉ hiện tại",
+                            title = "Your location",
+                            snippet = "Current address",
                             icon = smallIcon,
                         )
                     }
@@ -270,7 +270,7 @@ class MapUtils(private val context: Context) {
                     nearbyUsersLocations.forEach { location ->
                         Marker(
                             state = MarkerState(position = location),
-                            title = "Người dùng xung quanh",
+                            title = "Nearby users",
                             icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)
                         )
                     }
@@ -295,7 +295,7 @@ class MapUtils(private val context: Context) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(bottom = 8.dp),
-                        placeholder = { Text("Nhập địa điểm cần tìm...") },
+                        placeholder = { Text("Enter location to search...") },
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp),
                         trailingIcon = {
@@ -372,7 +372,7 @@ class MapUtils(private val context: Context) {
                         colors = ButtonDefaults.buttonColors(Color(0xFFb631eb)),
                         modifier = Modifier.fillMaxWidth(0.5f)
                     ) {
-                        Text(text = "Cập nhật vị trí.")
+                        Text(text = "Update location")
                     }
                 }
             }
@@ -385,7 +385,7 @@ class MapUtils(private val context: Context) {
         loadImageUrlFromFirestore({ url ->
             imageUrl = url
         }, {
-            Toast.makeText(context, "Không thể tải ảnh từ Firestore", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Unable to load image from Firestore", Toast.LENGTH_SHORT).show()
         })
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             IconButton(

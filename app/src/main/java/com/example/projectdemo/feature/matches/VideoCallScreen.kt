@@ -82,7 +82,7 @@ fun VideoCallScreen(
     val context = LocalContext.current
     var permissionsGranted by remember { mutableStateOf(false) }
 
-    // TODO: Thay thế bằng AppID và AppSign thực tế của bạn từ ZEGOCLOUD Console
+    // TODO: Replace with your actual AppID and AppSign from ZEGOCLOUD Console
     val appID: Long = 629861639
     val appSign = "2fb33d92cc70ed77181519a394dff5081ae6804fe8fcb59ac2cb8aeb0e77ee3b"
     var showIncomingCallDialog by remember { mutableStateOf(isIncomingCall) }
@@ -289,7 +289,7 @@ fun VideoCallScreen(
         }
     }
 
-    // Lắng nghe remote stream
+    // Listen for remote stream
     LaunchedEffect(remoteUserID) {
         if (engine != null) {
             remoteUserID?.let { remoteID ->
@@ -351,7 +351,7 @@ fun VideoCallScreen(
             TopAppBar(
                 title = {
                     AppTextBold(
-                        text = if (isCallConnected) "Đang gọi..." else "Đang kết nối...",
+                        text = if (isCallConnected) "Calling..." else "Connecting...",
                         fontSize = 18.sp,
                         color = Color.Black
                     )
@@ -494,7 +494,7 @@ fun VideoCallScreen(
                         .padding(16.dp)
                 ) {
                     AppText(
-                        text = "Đang chờ người dùng tham gia...",
+                        text = "Waiting for user to join...",
                         fontSize = 16.sp,
                         color = Color.White
                     )
@@ -512,14 +512,14 @@ fun IncomingCallDialog(
 ) {
     AlertDialog(
         onDismissRequest = onReject,
-        title = { Text(text = "Cuộc gọi đến", style = MaterialTheme.typography.headlineSmall) },
-        text = { Text(text = "Người dùng $callerId đang gọi cho bạn") },
+        title = { Text(text = "Incoming Call", style = MaterialTheme.typography.headlineSmall) },
+        text = { Text(text = "User $callerId is calling you") },
         confirmButton = {
             Button(
                 onClick = onAccept,
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Green)
             ) {
-                Text("Nghe")
+                Text("Accept")
             }
         },
         dismissButton = {
@@ -527,7 +527,7 @@ fun IncomingCallDialog(
                 onClick = onReject,
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
             ) {
-                Text("Từ chối")
+                Text("Reject")
             }
         }
     )

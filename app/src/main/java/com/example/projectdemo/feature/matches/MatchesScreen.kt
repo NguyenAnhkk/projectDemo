@@ -36,7 +36,6 @@ fun MatchesScreen(navController: NavController) {
     val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
     var matches by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
 
-
     LaunchedEffect(currentUserId) {
         if (currentUserId != null) {
             val firestore = FirebaseFirestore.getInstance()
@@ -72,7 +71,7 @@ fun MatchesScreen(navController: NavController) {
                                         lastMessage.getLong("timestamp") ?: 0L
                                     match["lastMessage"] =
                                         if (lastMessage.getString("imageUrl") != null) {
-                                            "Đã gửi một hình ảnh"
+                                            "Sent an image"
                                         } else {
                                             lastMessage.getString("message") ?: ""
                                         }
@@ -95,7 +94,7 @@ fun MatchesScreen(navController: NavController) {
     ) {
         Column {
             TopAppBar(
-                title = { Text("Tin nhắn") },
+                title = { Text("Messages") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
@@ -195,7 +194,7 @@ fun MatchesScreen(navController: NavController) {
                                     fontSize = 16.sp
                                 )
                                 Text(
-                                    text = match["lastMessage"] as? String ?: "Chưa có tin nhắn",
+                                    text = match["lastMessage"] as? String ?: "No messages yet",
                                     color = Color.Gray,
                                     fontSize = 14.sp,
                                     maxLines = 1
@@ -207,4 +206,4 @@ fun MatchesScreen(navController: NavController) {
             }
         }
     }
-} 
+}

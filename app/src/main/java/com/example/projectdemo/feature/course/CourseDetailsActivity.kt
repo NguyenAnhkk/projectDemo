@@ -177,7 +177,7 @@ fun CourseDetailsActivity(
                 )
             ) {
                 IconButton(onClick = {navController.popBackStack()}) {
-                Icon(painter =  painterResource(R.drawable.baseline_arrow_back_ios_new_24), contentDescription = null)}
+                    Icon(painter =  painterResource(R.drawable.baseline_arrow_back_ios_new_24), contentDescription = null)}
                 DatingLoader(nearbyUsers = nearbyUsers)
             }
 
@@ -205,7 +205,7 @@ fun CourseDetailsActivity(
                                         painter = painterResource(id = R.drawable.baseline_delete_24),
                                         contentDescription = "delete"
                                     )
-                                    Text(text = "Xóa cuộc trò chuyện")
+                                    Text(text = "Delete conversation")
                                 }
                             }
                             Button(
@@ -217,7 +217,7 @@ fun CourseDetailsActivity(
                                         painter = painterResource(id = R.drawable.baseline_block_24),
                                         contentDescription = "block"
                                     )
-                                    Text(text = "Chặn người dùng")
+                                    Text(text = "Block user")
                                 }
                             }
                         }
@@ -527,9 +527,9 @@ fun getDistrictFromLatLng(context: Context, latLng: LatLng): String {
     val geocoder = Geocoder(context, Locale.getDefault())
     val addresses = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
     return if (addresses.isNullOrEmpty()) {
-        "Không xác định"
+        "Unknown"
     } else {
-        addresses[0].subAdminArea ?: "Không xác định"
+        addresses[0].subAdminArea ?: "Unknown"
     }
 }
 
@@ -672,14 +672,14 @@ private fun createMatchNotification(userId: String, matchedWithUserId: String) {
 
 fun handleIgnore(currentUserId: String, ignoredUserId: String) {
     val firestore = FirebaseFirestore.getInstance()
-    
+
     // Add to ignored collection
     val ignoreData = hashMapOf(
         "timestamp" to System.currentTimeMillis(),
         "fromUserId" to currentUserId,
         "toUserId" to ignoredUserId
     )
-    
+
     firestore.collection("ignored")
         .document("$currentUserId-$ignoredUserId")
         .set(ignoreData)

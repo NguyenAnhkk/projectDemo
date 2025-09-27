@@ -12,7 +12,7 @@ import java.util.Locale
 object ManagerLocation {
     var currentLocationState by mutableStateOf<LatLng?>(null)
     var isLocationUpdated by mutableStateOf(false)
-    var currentAddress by mutableStateOf("Vị trí chưa cập nhật")
+    var currentAddress by mutableStateOf("Location not updated")
 
     fun updateLocation(latLng: LatLng, context: Context) {
         currentLocationState = latLng
@@ -25,7 +25,7 @@ object ManagerLocation {
         return try {
             val addresses: List<Address>? = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
             if (addresses.isNullOrEmpty()) {
-                "Không xác định"
+                "Unknown"
             } else {
                 val addressLine = addresses[0].getAddressLine(0)
                 val addressParts = addressLine.split(",")
@@ -36,7 +36,7 @@ object ManagerLocation {
                 }
             }
         } catch (e: Exception) {
-            "Không thể xác định địa chỉ"
+            "Unable to determine address"
         }
     }
 }
