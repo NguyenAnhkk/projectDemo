@@ -217,7 +217,7 @@ fun ChangePasswordScreen(navController: NavHostController) {
                                 contentDescription = if (currentPasswordVisibility) "Hide password" else "Show password"
                             )
                         }
-                    }
+                    },  singleLine = true
                 )
 
                 OutlinedTextField(
@@ -243,7 +243,7 @@ fun ChangePasswordScreen(navController: NavHostController) {
                                 contentDescription = if (newPasswordVisibility) "Hide password" else "Show password"
                             )
                         }
-                    }
+                    },  singleLine = true
                 )
 
                 OutlinedTextField(
@@ -269,7 +269,7 @@ fun ChangePasswordScreen(navController: NavHostController) {
                                 contentDescription = if (confirmPasswordVisibility) "Hide password" else "Show password"
                             )
                         }
-                    }
+                    },  singleLine = true
                 )
 
                 Button(

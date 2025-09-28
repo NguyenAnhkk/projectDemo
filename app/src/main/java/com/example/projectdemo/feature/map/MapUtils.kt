@@ -113,7 +113,8 @@ class MapUtils(private val context: Context) {
     fun getAddressFromLatLng(latLng: LatLng): String {
         val geocoder = Geocoder(context, Locale.getDefault())
         return try {
-            val addresses: List<Address>? = geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
+            val addresses: List<Address>? =
+                geocoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
             if (addresses.isNullOrEmpty()) {
                 "Unknown"
             } else {
@@ -201,7 +202,11 @@ class MapUtils(private val context: Context) {
                     isLocationUpdated = true
                 }
             } else {
-                Toast.makeText(context, "Location permission required to continue", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    context,
+                    "Location permission required to continue",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         }
 
@@ -350,10 +355,15 @@ class MapUtils(private val context: Context) {
                     Button(
                         onClick = {
                             if (permissions.all {
-                                    ContextCompat.checkSelfPermission(context, it) == PackageManager.PERMISSION_GRANTED
+                                    ContextCompat.checkSelfPermission(
+                                        context,
+                                        it
+                                    ) == PackageManager.PERMISSION_GRANTED
                                 }) {
-                                val locationManager = context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-                                val isGpsEnabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
+                                val locationManager =
+                                    context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
+                                val isGpsEnabled =
+                                    locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
 
                                 if (isGpsEnabled) {
                                     startLocationUpdates(fusedLocationClient, context) { location ->
@@ -385,7 +395,8 @@ class MapUtils(private val context: Context) {
         loadImageUrlFromFirestore({ url ->
             imageUrl = url
         }, {
-            Toast.makeText(context, "Unable to load image from Firestore", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Unable to load image from Firestore", Toast.LENGTH_SHORT)
+                .show()
         })
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             IconButton(
@@ -406,6 +417,7 @@ class MapUtils(private val context: Context) {
                                 modifier = Modifier.fillMaxSize()
                             )
                         }
+
                         else -> {
                             Image(
                                 painter = painterResource(id = R.drawable.defaultimg),
@@ -428,21 +440,143 @@ class MapUtils(private val context: Context) {
         navController: NavController,
         modifier: Modifier = Modifier
     ) {
-        Box(
+        Card(
             modifier = modifier
                 .fillMaxWidth()
-                .background(Color.White)
+                .padding(horizontal = 8.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            shape = RoundedCornerShape(16.dp)
         ) {
-            Text(
-                text = currentAddress,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Normal,
-                color = Color.Black,
+            Row(
                 modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .padding(4.dp, 0.dp, 0.dp, 0.dp)
-            )
-            IconButtonWithImage(navController = navController, userPhotoUrl = userPhotoUrl)
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                // Location Section
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Location Icon
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .background(
+                                color = Color(0xFFE3F2FD),
+                                shape = CircleShape
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.outline_location_on_24),
+                            contentDescription = "Location",
+                            tint = Color(0xFF1976D2),
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(12.dp))
+
+                    // Address Text
+                    Column {
+                        Text(
+                            text = "Vị trí hiện tại",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color.Gray
+                        )
+                        Text(
+                            text = currentAddress,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.Black,
+                            maxLines = 2,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                        )
+                    }
+                }
+
+                // Profile Button
+                EnhancedProfileButton(
+                    navController = navController,
+                    userPhotoUrl = userPhotoUrl
+                )
+            }
+        }
+    }
+
+    @Composable
+    fun EnhancedProfileButton(
+        navController: NavController,
+        userPhotoUrl: String?
+    ) {
+        var imageUrl by remember { mutableStateOf<String?>(null) }
+        val context = LocalContext.current
+
+        loadImageUrlFromFirestore({ url ->
+            imageUrl = url
+        }, {
+            Toast.makeText(context, "Unable to load image from Firestore", Toast.LENGTH_SHORT)
+                .show()
+        })
+
+        Card(
+            modifier = Modifier.size(48.dp),
+            shape = CircleShape,
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White)
+        ) {
+            IconButton(
+                onClick = { navController.navigate("profile") },
+                modifier = Modifier.fillMaxSize()
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(
+                            brush = androidx.compose.ui.graphics.Brush.linearGradient(
+                                colors = listOf(
+                                    Color(0xFFE1BEE7),
+                                    Color(0xFFCE93D8)
+                                )
+                            )
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    when {
+                        imageUrl != null -> {
+                            Image(
+                                painter = rememberAsyncImagePainter(model = imageUrl),
+                                contentDescription = "User Avatar",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+
+                        else -> {
+                            Image(
+                                painter = painterResource(id = R.drawable.defaultimg),
+                                contentDescription = "Default Avatar",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    }
+
+                    // Online indicator
+                    Box(
+                        modifier = Modifier
+                            .size(12.dp)
+                            .background(Color(0xFF4CAF50), CircleShape)
+                            .align(Alignment.BottomEnd)
+                            .offset(x = (-2).dp, y = (-2).dp)
+                    )
+                }
+            }
         }
     }
 }
