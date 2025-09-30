@@ -34,6 +34,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Divider
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Favorite
@@ -54,6 +55,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -70,6 +74,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -113,7 +118,6 @@ fun Profile(
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     val authState by authViewModel.authState.observeAsState(AuthState.Unauthenticated)
     var imageUrl by remember { mutableStateOf<String?>(null) }
-    val currentLocation = LatLng(21.0278, 105.8342)
     var notifications by remember { mutableStateOf<List<Map<String, Any>>>(emptyList()) }
     var showNotifications by remember { mutableStateOf(false) }
     var showLikedUsers by remember { mutableStateOf(false) }
@@ -121,6 +125,9 @@ fun Profile(
     val currentUserId = FirebaseAuth.getInstance().currentUser?.uid
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     val unreadCount = notifications.count { !(it["read"] as? Boolean ?: false) }
+    val currentLocation = ManagerLocation.currentLocationState
+    val isLocationUpdated = ManagerLocation.isLocationUpdated
+    val currentAddress = ManagerLocation.currentAddress
     LaunchedEffect(currentUserId) {
         if (currentUserId != null) {
             val firestore = FirebaseFirestore.getInstance()
@@ -224,7 +231,8 @@ fun Profile(
                     uploadImageToStorage(uri, { url ->
                         imageUrl = url
                         saveImageUrlToFirestore(url)
-                        Toast.makeText(context, "Image uploaded successfully", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Image uploaded successfully", Toast.LENGTH_SHORT)
+                            .show()
                     }, {
                         Toast.makeText(
                             context,
@@ -233,7 +241,11 @@ fun Profile(
                         ).show()
                     })
                 } catch (e: Exception) {
-                    Toast.makeText(context, "Error accessing image: ${e.message}", Toast.LENGTH_SHORT)
+                    Toast.makeText(
+                        context,
+                        "Error accessing image: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    )
                         .show()
                 }
             }
@@ -276,7 +288,8 @@ fun Profile(
             loadImageUrlFromFirestore({ url ->
                 imageUrl = url
             }, {
-                Toast.makeText(context, "Unable to load image from Firestore", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Unable to load image from Firestore", Toast.LENGTH_SHORT)
+                    .show()
             })
         } else if (authState is AuthState.Error) {
             Toast.makeText(
@@ -292,57 +305,73 @@ fun Profile(
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        "Profile",
+                        "",
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
                         color = MaterialTheme.colorScheme.primary
                     )
                 },
                 actions = {
-                    IconButton(
-                        onClick = { navController.navigate("matches") },
-                        modifier = Modifier.size(48.dp)
+                    Row(
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp),
+                                shape = RoundedCornerShape(24.dp)
+                            )
+                            .padding(horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_chat_24),
-                            contentDescription = "Matches",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    IconButton(
-                        onClick = { showNotifications = !showNotifications },
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        BadgedBox(
-                            badge = {
-                                if (unreadCount > 0) {
-                                    Badge(
-                                        containerColor = MaterialTheme.colorScheme.error,
-                                        contentColor = MaterialTheme.colorScheme.onError
-                                    ) {
-                                        Text(
-                                            if (unreadCount > 9) "9+" else unreadCount.toString(),
-                                            style = MaterialTheme.typography.labelSmall,
-                                            fontSize = 10.sp
-                                        )
-                                    }
-                                }
-                            }
-                        ) {
+
+                        IconButton(onClick = { navController.navigate("matches") }) {
                             Icon(
-                                painter = painterResource(id = R.drawable.baseline_notifications_24),
-                                contentDescription = "Notifications",
-                                tint = if (showNotifications) MaterialTheme.colorScheme.primary
-                                else MaterialTheme.colorScheme.onSurfaceVariant
+                                painter = painterResource(id = R.drawable.baseline_chat_24),
+                                contentDescription = "Matches",
+                                tint = MaterialTheme.colorScheme.secondary
                             )
                         }
+                        Divider(
+                            modifier = Modifier
+                                .height(20.dp)
+                                .width(1.dp),
+                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                        )
+
+                        IconButton(
+                            onClick = { showNotifications = !showNotifications },
+                            modifier = Modifier.size(60.dp)
+                        ) {
+                            BadgedBox(
+                                badge = {
+                                    if (unreadCount > 0) {
+                                        Badge(
+                                            containerColor = MaterialTheme.colorScheme.error,
+                                            contentColor = MaterialTheme.colorScheme.onError
+                                        ) {
+                                            Text(
+                                                if (unreadCount > 9) "9+" else unreadCount.toString(),
+                                                style = MaterialTheme.typography.labelSmall,
+                                                fontSize = 10.sp
+                                            )
+                                        }
+                                    }
+                                }
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_notifications_24),
+                                    contentDescription = "Notifications",
+                                    tint = if (showNotifications) MaterialTheme.colorScheme.primary
+                                    else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
                     }
+
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp),
-                    navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                    actionIconContentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    containerColor = Color.Transparent,
+                    scrolledContainerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp),
+                    titleContentColor = MaterialTheme.colorScheme.primary
                 ),
                 scrollBehavior = scrollBehavior
             )
@@ -350,7 +379,7 @@ fun Profile(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    navController.navigate("course/${currentLocation.latitude}/${currentLocation.longitude}")
+                    navController.navigate("course/${currentLocation?.latitude}/${currentLocation?.longitude}")
                 },
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary,
@@ -368,57 +397,57 @@ fun Profile(
             }
         },
         bottomBar = {
-            BottomAppBar(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp))
-                    .shadow(8.dp, RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)),
-                containerColor = MaterialTheme.colorScheme.surface,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                tonalElevation = 8.dp,
+            var selectedItem by remember { mutableStateOf("home") }
+
+            NavigationBar(
+                containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
+                tonalElevation = 0.dp
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    IconButton(
-                        onClick = {
-                            navController.navigate("change_password")
-                        },
-                        modifier = Modifier.size(48.dp)
-                    ) {
+                // Mục Mật khẩu
+                NavigationBarItem(
+                    icon = {
                         Icon(
-                            painter = painterResource(id = R.drawable.outline_passkey_24),
-                            contentDescription = "Change Password",
-                            tint = MaterialTheme.colorScheme.primary
+                            painterResource(id = R.drawable.outline_passkey_24),
+                            "Password"
                         )
+                    },
+                    label = { Text("Mật khẩu") },
+                    selected = selectedItem == "password",
+                    onClick = {
+                        selectedItem = "password"
+                        navController.navigate("change_password")
                     }
-                    IconButton(
-                        onClick = { navController.popBackStack() },
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Home,
-                            contentDescription = "Home",
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
+                )
 
-                    Spacer(Modifier.weight(1f))
 
-                    IconButton(
-                        onClick = { authViewModel.signout(navController, context) },
-                        modifier = Modifier.size(48.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.baseline_logout_24),
-                            contentDescription = "Logout",
-                            tint = MaterialTheme.colorScheme.error
-                        )
-                    }
-                }
+                NavigationBarItem(
+                    icon = { Icon(Icons.Default.Home, "Home", modifier = Modifier.size(28.dp)) },
+                    label = { Text("Home") },
+                    selected = selectedItem == "home",
+                    onClick = {
+                        selectedItem = "home"
+                        navController.popBackStack()
+                    },
+                    alwaysShowLabel = true
+                )
+
+                NavigationBarItem(
+                    icon = { Icon(painterResource(id = R.drawable.baseline_logout_24), "Logout") },
+                    label = { Text("Đăng xuất") },
+                    selected = selectedItem == "logout",
+                    onClick = {
+                        selectedItem = "logout"
+                        authViewModel.signout(navController, context)
+                    },
+                    colors = NavigationBarItemDefaults.colors(
+
+                        unselectedIconColor = MaterialTheme.colorScheme.error,
+                        unselectedTextColor = MaterialTheme.colorScheme.error,
+                        selectedIconColor = MaterialTheme.colorScheme.onError,
+                        selectedTextColor = MaterialTheme.colorScheme.onError,
+                        indicatorColor = MaterialTheme.colorScheme.error
+                    )
+                )
             }
         }
     ) { paddingValues ->
@@ -734,7 +763,6 @@ fun Profile(
                                 }
                             }
 
-                            // Edit Icon
                             Box(
                                 modifier = Modifier
                                     .align(Alignment.BottomEnd)
@@ -767,11 +795,14 @@ fun Profile(
 
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Row {
-                                    Icon(painter = painterResource(R.drawable.outline_location_on_24), contentDescription = "location")
+                                    Icon(
+                                        painter = painterResource(R.drawable.outline_location_on_24),
+                                        contentDescription = "location"
+                                    )
                                     Text(
-                                        text = if (ManagerLocation.isLocationUpdated) ManagerLocation.currentAddress else "Location not updated",
+                                        text = currentAddress,
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = if (ManagerLocation.isLocationUpdated) MaterialTheme.colorScheme.primary
+                                        color = if (isLocationUpdated) MaterialTheme.colorScheme.primary
                                         else MaterialTheme.colorScheme.onSurfaceVariant,
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier.padding(horizontal = 16.dp)
@@ -793,7 +824,10 @@ fun Profile(
                                                 type = "text/plain"
                                             }
                                             val shareIntent =
-                                                Intent.createChooser(sendIntent, "Share information")
+                                                Intent.createChooser(
+                                                    sendIntent,
+                                                    "Share information"
+                                                )
                                             context.startActivity(shareIntent)
                                         }
                                         .background(MaterialTheme.colorScheme.primaryContainer)

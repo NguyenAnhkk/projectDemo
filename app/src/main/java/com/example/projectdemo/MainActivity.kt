@@ -16,6 +16,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.example.projectdemo.lib.MyAppTheme
 import com.example.projectdemo.feature.auth.common.AuthViewModel
+import com.example.projectdemo.feature.map.ManagerLocation
 import com.example.projectdemo.ui.theme.MyAppNavigation
 import com.example.projectdemo.ui.theme.ProjectDemoTheme
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -32,7 +33,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
-
+        ManagerLocation.initialize(this)
         setContent {
             ProjectDemoTheme {
                 Scaffold { innerPadding ->

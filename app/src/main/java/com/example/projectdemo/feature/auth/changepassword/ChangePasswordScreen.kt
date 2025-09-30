@@ -173,17 +173,26 @@ fun ChangePasswordScreen(navController: NavHostController) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.outline_lock_reset_24),
+                    contentDescription = "Change Password",
+                    tint = Color(0xFF405DA3),
+                    modifier = Modifier
+                        .size(64.dp)
+                        .padding(bottom = 16.dp)
+                )
                 AppTextBold(
                     text = "Change Password",
-                    fontSize = 24.sp,
+                    fontSize = 28.sp,
                     color = Color(0xFF405DA3),
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
                 AppText(
                     text = "Please enter your current password and new password",
                     fontSize = 16.sp,
-                    color = Color.Gray,
-                    textAlign = TextAlign.Center
+                    color = Color(0xFF666666),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(horizontal = 24.dp)
                 )
             }
 
@@ -197,106 +206,152 @@ fun ChangePasswordScreen(navController: NavHostController) {
                 OutlinedTextField(
                     value = currentPassword,
                     onValueChange = { currentPassword = it },
-                    label = { AppText(text = "Current Password", color = Color.Gray) },
+                    label = {
+                        AppText(
+                            text = "Current Password",
+                            color = Color.Gray,
+                            fontSize = 14.sp
+                        )
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp),
+                        .padding(bottom = 20.dp),
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
+                        focusedContainerColor = Color(0xFFF8F9FF),
+                        unfocusedContainerColor = Color(0xFFF8F9FF),
                         focusedIndicatorColor = Color(0xFF405DA3),
-                        unfocusedIndicatorColor = Color.Gray,
+                        unfocusedIndicatorColor = Color(0xFFCCCCCC),
                         focusedLabelColor = Color(0xFF405DA3),
-                        unfocusedLabelColor = Color.Gray
+                        unfocusedLabelColor = Color.Gray,
+                        cursorColor = Color(0xFF405DA3)
                     ),
+                    shape = RoundedCornerShape(12.dp),
                     visualTransformation = if (currentPasswordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
-                        IconButton(onClick = { currentPasswordVisibility = !currentPasswordVisibility }) {
+                        IconButton(
+                            onClick = { currentPasswordVisibility = !currentPasswordVisibility },
+                            modifier = Modifier.size(24.dp)
+                        ) {
                             Icon(
                                 painter = currentPasswordIcon,
-                                contentDescription = if (currentPasswordVisibility) "Hide password" else "Show password"
+                                contentDescription = if (currentPasswordVisibility) "Hide password" else "Show password",
+                                tint = Color(0xFF666666)
                             )
                         }
-                    },  singleLine = true
+                    },
+                    singleLine = true
                 )
 
                 OutlinedTextField(
                     value = newPassword,
                     onValueChange = { newPassword = it },
-                    label = { AppText(text = "New Password", color = Color.Gray) },
+                    label = {
+                        AppText(
+                            text = "New Password",
+                            color = Color.Gray,
+                            fontSize = 14.sp
+                        )
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 16.dp),
+                        .padding(bottom = 20.dp),
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
+                        focusedContainerColor = Color(0xFFF8F9FF),
+                        unfocusedContainerColor = Color(0xFFF8F9FF),
                         focusedIndicatorColor = Color(0xFF405DA3),
-                        unfocusedIndicatorColor = Color.Gray,
+                        unfocusedIndicatorColor = Color(0xFFCCCCCC),
                         focusedLabelColor = Color(0xFF405DA3),
-                        unfocusedLabelColor = Color.Gray
+                        unfocusedLabelColor = Color.Gray,
+                        cursorColor = Color(0xFF405DA3)
                     ),
+                    shape = RoundedCornerShape(12.dp),
                     visualTransformation = if (newPasswordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
-                        IconButton(onClick = { newPasswordVisibility = !newPasswordVisibility }) {
+                        IconButton(
+                            onClick = { newPasswordVisibility = !newPasswordVisibility },
+                            modifier = Modifier.size(24.dp)
+                        ) {
                             Icon(
                                 painter = newPasswordIcon,
-                                contentDescription = if (newPasswordVisibility) "Hide password" else "Show password"
+                                contentDescription = if (newPasswordVisibility) "Hide password" else "Show password",
+                                tint = Color(0xFF666666)
                             )
                         }
-                    },  singleLine = true
+                    },
+                    singleLine = true
                 )
 
                 OutlinedTextField(
                     value = confirmPassword,
                     onValueChange = { confirmPassword = it },
-                    label = { AppText(text = "Confirm New Password", color = Color.Gray) },
+                    label = {
+                        AppText(
+                            text = "Confirm New Password",
+                            color = Color.Gray,
+                            fontSize = 14.sp
+                        )
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 24.dp),
+                        .padding(bottom = 32.dp),
                     colors = TextFieldDefaults.colors(
-                        focusedContainerColor = Color.Transparent,
-                        unfocusedContainerColor = Color.Transparent,
+                        focusedContainerColor = Color(0xFFF8F9FF),
+                        unfocusedContainerColor = Color(0xFFF8F9FF),
                         focusedIndicatorColor = Color(0xFF405DA3),
-                        unfocusedIndicatorColor = Color.Gray,
+                        unfocusedIndicatorColor = Color(0xFFCCCCCC),
                         focusedLabelColor = Color(0xFF405DA3),
-                        unfocusedLabelColor = Color.Gray
+                        unfocusedLabelColor = Color.Gray,
+                        cursorColor = Color(0xFF405DA3)
                     ),
+                    shape = RoundedCornerShape(12.dp),
                     visualTransformation = if (confirmPasswordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
                     trailingIcon = {
-                        IconButton(onClick = { confirmPasswordVisibility = !confirmPasswordVisibility }) {
+                        IconButton(
+                            onClick = { confirmPasswordVisibility = !confirmPasswordVisibility },
+                            modifier = Modifier.size(24.dp)
+                        ) {
                             Icon(
                                 painter = confirmPasswordIcon,
-                                contentDescription = if (confirmPasswordVisibility) "Hide password" else "Show password"
+                                contentDescription = if (confirmPasswordVisibility) "Hide password" else "Show password",
+                                tint = Color(0xFF666666)
                             )
                         }
-                    },  singleLine = true
+                    },
+                    singleLine = true
                 )
 
                 Button(
                     onClick = { changePassword() },
-                    shape = RoundedCornerShape(8.dp),
+                    shape = RoundedCornerShape(12.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(50.dp),
+                        .height(56.dp),
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF405DA3)
+                        containerColor = Color(0xFF405DA3),
+                        disabledContainerColor = Color(0xFFA0A8C6)
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(
+                        defaultElevation = 4.dp,
+                        pressedElevation = 2.dp
                     ),
                     enabled = !isLoading
                 ) {
                     if (isLoading) {
                         CircularProgressIndicator(
                             color = Color.White,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp
                         )
                     } else {
                         AppTextBold(
                             text = "Change Password",
-                            color = Color.White
+                            color = Color.White,
+                            fontSize = 16.sp
                         )
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
                 TextButton(
                     onClick = {
@@ -304,12 +359,16 @@ fun ChangePasswordScreen(navController: NavHostController) {
                             navController.popBackStack()
                         }
                     },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = !isLoading
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    enabled = !isLoading,
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     AppText(
                         text = "Back",
-                        color = Color(0xFF405DA3)
+                        color = Color(0xFF405DA3),
+                        fontSize = 16.sp
                     )
                 }
             }
@@ -321,13 +380,26 @@ fun ChangePasswordScreen(navController: NavHostController) {
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                AppText(
-                    text = "New password must be at least 6 characters long",
-                    fontSize = 14.sp,
-                    color = Color.Gray,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 16.dp)
-                )
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color(0xFFF0F4FF)
+                    ),
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 2.dp
+                    )
+                ) {
+                    AppText(
+                        text = "New password must be at least 6 characters long",
+                        fontSize = 14.sp,
+                        color = Color(0xFF666666),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(vertical = 16.dp, horizontal = 20.dp)
+                    )
+                }
             }
         }
     }

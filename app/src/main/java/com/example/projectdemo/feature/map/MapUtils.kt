@@ -19,15 +19,21 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -35,8 +41,12 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
@@ -186,7 +196,9 @@ class MapUtils(private val context: Context) {
         camerapositionState: CameraPositionState,
         navController: NavController,
     ) {
+        var isLoading by remember { mutableStateOf(false) }
         val context = LocalContext.current
+        val coroutineScope = rememberCoroutineScope()
         var searchQuery by remember { mutableStateOf("") }
         var searchError by remember { mutableStateOf<String?>(null) }
         val focusManager = LocalFocusManager.current
@@ -199,7 +211,7 @@ class MapUtils(private val context: Context) {
         val smallIcon = BitmapDescriptorFactory.fromBitmap(scaledBitmap)
         val userPhotoUrl = Firebase.auth.currentUser?.photoUrl?.toString()
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
-
+        val keyboardController = LocalSoftwareKeyboardController.current
         val launchMultiplePermissions = rememberLauncherForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) { permissionsMap ->
@@ -335,6 +347,37 @@ class MapUtils(private val context: Context) {
                                 fontSize = 14.sp
                             )
                         },
+                        keyboardOptions = KeyboardOptions(
+                            imeAction = ImeAction.Search,
+                            keyboardType = KeyboardType.Text,
+                            autoCorrect = true,
+                            capitalization = KeyboardCapitalization.Sentences
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onSearch = {
+                                // Xử lý tìm kiếm khi nhấn nút Search trên bàn phím
+
+                                if (searchQuery.isNotBlank()) {
+                                    searchLocation(
+                                        query = searchQuery,
+                                        camerapositionState = camerapositionState,
+                                        coroutineScope = coroutineScope,
+                                        onSuccess = { latLng ->
+                                            currentLocation = latLng
+                                            isLocationUpdated = true
+                                            searchError = null
+                                            // Ẩn bàn phím sau khi search
+                                            keyboardController?.hide()
+                                        },
+                                        onError = { errorMsg ->
+                                            searchError = errorMsg
+                                        }
+                                    )
+                                } else {
+                                    keyboardController?.hide()
+                                }
+                            }
+                        ),
                         singleLine = true,
                         shape = RoundedCornerShape(12.dp),
                         colors = OutlinedTextFieldDefaults.colors(
@@ -342,10 +385,16 @@ class MapUtils(private val context: Context) {
                             unfocusedBorderColor = Color.Transparent,
                             cursorColor = Color(0xFF2196F3),
                             focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black
+                            unfocusedTextColor = Color.Black,
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent
                         ),
                         trailingIcon = {
                             val coroutineScope = rememberCoroutineScope()
+
+                            // Hiệu ứng scale khi click
+                            var buttonScale by remember { mutableStateOf(1f) }
+
                             Box(
                                 modifier = Modifier
                                     .size(36.dp)
@@ -358,7 +407,11 @@ class MapUtils(private val context: Context) {
                                         ),
                                         shape = CircleShape
                                     )
-                                    .clickable {
+                                    .clickable(
+                                        interactionSource = remember { MutableInteractionSource() },
+                                        indication = null
+                                    ) {
+                                        buttonScale = 0.9f
                                         if (searchQuery.isNotBlank()) {
                                             searchLocation(
                                                 query = searchQuery,
@@ -368,25 +421,29 @@ class MapUtils(private val context: Context) {
                                                     currentLocation = latLng
                                                     isLocationUpdated = true
                                                     searchError = null
+                                                    // Ẩn bàn phím
+                                                    keyboardController?.hide()
                                                 },
                                                 onError = { errorMsg ->
                                                     searchError = errorMsg
                                                 }
                                             )
                                         }
-                                    },
+                                        // Reset scale sau khi click
+                                        buttonScale = 1f
+                                    }
+                                    .scale(buttonScale),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     painter = painterResource(id = R.drawable.baseline_search_24),
-                                    contentDescription = "Search",
+                                    contentDescription = "Search location",
                                     tint = Color.White,
                                     modifier = Modifier.size(20.dp)
                                 )
                             }
                         }
                     )
-
 
 
                     Box(modifier = Modifier.clip(RoundedCornerShape(16.dp))) {
@@ -429,11 +486,33 @@ class MapUtils(private val context: Context) {
                                 launchMultiplePermissions.launch(permissions)
                             }
                         },
+                        enabled = !isLoading,
                         shape = RoundedCornerShape(16.dp),
-                        colors = ButtonDefaults.buttonColors(Color(0xFFb631eb)),
-                        modifier = Modifier.fillMaxWidth(0.5f)
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF2196F3),
+                            contentColor = Color.White
+                        ),
+                        modifier = Modifier
+                            .fillMaxWidth(0.5f)
+                            .height(50.dp)
+
                     ) {
-                        Text(text = "Update location")
+                        if (isLoading) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = Color.White,
+                                strokeWidth = 2.dp
+                            )
+                        } else {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Icon(
+                                    imageVector = Icons.Default.LocationOn,
+                                    contentDescription = null
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Update Location", fontWeight = FontWeight.SemiBold)
+                            }
+                        }
                     }
                 }
             }
@@ -506,12 +585,10 @@ class MapUtils(private val context: Context) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                // Location Section
                 Row(
                     modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Location Icon
                     Box(
                         modifier = Modifier
                             .size(40.dp)
@@ -531,7 +608,6 @@ class MapUtils(private val context: Context) {
 
                     Spacer(modifier = Modifier.width(12.dp))
 
-                    // Address Text
                     Column {
                         Text(
                             text = "Vị trí hiện tại",
@@ -550,7 +626,6 @@ class MapUtils(private val context: Context) {
                     }
                 }
 
-                // Profile Button
                 EnhancedProfileButton(
                     navController = navController,
                     userPhotoUrl = userPhotoUrl
@@ -618,7 +693,6 @@ class MapUtils(private val context: Context) {
                         }
                     }
 
-                    // Online indicator
                     Box(
                         modifier = Modifier
                             .size(12.dp)
