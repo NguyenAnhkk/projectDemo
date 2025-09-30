@@ -92,6 +92,10 @@ import com.example.projectdemo.feature.auth.common.AuthViewModel
 import com.example.projectdemo.feature.course.createMatch
 import com.example.projectdemo.feature.course.handleIgnore
 import com.example.projectdemo.feature.map.ManagerLocation
+import com.example.projectdemo.lib.AppBox
+import com.example.projectdemo.lib.AppColumn
+import com.example.projectdemo.lib.AppRow
+import com.example.projectdemo.lib.AppText
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -403,7 +407,7 @@ fun Profile(
                 containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(3.dp),
                 tonalElevation = 0.dp
             ) {
-                // Mục Mật khẩu
+
                 NavigationBarItem(
                     icon = {
                         Icon(
@@ -411,7 +415,7 @@ fun Profile(
                             "Password"
                         )
                     },
-                    label = { Text("Mật khẩu") },
+                    label = { AppText("Mật khẩu") },
                     selected = selectedItem == "password",
                     onClick = {
                         selectedItem = "password"
@@ -422,7 +426,7 @@ fun Profile(
 
                 NavigationBarItem(
                     icon = { Icon(Icons.Default.Home, "Home", modifier = Modifier.size(28.dp)) },
-                    label = { Text("Home") },
+                    label = { AppText("Home") },
                     selected = selectedItem == "home",
                     onClick = {
                         selectedItem = "home"
@@ -433,7 +437,7 @@ fun Profile(
 
                 NavigationBarItem(
                     icon = { Icon(painterResource(id = R.drawable.baseline_logout_24), "Logout") },
-                    label = { Text("Đăng xuất") },
+                    label = { AppText("Đăng xuất") },
                     selected = selectedItem == "logout",
                     onClick = {
                         selectedItem = "logout"
@@ -462,7 +466,7 @@ fun Profile(
             when {
                 showNotifications -> {
                     if (notifications.isEmpty()) {
-                        Column(
+                        AppColumn(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(32.dp),
@@ -476,7 +480,7 @@ fun Profile(
                                 modifier = Modifier.size(64.dp)
                             )
                             Spacer(modifier = Modifier.height(16.dp))
-                            Text(
+                            AppText(
                                 "No notifications yet",
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -513,7 +517,7 @@ fun Profile(
                                             }
                                     }
 
-                                    Box(Modifier.animateItemPlacement()) {
+                                    AppBox(Modifier.animateItemPlacement()) {
                                         LikeNotificationItem(
                                             likedUserName = if (likedUserName.isBlank()) "Someone" else likedUserName,
                                             read = read,
@@ -563,7 +567,7 @@ fun Profile(
 
                 showLikedUsers -> {
                     if (likedUsers.isEmpty()) {
-                        Column(
+                        AppColumn(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(32.dp),
@@ -577,7 +581,7 @@ fun Profile(
                                 modifier = Modifier.size(64.dp)
                             )
                             Spacer(modifier = Modifier.height(16.dp))
-                            Text(
+                            AppText(
                                 "No likes yet",
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
@@ -658,13 +662,13 @@ fun Profile(
                                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                                     shape = MaterialTheme.shapes.medium
                                 ) {
-                                    Row(
+                                    AppRow(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(16.dp),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Box(
+                                        AppBox(
                                             modifier = Modifier
                                                 .size(56.dp)
                                                 .clip(CircleShape)
@@ -690,7 +694,7 @@ fun Profile(
                                             }
                                         }
                                         Spacer(modifier = Modifier.width(16.dp))
-                                        Text(
+                                        AppText(
                                             text = likedUserName,
                                             style = MaterialTheme.typography.bodyLarge,
                                             color = MaterialTheme.colorScheme.onSurface
@@ -710,18 +714,18 @@ fun Profile(
                 }
 
                 else -> {
-                    Column(
+                    AppColumn(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         // Profile Image Section
-                        Box(
+                        AppBox(
                             modifier = Modifier
                                 .size(120.dp)
                         ) {
-                            Box(
+                            AppBox(
                                 modifier = Modifier
                                     .size(110.dp)
                                     .clip(CircleShape)
@@ -763,7 +767,7 @@ fun Profile(
                                 }
                             }
 
-                            Box(
+                            AppBox(
                                 modifier = Modifier
                                     .align(Alignment.BottomEnd)
                                     .size(36.dp)
@@ -794,16 +798,14 @@ fun Profile(
                                 )
 
                                 Spacer(modifier = Modifier.height(16.dp))
-                                Row {
+                                AppRow {
                                     Icon(
                                         painter = painterResource(R.drawable.outline_location_on_24),
                                         contentDescription = "location"
                                     )
-                                    Text(
+                                    AppText(
                                         text = currentAddress,
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = if (isLocationUpdated) MaterialTheme.colorScheme.primary
-                                        else MaterialTheme.colorScheme.onSurfaceVariant,
                                         textAlign = TextAlign.Center,
                                         modifier = Modifier.padding(horizontal = 16.dp)
                                     )
@@ -812,7 +814,7 @@ fun Profile(
 
                                 Spacer(modifier = Modifier.height(24.dp))
 
-                                Row(
+                                AppRow(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .clip(MaterialTheme.shapes.medium)
@@ -842,17 +844,16 @@ fun Profile(
                                         modifier = Modifier.size(24.dp)
                                     )
                                     Spacer(modifier = Modifier.width(12.dp))
-                                    Text(
-                                        text = "Chia sẻ thông tin",
+                                    AppText(
+                                        text = "Share information",
                                         style = MaterialTheme.typography.bodyLarge,
                                         color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                        fontWeight = FontWeight.Medium
                                     )
                                 }
                             }
 
                             is AuthState.Error -> {
-                                Text(
+                                AppText(
                                     text = (authState as AuthState.Error).message,
                                     color = MaterialTheme.colorScheme.error,
                                     style = MaterialTheme.typography.bodyMedium,
@@ -867,7 +868,7 @@ fun Profile(
                                     strokeWidth = 3.dp
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
-                                Text(
+                                AppText(
                                     text = "Đang tải dữ liệu người dùng...",
                                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     style = MaterialTheme.typography.bodyMedium
