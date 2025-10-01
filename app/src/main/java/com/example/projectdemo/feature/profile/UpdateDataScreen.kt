@@ -26,6 +26,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.projectdemo.feature.course.Course
+import com.example.projectdemo.lib.AppColumn
+import com.example.projectdemo.lib.AppText
 import com.google.firebase.firestore.FirebaseFirestore
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,7 +37,7 @@ fun UpdateDataScreen(name: String, age: String, address: String) {
     var updatedAge by remember { mutableStateOf(age) }
     var updatedAddress by remember { mutableStateOf(address) }
     val context = LocalContext.current
-    Column(
+    AppColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White),
@@ -45,7 +47,7 @@ fun UpdateDataScreen(name: String, age: String, address: String) {
         TextField(
             value = updatedName,
             onValueChange = { updatedName = it },
-            label = { Text("Name") },
+            label = { AppText("Name") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
@@ -54,7 +56,7 @@ fun UpdateDataScreen(name: String, age: String, address: String) {
         TextField(
             value = updatedAge,
             onValueChange = { updatedAge = it },
-            label = { Text("Age") },
+            label = { AppText("Age") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
@@ -62,7 +64,7 @@ fun UpdateDataScreen(name: String, age: String, address: String) {
         TextField(
             value = updatedAddress,
             onValueChange = { updatedAddress = it },
-            label = { Text("Address") },
+            label = { AppText("Address") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
@@ -84,7 +86,7 @@ fun UpdateDataScreen(name: String, age: String, address: String) {
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Text(text = "Update Data", modifier = Modifier.padding(8.dp))
+            AppText(text = "Update Data", modifier = Modifier.padding(8.dp))
         }
         Spacer(modifier = Modifier.height(10.dp))
         Button(
@@ -92,7 +94,7 @@ fun UpdateDataScreen(name: String, age: String, address: String) {
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Text(text = "Delete Course", modifier = Modifier.padding(8.dp))
+            AppText(text = "Delete Course", modifier = Modifier.padding(8.dp))
         }
     }
 }

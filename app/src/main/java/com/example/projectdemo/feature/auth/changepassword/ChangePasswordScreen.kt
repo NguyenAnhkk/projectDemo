@@ -193,7 +193,7 @@ fun ChangePasswordScreen(navController: NavHostController) {
         isPaddingNavigation = true,
         modifier = Modifier.fillMaxSize()
     ) {
-        Column(
+        AppColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
@@ -206,8 +206,7 @@ fun ChangePasswordScreen(navController: NavHostController) {
                     )
                 )
         ) {
-            // Header with back button
-            Row(
+            AppRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 20.dp, vertical = 16.dp),
@@ -230,7 +229,7 @@ fun ChangePasswordScreen(navController: NavHostController) {
                     )
                 }
                 Spacer(modifier = Modifier.width(12.dp))
-                Text(
+                AppText(
                     text = "Change Password",
                     style = MaterialTheme.typography.headlineSmall,
                     color = ModernColorScheme.onSurface,
@@ -238,7 +237,7 @@ fun ChangePasswordScreen(navController: NavHostController) {
                 )
             }
 
-            Column(
+            AppColumn(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp)
@@ -246,8 +245,7 @@ fun ChangePasswordScreen(navController: NavHostController) {
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(32.dp, Alignment.CenterVertically)
             ) {
-                // Icon Section
-                Box(
+                AppBox(
                     modifier = Modifier
                         .size(120.dp)
                         .background(
@@ -264,29 +262,27 @@ fun ChangePasswordScreen(navController: NavHostController) {
                     )
                 }
 
-                // Title Section
-                Column(
+                AppColumn(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
+                    AppText(
                         text = "Update Your Password",
                         style = MaterialTheme.typography.headlineMedium,
                         color = ModernColorScheme.onSurface,
                         fontSize = 24.sp,
                         modifier = Modifier.padding(bottom = 8.dp)
                     )
-                    Text(
+                    AppText(
                         text = "Enter your current password and set a new one to secure your account",
                         style = MaterialTheme.typography.bodyMedium,
                         color = ModernColorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center,
-                        lineHeight = 20.sp,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     )
                 }
 
                 // Form Section
-                Column(
+                AppColumn(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
@@ -295,7 +291,7 @@ fun ChangePasswordScreen(navController: NavHostController) {
                         value = currentPassword,
                         onValueChange = { currentPassword = it },
                         label = {
-                            Text(
+                            AppText(
                                 text = "Current Password",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = ModernColorScheme.onSurfaceVariant
@@ -326,12 +322,11 @@ fun ChangePasswordScreen(navController: NavHostController) {
                         singleLine = true
                     )
 
-                    // New Password Field
                     OutlinedTextField(
                         value = newPassword,
                         onValueChange = { newPassword = it },
                         label = {
-                            Text(
+                            AppText(
                                 text = "New Password",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = ModernColorScheme.onSurfaceVariant
@@ -367,7 +362,7 @@ fun ChangePasswordScreen(navController: NavHostController) {
                         value = confirmPassword,
                         onValueChange = { confirmPassword = it },
                         label = {
-                            Text(
+                            AppText(
                                 text = "Confirm New Password",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = ModernColorScheme.onSurfaceVariant
@@ -408,7 +403,7 @@ fun ChangePasswordScreen(navController: NavHostController) {
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                         border = BorderStroke(1.dp, ModernColorScheme.primaryContainer.copy(alpha = 0.5f))
                     ) {
-                        Row(
+                        AppRow(
                             modifier = Modifier.padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -420,18 +415,17 @@ fun ChangePasswordScreen(navController: NavHostController) {
                                     .size(20.dp)
                                     .padding(end = 12.dp)
                             )
-                            Text(
+                            AppText(
                                 text = "New password must be at least 6 characters long and different from current password",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = ModernColorScheme.onSurfaceVariant,
-                                lineHeight = 16.sp
                             )
                         }
                     }
                 }
 
                 // Action Buttons
-                Column(
+                AppColumn(
                     modifier = Modifier.fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
@@ -458,7 +452,7 @@ fun ChangePasswordScreen(navController: NavHostController) {
                                 strokeWidth = 2.dp
                             )
                         } else {
-                            Text(
+                            AppText(
                                 text = "Update Password",
                                 color = Color.White,
                                 fontSize = 16.sp,
@@ -479,7 +473,7 @@ fun ChangePasswordScreen(navController: NavHostController) {
                         enabled = !isLoading,
                         shape = RoundedCornerShape(16.dp)
                     ) {
-                        Text(
+                        AppText(
                             text = "Cancel",
                             color = ModernColorScheme.primary,
                             fontSize = 16.sp

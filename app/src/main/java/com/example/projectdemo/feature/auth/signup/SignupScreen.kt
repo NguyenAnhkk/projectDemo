@@ -53,6 +53,7 @@ import com.example.projectdemo.lib.AppText
 import com.example.projectdemo.lib.AppTextBold
 import com.example.projectdemo.feature.auth.common.AuthState
 import com.example.projectdemo.feature.auth.common.AuthViewModel
+import com.example.projectdemo.lib.AppBox
 import com.example.projectdemo.ui.theme.rememberImeState
 import com.maxkeppeker.sheets.core.models.base.rememberSheetState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
@@ -143,7 +144,7 @@ fun SignupPage(
             isPaddingNavigation = true,
             modifier = Modifier.fillMaxSize(),
         ) {
-            Column(
+            AppColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(scrollState)
@@ -153,7 +154,7 @@ fun SignupPage(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
 
-                Column(
+                AppColumn(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 32.dp),
@@ -171,7 +172,7 @@ fun SignupPage(
                         textAlign = TextAlign.Center
                     )
                 }
-                Box(
+                AppBox(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(

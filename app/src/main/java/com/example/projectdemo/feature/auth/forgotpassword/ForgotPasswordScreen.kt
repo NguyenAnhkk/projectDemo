@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.projectdemo.feature.auth.forgotpassword.PasswordResetViewModel
+import com.example.projectdemo.lib.AppBox
 import com.example.projectdemo.lib.AppColumn
 import com.example.projectdemo.lib.AppScreen
 import com.example.projectdemo.lib.AppText
@@ -50,7 +51,7 @@ fun ForgotPasswordScreen(viewModel: PasswordResetViewModel, navController: NavHo
         Color(0xFFFC466B),
         Color(0xFF3F5EFB),
     )
-    Box(
+    AppBox(
         modifier = Modifier
             .fillMaxSize()
             .background(
@@ -66,14 +67,14 @@ fun ForgotPasswordScreen(viewModel: PasswordResetViewModel, navController: NavHo
             isPaddingNavigation = true,
             modifier = Modifier.fillMaxSize()
         ) {
-            Column(
+            AppColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 24.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
+                AppColumn(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 32.dp),
@@ -91,7 +92,7 @@ fun ForgotPasswordScreen(viewModel: PasswordResetViewModel, navController: NavHo
                     )
                 }
 
-                Box(
+                AppBox(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
@@ -165,7 +166,7 @@ fun ForgotPasswordScreen(viewModel: PasswordResetViewModel, navController: NavHo
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                Box(
+                AppBox(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(

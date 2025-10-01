@@ -66,6 +66,11 @@ import com.example.projectdemo.R
 import com.example.projectdemo.ulti.DraggableCard
 import com.example.projectdemo.ulti.verticalGradientBackground
 import com.example.projectdemo.feature.auth.common.DataViewModel
+import com.example.projectdemo.lib.AppBox
+import com.example.projectdemo.lib.AppColumn
+import com.example.projectdemo.lib.AppRow
+import com.example.projectdemo.lib.AppText
+import com.example.projectdemo.lib.AppTextBold
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -168,7 +173,7 @@ fun CourseDetailsActivity(
     ModalNavigationDrawer(drawerContent = {
     }, drawerState = drawerState) {
         Surface(modifier = Modifier.fillMaxSize()) {
-            Box(
+            AppBox(
                 modifier = Modifier.verticalGradientBackground(
                     listOf(
                         Color.White,
@@ -186,8 +191,8 @@ fun CourseDetailsActivity(
                     sheetState = sheetState,
                     onDismissRequest = { isSheetOpen = false }
                 ) {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        Column {
+                    AppBox(modifier = Modifier.fillMaxSize()) {
+                        AppColumn {
                             Button(
                                 onClick = {
                                     val senderId = currentUserId ?: return@Button
@@ -200,24 +205,24 @@ fun CourseDetailsActivity(
                                 },
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                Row {
+                                AppRow {
                                     Icon(
                                         painter = painterResource(id = R.drawable.baseline_delete_24),
                                         contentDescription = "delete"
                                     )
-                                    Text(text = "Delete conversation")
+                                    AppText(text = "Delete conversation")
                                 }
                             }
                             Button(
                                 onClick = { /*TODO*/ },
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                Row {
+                                AppRow {
                                     Icon(
                                         painter = painterResource(id = R.drawable.baseline_block_24),
                                         contentDescription = "block"
                                     )
-                                    Text(text = "Block user")
+                                    AppText(text = "Block user")
                                 }
                             }
                         }
@@ -320,12 +325,12 @@ fun CardContent(
         }
     }
 
-    Column(
+    AppColumn(
         modifier = modifier
             .fillMaxSize()
             .background(Color.White)
     ) {
-        Box(
+        AppBox(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
@@ -339,7 +344,7 @@ fun CardContent(
                 modifier = Modifier.fillMaxSize()
             )
 
-            Row(
+            AppRow(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .padding(8.dp),
@@ -411,7 +416,7 @@ fun CardContent(
             }
         }
 
-        Column(
+        AppColumn(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp)
@@ -421,18 +426,15 @@ fun CardContent(
                 )
                 .padding(16.dp)
         ) {
-            // User name
-            Text(
+            AppTextBold(
                 text = user.userName,
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurface,
-                fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
-            // Information in a compact layout
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                // Age row
+
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         painter = painterResource(id = R.drawable.outline_cake_24),
@@ -441,15 +443,15 @@ fun CardContent(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
+                    AppText(
                         text = user.dateOfBirth,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
-                // Location row
-                Row(verticalAlignment = Alignment.CenterVertically) {
+
+                AppRow(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         painter = painterResource(id = R.drawable.outline_location_on_24),
                         contentDescription = "Location",
@@ -457,7 +459,7 @@ fun CardContent(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
+                    AppText(
                         text = user.address,
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface,
@@ -466,8 +468,8 @@ fun CardContent(
                     )
                 }
 
-                // Distance row
-                Row(verticalAlignment = Alignment.CenterVertically) {
+
+                AppRow(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         painter = painterResource(id = R.drawable.outline_location_on_24),
                         contentDescription = "Distance",
@@ -475,7 +477,7 @@ fun CardContent(
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
+                    AppText(
                         text = "${"%.1f".format(user.distance / 1000)} km away",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurface

@@ -21,6 +21,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.projectdemo.R
+import com.example.projectdemo.lib.AppRow
+import com.example.projectdemo.lib.AppText
+import com.example.projectdemo.lib.AppTextBold
 import com.example.projectdemo.ui.theme.Pink40
 import com.example.projectdemo.ui.theme.ProjectDemoTheme
 
@@ -46,14 +49,13 @@ fun ActionButton(
         colors = colors,
         shape = RoundedCornerShape(percent = 50)
     ) {
-        Row(
+        AppRow(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
+            AppTextBold(
                 text = text,
                 style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.Bold
             )
             if (isNavigationArrowVisible) {
                 Icon(

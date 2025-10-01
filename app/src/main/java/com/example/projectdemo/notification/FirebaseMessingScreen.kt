@@ -15,6 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.example.projectdemo.lib.AppColumn
+import com.example.projectdemo.lib.AppText
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -47,13 +49,13 @@ fun FirebaseMessagingScreen() {
         }
     }
 
-    Column(
+    AppColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black),
         verticalArrangement = Arrangement.spacedBy(20.dp, alignment = Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text(text = "Hello main screen", color = Color.White)
+        AppText(text = "Hello main screen", color = Color.White)
     }
 }

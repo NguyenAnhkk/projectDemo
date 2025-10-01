@@ -316,7 +316,7 @@ fun UserDetailScreen(
             )
         }
     ) { innerPadding ->
-        Box(
+        AppBox(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
@@ -327,7 +327,7 @@ fun UserDetailScreen(
                     })
                 }
         ) {
-            Column(
+            AppColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(0.dp, 0.dp, 0.dp, 75.dp),
@@ -341,13 +341,13 @@ fun UserDetailScreen(
                     reverseLayout = false
                 ) {
                     item {
-                        Column(
+                        AppColumn(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Box(
+                            AppBox(
                                 modifier = Modifier
                                     .size(100.dp)
                                     .clip(CircleShape)
@@ -370,14 +370,13 @@ fun UserDetailScreen(
                                 }
                             }
                             Spacer(modifier = Modifier.height(12.dp))
-                            Text(
+                            AppTextBold(
                                 text = userName.value,
-                                fontWeight = FontWeight.Bold,
                                 fontSize = 20.sp,
                                 color = Color.Black
                             )
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(
+                            AppText(
                                 text = "Date of Birth: ${dateOfBirth.value}",
                                 fontSize = 14.sp,
                                 color = Color(0xFF65676B)
@@ -413,7 +412,7 @@ fun UserDetailScreen(
                             }
                         }
 
-                        Column(
+                        AppColumn(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
@@ -437,7 +436,7 @@ fun UserDetailScreen(
                                         else -> java.text.SimpleDateFormat("dd/MM/yyyy").format(messageTime) + " lúc " + java.text.SimpleDateFormat("HH:mm").format(messageTime)
                                     }
 
-                                    Text(
+                                    AppText(
                                         text = timeText,
                                         color = Color(0xFF65676B),
                                         fontSize = 10.sp,
@@ -446,14 +445,14 @@ fun UserDetailScreen(
                                 }
                             }
 
-                            Row(
+                            AppRow(
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(horizontal = 8.dp, vertical = 2.dp),
                                 horizontalArrangement = if (isFromReceiver) Arrangement.Start else Arrangement.End
                             ) {
                                 if (isFromReceiver && !isNextMessageFromReceiver) {
-                                    Box(
+                                    AppBox(
                                         modifier = Modifier
                                             .size(28.dp)
                                             .clip(CircleShape)
@@ -478,17 +477,17 @@ fun UserDetailScreen(
                                 }
 
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Column(
+                                AppColumn(
                                     modifier = Modifier
                                         .padding(
                                             start = if (isFromReceiver && isNextMessageFromReceiver) 36.dp else 0.dp,
                                         )
                                 ) {
-                                    Row(
+                                    AppRow(
                                         modifier = Modifier.fillMaxWidth(),
                                         horizontalArrangement = if (isFromReceiver) Arrangement.Start else Arrangement.End
                                     ) {
-                                        Box(
+                                        AppBox(
                                             modifier = Modifier
                                                 .clip(
                                                     if (isFromReceiver) {
@@ -592,11 +591,11 @@ fun UserDetailScreen(
                                                 else -> java.text.SimpleDateFormat("dd/MM/yyyy").format(messageTime) + " lúc " + java.text.SimpleDateFormat("HH:mm").format(messageTime)
                                             }
 
-                                            Row(
+                                            AppRow(
                                                 modifier = Modifier.fillMaxWidth(),
                                                 horizontalArrangement = if (isFromReceiver) Arrangement.Start else Arrangement.End
                                             ) {
-                                                Text(
+                                                AppText(
                                                     text = timeText,
                                                     color = Color(0xFF65676B),
                                                     fontSize = 10.sp,
@@ -838,7 +837,7 @@ fun UserDetailScreen(
                             selectedMessage = null
                             showDialog = false
                         }) {
-                            Text("Xóa")
+                            AppText("Xóa")
                         }
                     },
                     dismissButton = {
@@ -846,7 +845,7 @@ fun UserDetailScreen(
                             showDialog = false
                             selectedMessage = null
                         }) {
-                            Text("Hủy")
+                            AppText("Hủy")
                         }
                     }
                 )
@@ -856,7 +855,7 @@ fun UserDetailScreen(
                     val scale = remember { mutableStateOf(1f) }
                     val offsetX = remember { mutableStateOf(0f) }
                     val offsetY = remember { mutableStateOf(0f) }
-                    Box(
+                    AppBox(
                         modifier = Modifier
                             .wrapContentSize()
                             .background(Color.Transparent)
@@ -889,7 +888,7 @@ fun UserDetailScreen(
                 }
             }
             if (isLoading) {
-                Box(
+                AppBox(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier
                         .fillMaxSize()

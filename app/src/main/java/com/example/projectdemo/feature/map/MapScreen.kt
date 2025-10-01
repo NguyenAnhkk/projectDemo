@@ -7,6 +7,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
 import com.example.projectdemo.feature.auth.common.AuthViewModel
+import com.example.projectdemo.lib.AppColumn
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.ktx.auth
@@ -29,7 +30,7 @@ fun HomePage(
 
     val mapUtils = remember { MapUtils(context) }
 
-    Column(
+    AppColumn(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally

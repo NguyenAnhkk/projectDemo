@@ -20,6 +20,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.projectdemo.R
+import com.example.projectdemo.lib.AppBox
 
 @Composable
 fun SplashScreen(navController: NavController) {
@@ -45,7 +46,7 @@ fun SplashScreen(navController: NavController) {
         }
     }
 
-    Box(
+    AppBox(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White),

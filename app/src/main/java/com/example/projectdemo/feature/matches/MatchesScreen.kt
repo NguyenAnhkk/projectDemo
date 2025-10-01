@@ -23,7 +23,12 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.projectdemo.R
+import com.example.projectdemo.lib.AppBox
+import com.example.projectdemo.lib.AppColumn
+import com.example.projectdemo.lib.AppRow
 import com.example.projectdemo.lib.AppScreen
+import com.example.projectdemo.lib.AppText
+import com.example.projectdemo.lib.AppTextBold
 import com.example.projectdemo.lib.MyAppTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -92,9 +97,9 @@ fun MatchesScreen(navController: NavController) {
         isPaddingNavigation = true,
         modifier = Modifier.fillMaxSize()
     ) {
-        Column {
+        AppColumn {
             TopAppBar(
-                title = { Text("Messages") },
+                title = { AppText("Messages") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
@@ -156,13 +161,13 @@ fun MatchesScreen(navController: NavController) {
                             containerColor = Color.Transparent
                         )
                     ) {
-                        Row(
+                        AppRow(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Box(
+                            AppBox(
                                 modifier = Modifier
                                     .size(50.dp)
                                     .clip(CircleShape)
@@ -186,14 +191,13 @@ fun MatchesScreen(navController: NavController) {
                                 }
                             }
                             Spacer(modifier = Modifier.width(16.dp))
-                            Column {
-                                Text(
+                            AppColumn {
+                                AppTextBold(
                                     text = matchedUser?.get("userName") as? String
                                         ?: "Unknown User",
-                                    fontWeight = FontWeight.Bold,
                                     fontSize = 16.sp
                                 )
-                                Text(
+                                AppText(
                                     text = match["lastMessage"] as? String ?: "No messages yet",
                                     color = Color.Gray,
                                     fontSize = 14.sp,

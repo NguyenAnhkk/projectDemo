@@ -96,6 +96,7 @@ import com.example.projectdemo.lib.AppBox
 import com.example.projectdemo.lib.AppColumn
 import com.example.projectdemo.lib.AppRow
 import com.example.projectdemo.lib.AppText
+import com.example.projectdemo.lib.AppTextBold
 import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -308,14 +309,14 @@ fun Profile(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
-                    Text(
+                    AppText(
                         "",
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
                         color = MaterialTheme.colorScheme.primary
                     )
                 },
                 actions = {
-                    Row(
+                    AppRow(
                         modifier = Modifier
                             .padding(end = 8.dp)
                             .background(
@@ -351,7 +352,7 @@ fun Profile(
                                             containerColor = MaterialTheme.colorScheme.error,
                                             contentColor = MaterialTheme.colorScheme.onError
                                         ) {
-                                            Text(
+                                            AppText(
                                                 if (unreadCount > 9) "9+" else unreadCount.toString(),
                                                 style = MaterialTheme.typography.labelSmall,
                                                 fontSize = 10.sp
@@ -789,10 +790,9 @@ fun Profile(
 
                         when (authState) {
                             is AuthState.Authenticated -> {
-                                Text(
+                                AppTextBold(
                                     text = userName.value,
                                     style = MaterialTheme.typography.headlineMedium,
-                                    fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onBackground,
                                     textAlign = TextAlign.Center
                                 )
@@ -1006,14 +1006,14 @@ fun LikeNotificationItem(
                 )
             },
             headlineContent = {
-                Text(
+                AppText(
                     "$likedUserName liked your profile",
                     style = MaterialTheme.typography.titleMedium
                 )
             },
             supportingContent = {
                 if (!read) {
-                    Row(
+                    AppRow(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
@@ -1021,7 +1021,7 @@ fun LikeNotificationItem(
                         OutlinedButton(onClick = onIgnore) { Text("Ignore") }
                     }
                 } else {
-                    Text("Already handled", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    AppText("Already handled", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         )

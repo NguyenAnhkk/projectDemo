@@ -55,6 +55,11 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.projectdemo.R
 import com.example.projectdemo.feature.profile.loadImageUrlFromFirestore
+import com.example.projectdemo.lib.AppBox
+import com.example.projectdemo.lib.AppColumn
+import com.example.projectdemo.lib.AppRow
+import com.example.projectdemo.lib.AppText
+import com.example.projectdemo.lib.AppTextBold
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -277,7 +282,7 @@ class MapUtils(private val context: Context) {
         }
 
         Scaffold() {
-            Box(modifier = Modifier.fillMaxSize()
+            AppBox(modifier = Modifier.fillMaxSize()
                 .pointerInput(Unit) {
                 detectTapGestures(onTap = {
                     focusManager.clearFocus() // Ẩn bàn phím khi tap ra ngoài
@@ -311,7 +316,7 @@ class MapUtils(private val context: Context) {
                     }
                 }
 
-                Column(
+                AppColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(10.dp),
@@ -341,7 +346,7 @@ class MapUtils(private val context: Context) {
                                 shape = RoundedCornerShape(12.dp)
                             ),
                         placeholder = {
-                            Text(
+                            AppText(
                                 "🔍 Enter location to search...",
                                 color = Color.Gray.copy(alpha = 0.6f),
                                 fontSize = 14.sp
@@ -355,8 +360,6 @@ class MapUtils(private val context: Context) {
                         ),
                         keyboardActions = KeyboardActions(
                             onSearch = {
-                                // Xử lý tìm kiếm khi nhấn nút Search trên bàn phím
-
                                 if (searchQuery.isNotBlank()) {
                                     searchLocation(
                                         query = searchQuery,
@@ -366,7 +369,6 @@ class MapUtils(private val context: Context) {
                                             currentLocation = latLng
                                             isLocationUpdated = true
                                             searchError = null
-                                            // Ẩn bàn phím sau khi search
                                             keyboardController?.hide()
                                         },
                                         onError = { errorMsg ->
@@ -391,11 +393,8 @@ class MapUtils(private val context: Context) {
                         ),
                         trailingIcon = {
                             val coroutineScope = rememberCoroutineScope()
-
-                            // Hiệu ứng scale khi click
                             var buttonScale by remember { mutableStateOf(1f) }
-
-                            Box(
+                            AppBox(
                                 modifier = Modifier
                                     .size(36.dp)
                                     .background(
@@ -421,7 +420,6 @@ class MapUtils(private val context: Context) {
                                                     currentLocation = latLng
                                                     isLocationUpdated = true
                                                     searchError = null
-                                                    // Ẩn bàn phím
                                                     keyboardController?.hide()
                                                 },
                                                 onError = { errorMsg ->
@@ -429,7 +427,6 @@ class MapUtils(private val context: Context) {
                                                 }
                                             )
                                         }
-                                        // Reset scale sau khi click
                                         buttonScale = 1f
                                     }
                                     .scale(buttonScale),
@@ -446,7 +443,7 @@ class MapUtils(private val context: Context) {
                     )
 
 
-                    Box(modifier = Modifier.clip(RoundedCornerShape(16.dp))) {
+                    AppBox(modifier = Modifier.clip(RoundedCornerShape(16.dp))) {
                         CustomTopBar(
                             currentAddress = currentAddress,
                             userPhotoUrl = userPhotoUrl,
@@ -455,7 +452,7 @@ class MapUtils(private val context: Context) {
                     }
                 }
 
-                Column(
+                AppColumn(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Bottom,
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -504,13 +501,13 @@ class MapUtils(private val context: Context) {
                                 strokeWidth = 2.dp
                             )
                         } else {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            AppRow(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
                                     imageVector = Icons.Default.LocationOn,
                                     contentDescription = null
                                 )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Update Location", fontWeight = FontWeight.SemiBold)
+                                AppTextBold("Update Location")
                             }
                         }
                     }
@@ -528,11 +525,11 @@ class MapUtils(private val context: Context) {
             Toast.makeText(context, "Unable to load image from Firestore", Toast.LENGTH_SHORT)
                 .show()
         })
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+        AppRow(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
             IconButton(
                 onClick = { navController.navigate("profile") },
             ) {
-                Box(
+                AppBox(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
@@ -578,18 +575,18 @@ class MapUtils(private val context: Context) {
             colors = CardDefaults.cardColors(containerColor = Color.White),
             shape = RoundedCornerShape(16.dp)
         ) {
-            Row(
+            AppRow(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(
+                AppRow(
                     modifier = Modifier.weight(1f),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Box(
+                    AppBox(
                         modifier = Modifier
                             .size(40.dp)
                             .background(
@@ -608,20 +605,17 @@ class MapUtils(private val context: Context) {
 
                     Spacer(modifier = Modifier.width(12.dp))
 
-                    Column {
-                        Text(
+                    AppColumn {
+                        AppText(
                             text = "Vị trí hiện tại",
                             fontSize = 11.sp,
-                            fontWeight = FontWeight.Medium,
                             color = Color.Gray
                         )
-                        Text(
+                        AppTextBold(
                             text = currentAddress,
                             fontSize = 14.sp,
-                            fontWeight = FontWeight.SemiBold,
                             color = Color.Black,
                             maxLines = 2,
-                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
                     }
                 }
@@ -659,7 +653,7 @@ class MapUtils(private val context: Context) {
                 onClick = { navController.navigate("profile") },
                 modifier = Modifier.fillMaxSize()
             ) {
-                Box(
+                AppBox(
                     modifier = Modifier
                         .size(44.dp)
                         .clip(CircleShape)

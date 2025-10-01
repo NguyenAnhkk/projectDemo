@@ -79,6 +79,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.sp
 import com.example.projectdemo.feature.auth.common.AuthState
 import com.example.projectdemo.feature.auth.common.AuthViewModel
+import com.example.projectdemo.lib.AppBox
+import com.example.projectdemo.lib.AppRow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -175,6 +177,7 @@ fun LoginPage(
                     Toast.makeText(context, errorMessage, Toast.LENGTH_SHORT).show()
                 }
             }
+
             else -> Unit
         }
     }
@@ -184,7 +187,7 @@ fun LoginPage(
         Color(0xFF3F5EFB),
     )
 
-    Box(
+    AppBox(
         modifier = Modifier
             .fillMaxSize()
             .background(
@@ -200,7 +203,7 @@ fun LoginPage(
             isPaddingNavigation = true,
             modifier = Modifier.fillMaxSize()
         ) {
-            Column(
+            AppColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(scrollState)
@@ -208,7 +211,7 @@ fun LoginPage(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
+                AppColumn(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 40.dp),
@@ -225,7 +228,7 @@ fun LoginPage(
                     )
                 }
 
-                Box(
+                AppBox(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(
@@ -345,7 +348,7 @@ fun LoginPage(
 
 @Composable
 fun DividerWithText() {
-    Row(
+    AppRow(
         modifier = Modifier
             .fillMaxWidth()
             .height(40.dp),

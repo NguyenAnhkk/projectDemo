@@ -26,6 +26,9 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.example.projectdemo.feature.auth.signin.components.ActionButton
+import com.example.projectdemo.lib.AppColumn
+import com.example.projectdemo.lib.AppText
+import com.example.projectdemo.lib.AppTextBold
 import com.example.projectdemo.ui.theme.Pink40
 
 @Composable
@@ -38,7 +41,7 @@ fun WelcomeScreen(
         Color(0xFFFC466B),
         Color(0xFF3F5EFB),
     )
-    Column(
+    AppColumn(
         modifier = modifier
             .fillMaxSize()
             .systemBarsPadding()
@@ -59,15 +62,14 @@ fun WelcomeScreen(
             iterations = Int.MAX_VALUE
         )
 
-        Text(
+        AppTextBold(
             text = "Let's Get Started",
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.Bold,
             color = Color.White,
             modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
         )
 
-        Text(
+        AppText(
             text = "Build meaningful connections with our app",
             style = MaterialTheme.typography.bodyMedium,
             color = Color.White.copy(alpha = 0.9f),

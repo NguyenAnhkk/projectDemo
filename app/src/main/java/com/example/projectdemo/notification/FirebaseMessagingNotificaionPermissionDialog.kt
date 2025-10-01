@@ -7,6 +7,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.LaunchedEffect
+import com.example.projectdemo.lib.AppText
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.PermissionState
 import com.google.accompanist.permissions.isGranted
@@ -24,21 +25,21 @@ fun FirebaseMessagingNotificationPermissionDialog(
             onDismissRequest = {
                 showNotificationDialog.value = false
             },
-            title = { Text(text = "Notification Permission") },
-            text = { Text(text = "Please allow this app to send you notifications") },
+            title = { AppText(text = "Notification Permission") },
+            text = { AppText(text = "Please allow this app to send you notifications") },
             confirmButton = {
                 TextButton(onClick = {
                     showNotificationDialog.value = false
                     notificationPermissionState.launchPermissionRequest()
                 }) {
-                    Text(text = "OK")
+                    AppText(text = "OK")
                 }
             },
             dismissButton = {
                 TextButton(onClick = {
                     showNotificationDialog.value = false
                 }) {
-                    Text(text = "Cancel")
+                    AppText(text = "Cancel")
                 }
             }
         )

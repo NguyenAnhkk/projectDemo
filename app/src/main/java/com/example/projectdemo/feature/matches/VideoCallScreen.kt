@@ -371,7 +371,7 @@ fun VideoCallScreen(
             )
         }
     ) { paddingValues ->
-        Box(
+        AppBox(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
@@ -512,14 +512,14 @@ fun IncomingCallDialog(
 ) {
     AlertDialog(
         onDismissRequest = onReject,
-        title = { Text(text = "Incoming Call", style = MaterialTheme.typography.headlineSmall) },
-        text = { Text(text = "User $callerId is calling you") },
+        title = { AppText(text = "Incoming Call", style = MaterialTheme.typography.headlineSmall) },
+        text = { AppText(text = "User $callerId is calling you") },
         confirmButton = {
             Button(
                 onClick = onAccept,
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Green)
             ) {
-                Text("Accept")
+                AppText("Accept")
             }
         },
         dismissButton = {
@@ -527,7 +527,7 @@ fun IncomingCallDialog(
                 onClick = onReject,
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Red)
             ) {
-                Text("Reject")
+                AppText("Reject")
             }
         }
     )

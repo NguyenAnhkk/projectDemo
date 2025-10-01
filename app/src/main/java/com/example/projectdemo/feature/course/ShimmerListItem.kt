@@ -28,6 +28,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import com.example.projectdemo.lib.AppBox
+import com.example.projectdemo.lib.AppColumn
+import com.example.projectdemo.lib.AppRow
 
 @Composable
 fun ShimmerListItem(
@@ -36,28 +39,34 @@ fun ShimmerListItem(
     modifier: Modifier = Modifier
 ) {
     if (isLoading) {
-        Row(modifier = Modifier) {
-            Box(
+        AppRow(modifier = Modifier) {
+            AppBox(
                 modifier = Modifier
                     .size(100.dp)
                     .clip(CircleShape)
                     .shimmerEffect()
-            )
+            ){
+
+            }
             Spacer(modifier = Modifier.width(16.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Box(
+            AppColumn(modifier = Modifier.weight(1f)) {
+                AppBox(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(20.dp)
                         .shimmerEffect()
-                )
+                ){
+
+                }
                 Spacer(modifier = Modifier.height(16.dp))
-                Box(
+                AppBox(
                     modifier = Modifier
                         .fillMaxWidth(0.7f)
                         .height(20.dp)
                         .shimmerEffect()
-                )
+                ){
+
+                }
 
             }
         }
